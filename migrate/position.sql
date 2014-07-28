@@ -1,0 +1,1 @@
+INSERT INTO `position`(name) SELECT distinct position FROM transfermarket_player WHERE position != '' AND position NOT IN ('Torwart','Abwehr','Sturm','Mittelfeld');
