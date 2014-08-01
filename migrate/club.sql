@@ -5,7 +5,9 @@ INSERT INTO `transfermarket_club`(`id`,`club_name`,`profile_uri`,`nation_id`) SE
 UPDATE `transfermarkt_club` JOIN `transfermarkt_team` ON transfermarkt_club.id = transfermarkt_team.id SET transfermarkt_club.nation_id = transfermarkt_team.nation_id
 
 #将transfermarkt_club里的的记录复制到club表中
-INSERT INTO `club`(`name`,`nation_id`) SELECT transfermarket_club.club_name,transfermarket_nation.nation_ref_id FROM `transfermarket_club` JOIN `transfermarket_nation` ON transfermarket_club.nation_id = transfermarket_nation.id WHERE `club_name` NOT IN (SELECT `name` FROM `club`)
+INSERT INTO `club`(`name`,`nation_id`) SELECT transfermarket_club.club_name,transfermarket_nation.nation_ref_id FROM `transfermarket_club` JOIN `transfermarket_nation` ON transfermarket_club.nation_id = transfermarket_nation.id WHERE `club_ref_id` = 0
+
+INSERT INTO `club`(`name`,`nation_id`) SELECT transfermarket_club.club_name,transfermarket_nation.nation_ref_id FROM (SELECT * FROM `transfermarket_club` WHERE `club_ref_id` = 0)`transfermarket_club` JOIN `transfermarket_nation` ON transfermarket_club.nation_id = transfermarket_nation.id
 
 #将club.id复制到将transfermarkt_club的club_ref_id中
 UPDATE `transfermarket_club` JOIN `club` ON transfermarket_club.club_name = club.name SET transfermarket_club.club_ref_id = club.id WHERE transfermarket_club.club_ref_id = 0

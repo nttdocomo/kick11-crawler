@@ -14,9 +14,20 @@ crawler.customHeaders = {
 	Cookie:'__qca=P0-912270038-1403184571295; 22ea10c3df12eecbacbf5e855c1fc2b3=4b2f77b042760e0b6c4403263173b81a02199e1da%3A4%3A%7Bi%3A0%3Bs%3A6%3A%22561326%22%3Bi%3A1%3Bs%3A9%3A%22nttdocomo%22%3Bi%3A2%3Bi%3A31536000%3Bi%3A3%3Ba%3A0%3A%7B%7D%7D; POPUPCHECK=1406040912765; PHPSESSID=kjuus3jlq0md5vhhq0hn2p7571; __utma=1.264986923.1403184483.1406010530.1406012399.139; __utmb=1.1.10.1406012399; __utmc=1; __utmz=1.1405646456.117.3.utmcsr=transfermarkt.com|utmccn=(referral)|utmcmd=referral|utmcct=/wettbewerbe/national/wettbewerbe/26'
 }
 crawler.userAgent = 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.153 Safari/537.36';
+var players_id = []
 crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
     var decoder = new StringDecoder('utf8'),
     transfer;
+    if(/^\/statistik\/letztetransfers(\?\S+?){0,1}$/.test(queueItem.path)){
+    	var $ = cheerio.load(decoder.write(responseBuffer));
+    	$('a[class="spielprofil_tooltip"]').each(function(index,el){
+    		var $el = $(el),id = $el.attr('id');
+    		if(id){
+    			players_id.push(id);
+    		}
+    	})
+    }
+    
     if(/^\/\S+\/korrektur\/spieler\/\d{1,6}$/.test(queueItem.path)){
     	var $ = cheerio.load(decoder.write(responseBuffer));
 		transfer_table = $('#transfers'),transfer_tbody = transfer_table.find('>tbody'),transfers_id = transfer_tbody.find(' > input[id$="trans_id"]');
@@ -40,8 +51,8 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 				    connection.release();
 				});
 			});
-		    var path = queueItem.path.replace('korrektur','transfers');
-	    	crawler.queueURL(host + path);
+			var path = queueItem.path.replace('korrektur','transfers');
+			crawler.queueURL(host + path);
 		})
     };
     if(/^\/\S+\/transfers\/spieler\/\d{1,6}$/.test(queueItem.path)){
@@ -65,6 +76,22 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
     }
 }).on('complete',function(){
 	console.log('complete');
+	if(players_id.length){
+		pool.getConnection(function(err, connection) {
+			var sql = mysql.format("SELECT profile_uri FROM transfermarket_player WHERE id IN (?)", [players_id]);
+			connection.query(sql, function(err,rows) {
+			    if (err) throw err;
+			    for (var i = rows.length - 1; i >= 0; i--) {
+				    var path = rows[i].profile_uri;
+				    path = path.replace('profil','korrektur');
+			    	crawler.queueURL(host + path);
+			    };
+			    connection.release();
+			    crawler.start();
+			    players_id = [];
+			});
+		});
+	}
 }).on('fetcherror',function(queueItem, response){
 	crawler.queueURL(host + queueItem.path);
 }).on('fetchtimeout',function(queueItem, response){
@@ -72,17 +99,32 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 }).on('fetchclienterror',function(queueItem, response){
 	crawler.queueURL(host + queueItem.path);
 });
-/*crawler.queueURL(host + '/cristiano-ronaldo/transfers/spieler/8198');
-crawler.start();*/
-pool.getConnection(function(err, connection) {
-	connection.query("SELECT profile_uri FROM transfermarket_player WHERE id NOT IN (SELECT DISTINCT player_id FROM `transfermarket_transfer`)", function(err,rows) {
+crawler.queueURL(host + '/statistik/letztetransfers');
+crawler.queueURL(host + '/statistik/letztetransfers?page=2');
+crawler.start();
+/*pool.getConnection(function(err, connection) {
+	connection.query("SELECT profile_uri FROM transfermarket_player WHERE id NOT IN (SELECT DISTINCT player_id FROM `transfermarket_transfer`) ORDER BY id DESC LIMIT 100 OFFSET 0", function(err,rows) {
 	    if (err) throw err;
 	    for (var i = rows.length - 1; i >= 0; i--) {
 		    var path = rows[i].profile_uri;
 		    path = path.replace('profil','korrektur');
+	    	
+	    	crawler.queueURL(host + path);
+	    };
+	    connection.release();
+	    
+	    crawler.start();
+	});
+});
+pool.getConnection(function(err, connection) {
+	connection.query("SELECT profile_uri FROM `transfermarket_player` WHERE id IN (SELECT player_id FROM `transfermarket_transfer` WHERE taking_team_id = 0 OR releasing_team_id = 0) LIMIT 100 OFFSET 0", function(err,rows) {
+	    if (err) throw err;
+	    for (var i = rows.length - 1; i >= 0; i--) {
+		    var path = rows[i].profile_uri;
+		    path = path.replace('profil','transfers');
 	    	crawler.queueURL(host + path);
 	    };
 	    connection.release();
 	    crawler.start();
 	});
-});
+});*/

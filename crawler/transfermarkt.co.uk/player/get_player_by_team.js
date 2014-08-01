@@ -38,10 +38,16 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
     }
 }).on('complete',function(){
 	console.log('complete');
+}).on('fetcherror',function(queueItem, response){
+	crawler.queueURL(host + queueItem.path);
+}).on('fetchtimeout',function(queueItem, response){
+	crawler.queueURL(host + queueItem.path);
+}).on('fetchclienterror',function(queueItem, response){
+	crawler.queueURL(host + queueItem.path);
 });
 pool.getConnection(function(err, connection) {
 	//connection.query("SELECT id, profile_uri FROM transfermarket_team WHERE id IN (13,131,367,368,418,621,681,714,897,940,993,1049,1050,1084,1531,1533,3302,3368,3709,16795)", function(err,rows) {
-	connection.query("SELECT profile_uri FROM transfermarket_team WHERE id = 82", function(err,rows) {
+	connection.query("SELECT profile_uri FROM transfermarket_team WHERE id = 631", function(err,rows) {
 	    if (err) throw err;
 	    for (var i = rows.length - 1; i >= 0; i--) {
 		    var path = rows[i].profile_uri;
