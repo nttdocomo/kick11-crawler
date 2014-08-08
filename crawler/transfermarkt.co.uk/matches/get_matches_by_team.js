@@ -50,14 +50,18 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 								team_2_id = td.eq(6).find('a').attr('href').replace(/\S+?(\d{1,})\/\S+?$/,'$1'),
 								team_1_name = td.eq(3).find('img').attr('title'),
 								team_2_name = td.eq(5).find('img').attr('title'),
+								result = td.eq(4).find('a'),
+								result = result.length ? result.text().split(':') : undefined,
+								score1 = result ? result[0] : undefined,
+								score2 = result ? result[1] : undefined,
 								time = time == '-' ? '00:00':time,
 								play_at = moment([date,time].join(' ')).format('YYYY-MM-DD HH:mm:ss');
-								console.log([matchday_id,play_at,team_1_name,team_2_name].join('-------'));
+								console.log([matchday_id,play_at,team_1_name,score1,score2,team_2_name].join('<<<>>>'));
 								getTeamIdByTeamName(team_1_name,(function(team_name,matchday_id,play_at){
 									return function(team_1_id){
 										getTeamIdByTeamName(team_name,function(team_2_id){
 											pool.getConnection(function(err, connection) {
-												var sql = mysql.format('INSERT INTO `matchs` (round_id,team1_id,team2_id,play_at) SELECT ? FROM dual WHERE NOT EXISTS(SELECT round_id,team1_id,team2_id,play_at FROM `matchs` WHERE round_id = ? AND team1_id = ? AND team2_id = ? AND play_at = ?)', [[matchday_id,team_1_id,team_2_id,play_at],matchday_id,team_1_id,team_2_id,play_at]);
+												var sql = mysql.format('INSERT INTO `matchs` (round_id,team1_id,team2_id,play_at'+ (score1 && score2 ? ',score1, score2' : '') +') SELECT ? FROM dual WHERE NOT EXISTS(SELECT round_id,team1_id,team2_id,play_at'+ (score1 && score2 ? ',score1, score2' : '') +' FROM `matchs` WHERE round_id = ? AND team1_id = ? AND team2_id = ? AND play_at = ?)', [score1 && score2 ? [matchday_id,team_1_id,team_2_id,play_at,score1,score2] : [matchday_id,team_1_id,team_2_id,play_at],matchday_id,team_1_id,team_2_id,play_at]);
 												console.log(sql);
 												connection.query(sql, function(err,rows) {
 													if (err) throw err;
@@ -66,7 +70,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 											});
 										})
 									}
-								})(team_2_name,matchday_id,play_at))
+								})(team_2_name,matchday_id,play_at,score1,score2))
 								data_array.push(date);
 								//console.log([matchday_id,play_at,team_1_name,team_2_name].join('-------'));
 							};
@@ -89,7 +93,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 /*crawler.queueURL(host + '/cristiano-ronaldo/transfers/spieler/8198');
 crawler.start();*/
 pool.getConnection(function(err, connection) {
-	connection.query("SELECT uri FROM transfermarket_competition WHERE competition_id = 'ES1'", function(err,rows) {
+	connection.query("SELECT transfermarket_competition.uri FROM `competition` JOIN `nation` ON competition.nation_id = nation.id JOIN `transfermarket_nation` ON nation.full_name = transfermarket_nation.name JOIN `transfermarket_competition` ON transfermarket_competition.nation_id = transfermarket_nation.id WHERE transfermarket_competition.competition_name IN (SELECT name FROM `competition`)", function(err,rows) {
 	    if (err) throw err;
 	    for (var i = rows.length - 1; i >= 0; i--) {
 		    var path = rows[i].uri;
