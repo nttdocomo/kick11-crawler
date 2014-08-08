@@ -46,7 +46,7 @@ bower_components
 
 # Files to ignore
 urls.py
-settings.py
+crawler/transfermarkt.co.uk/pool.js
 static/js/config.js
 static/js/admin/config.js
 templates/index.html
