@@ -131,7 +131,7 @@ get_nation_info = function($){
 	});
 },
 trim = function(text){
-	return text.replace(/^\s+(.+?)\s+$/,'$1');
+	return text.replace(/^\s+(.*?)\s+$/,'$1');
 };
 module.exports.get_or_read_file = get_or_read_file;
 module.exports.get_players_profile = get_players_profile;
