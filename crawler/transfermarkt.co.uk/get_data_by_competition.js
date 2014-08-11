@@ -5,31 +5,46 @@ var cheerio = require('cheerio'), StringDecoder = require('string_decoder').Stri
 pool  = require('../pool'),
 fs = require('fs'),
 url = require('url'),
-urls = [];
+crawler = require('./crawler'),
+urls = [],
 Competition = require('../competition/model'),
+Season = require('../seasons/model'),
 Team = require('./model'),
-Crawler = require("simplecrawler"),
-host = 'http://www.transfermarkt.co.uk',
-crawler = new Crawler('www.transfermarkt.co.uk');
-crawler.maxConcurrency = 10;
-crawler.interval = 600;
-crawler.timeout = 5000;
+host = 'http://www.transfermarkt.co.uk';
 crawler.discoverResources = false;
-crawler.userAgent = 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.153 Safari/537.36';
 crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
     var decoder;
     if(/^\/\S+?\/startseite\/wettbewerb\/\S+?$/i.test(queueItem.path) || /^\/\S+?\/startseite\/pokalwettbewerb\/\S+?$/i.test(queueItem.path)){//competition
     	decoder = new StringDecoder('utf8');
     	var competition = new Competition(cheerio.load(decoder.write(responseBuffer)));
-    	competition.get_teams_url().forEach(function(url){
-    		crawler.queueURL(host + url.replace(/(^\/\S+?\/startseite\/verein\/\d+?)\/saison_id\/\d{4}$/,'$1'));
+    	var season = new Season(cheerio.load(decoder.write(responseBuffer)));
+    	season.get_id(function(){
+    		competition.save(function(){
+		    	competition.get_teams_url().forEach(function(url){
+		    		crawler.queueURL(host + url.replace(/(^\/\S+?\/startseite\/verein\/\d+?)\/saison_id\/\d{4}$/,'$1'));
+		    	});
+	    	});
     	});
-    	competition.save_competition_team(pool);
+    	
     };
     if(/^\/\S+?\/startseite\/verein\/\d+?$/i.test(queueItem.path)){//competition
     	decoder = new StringDecoder('utf8');
     	var team = new Team(cheerio.load(decoder.write(responseBuffer)));
-    	team.save(pool)
+    	team.is_saved(function(){
+    		
+    	})
+    	team.save(function(){
+	    	team.get_player_url().forEach(function(url){
+		    	if(/^\/\S+\/nationalmannschaft\/spieler\/\d{1,6}$/.test(url)){
+		    		url = url.replace(/nationalmannschaft/,'profil')
+		    	};
+		    	crawler.queueURL(host + url);
+		    });
+    	});
+    };
+    if(/^\/\S+\/profil\/spieler\/\d{1,6}$/.test(queueItem.path)){
+	    player = new Player($);
+	    player.save(pool);
     };
 }).on('complete',function(){
 	console.log('complete');
@@ -46,6 +61,8 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 			});
 		}
 	});
+}).on('complete',function(){
+	console.log('complete');
 }).on('fetcherror',function(queueItem, response){
 	crawler.queueURL(host + queueItem.path);
 }).on('fetchtimeout',function(queueItem, response){
@@ -68,7 +85,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 	/^\/\S+?\/startseite\/verein\/\d+?$/i.test(parsedURL.path));
 });
 pool.getConnection(function(err, connection) {
-	connection.query("SELECT uri FROM transfermarket_competition WHERE competition_id = 'L1'", function(err,rows) {
+	connection.query("SELECT uri FROM transfermarket_competition WHERE competition_id = 'IT1'", function(err,rows) {
 	    if (err) throw err;
 	    connection.release();
 	    for (var i = rows.length - 1; i >= 0; i--) {

@@ -1,0 +1,1 @@
+INSERT INTO `events`(`competition_id`,`season_id`) SELECT competition.id,seasons.id FROM `competition` JOIN `seasons` WHERE CONCAT(competition.id,'-',seasons.id) NOT IN (SELECT CONCAT(competition_id,'-',season_id) FROM `events`)
