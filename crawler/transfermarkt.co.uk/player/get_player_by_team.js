@@ -46,7 +46,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 	crawler.queueURL(host + queueItem.path);
 });
 pool.getConnection(function(err, connection) {
-	connection.query("SELECT id, profile_uri FROM transfermarket_team", function(err,rows) {
+	connection.query("SELECT profile_uri FROM transfermarket_team", function(err,rows) {
 	    if (err) throw err;
 	    for (var i = rows.length - 1; i >= 0; i--) {
 		    var path = rows[i].profile_uri;
