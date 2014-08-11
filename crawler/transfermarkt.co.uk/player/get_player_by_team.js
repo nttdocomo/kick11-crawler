@@ -24,10 +24,10 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 	    //team.save_team_player(pool)
 	    //team.update_team_player(pool)
 	    team.get_player_url().forEach(function(url){
-	    	if(/^\/\S+\/nationalmannschaft\/spieler\/\d{1,6}$/.test(url)){
+	    	if(/^\/\S+\/nationalmannschaft\/spieler\/\d{1,9}$/.test(url)){
 	    		url = url.replace(/nationalmannschaft/,'profil');
 	    	}
-    		var id = url.replace(/^\/\S+\/profil\/spieler\/(\d{1,6})$/,'$1'),
+    		var id = url.replace(/^\/\S+\/profil\/spieler\/(\d{1,9})$/,'$1'),
     		sql = mysql.format("SELECT 1 FROM transfermarket_player WHERE id = ? limit 1;", [id]);
 			pool.getConnection(function(err, connection) {
 				connection.query(sql, function(err,rows) {
@@ -45,14 +45,14 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 	    });
     	//team.save(pool);
     }
-    if(/^\/\S+\/profil\/spieler\/\d{1,6}$/.test(queueItem.path)){
+    if(/^\/\S+\/profil\/spieler\/\d{1,9}$/.test(queueItem.path)){
 	    var player = new Player($),path = queueItem.path;
 	    player.save(pool);
-	    console.log(id + ' get, start to get the transfer');
+	    console.log(player.player_id + ' get, start to get the transfer');
 	    path = path.replace('profil','korrektur');
     	crawler.queueURL(host + path);
     }
-    if(/^\/\S+\/korrektur\/spieler\/\d{1,6}$/.test(queueItem.path)){
+    if(/^\/\S+\/korrektur\/spieler\/\d{1,9}$/.test(queueItem.path)){
     	var $ = cheerio.load(decoder.write(responseBuffer));
 		transfer_table = $('#transfers'),transfer_tbody = transfer_table.find('>tbody'),transfers_id = transfer_tbody.find(' > input[id$="trans_id"]');
 		transfers_id.each(function(index,el){
@@ -76,11 +76,11 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 				});
 			});
 		});
-	    console.log('Start to update the transfer');
 	    var path = queueItem.path.replace('korrektur','transfers');
+	    console.log('Start to update the transfer of '+path.replace(/^\/\S+\/transfers\/spieler\/(\d{1,9})$/,'$1'));
     	crawler.queueURL(host + path);
     };
-    if(/^\/\S+\/transfers\/spieler\/\d{1,6}$/.test(queueItem.path)){
+    if(/^\/\S+\/transfers\/spieler\/\d{1,9}$/.test(queueItem.path)){
     	var $ = cheerio.load(decoder.write(responseBuffer)),
 		transfer_table = $('.responsive-table > table'),transfer_tbody = transfer_table.find('>tbody'),transfers_tr = transfer_tbody.find(' > tr');
 		transfers_tr.each(function(index,el){
@@ -98,7 +98,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 				});
 			};
 		})
-		console.log('Complete update the transfer');
+		console.log('Complete update the transfer of ' + queueItem.path.replace(/^\/\S+\/transfers\/spieler\/(\d{1,9})$/,'$1'));
     }
 }).on('complete',function(){
 	console.log('complete');
