@@ -25,15 +25,30 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 	    //team.update_team_player(pool)
 	    team.get_player_url().forEach(function(url){
 	    	if(/^\/\S+\/nationalmannschaft\/spieler\/\d{1,6}$/.test(url)){
-	    		url = url.replace(/nationalmannschaft/,'profil')
-	    	};
-	    	crawler.queueURL(host + url);
+	    		url = url.replace(/nationalmannschaft/,'profil');
+	    	}
+    		var id = url.replace(/^\/\S+\/profil\/spieler\/(\d{1,6})$/,'$1'),
+    		sql = mysql.format("SELECT 1 FROM transfermarket_player WHERE id = ? limit 1;", [id]);
+			pool.getConnection(function(err, connection) {
+				connection.query(sql, function(err,rows) {
+				    if (err) throw err;
+				    if(!rows.length){
+				    	console.log(id + ' is not in the database, it will first get the player');
+				    	crawler.queueURL(host + url);
+				    } else {
+				    	console.log(id + ' is in the database, it will start to get the transfer');
+				    	crawler.queueURL(host + url.replace('profil','korrektur'));
+				    }
+				    connection.release();
+				});
+			});
 	    });
     	//team.save(pool);
     }
     if(/^\/\S+\/profil\/spieler\/\d{1,6}$/.test(queueItem.path)){
 	    var player = new Player($),path = queueItem.path;
 	    player.save(pool);
+	    console.log(id + ' get, start to get the transfer');
 	    path = path.replace('profil','korrektur');
     	crawler.queueURL(host + path);
     }
@@ -60,7 +75,8 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 				    connection.release();
 				});
 			});
-		})
+		});
+	    console.log('Start to update the transfer');
 	    var path = queueItem.path.replace('korrektur','transfers');
     	crawler.queueURL(host + path);
     };
@@ -82,6 +98,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 				});
 			};
 		})
+		console.log('Complete update the transfer');
     }
 }).on('complete',function(){
 	console.log('complete');
