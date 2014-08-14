@@ -29,6 +29,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 			connection.query(sql, function(err,rows) {
 			    if (err) throw err;
 			    var event_id = rows[0].id;
+			    console.log(event_id)
 			    connection.release();
 				tables.each(function(index,el){
 					var $el = $(el),
@@ -56,23 +57,29 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 								time = time == '-' ? '00:00':time,
 								play_at = moment([date,time].join(' ')).format('YYYY-MM-DD HH:mm:ss');
 								console.log([matchday_id,play_at,team_1_name,score1,score2,team_2_name].join('<<<>>>'));
-								getTeamIdByTeamName(team_1_name,(function(team_name,matchday_id,play_at){
-									return function(team_1_id){
-										getTeamIdByTeamName(team_name,function(team_2_id){
-											pool.getConnection(function(err, connection) {
-												var sql = mysql.format('INSERT INTO `matchs` (round_id,team1_id,team2_id,play_at'+ (score1 && score2 ? ',score1, score2' : '') +') SELECT ? FROM dual WHERE NOT EXISTS(SELECT round_id,team1_id,team2_id,play_at'+ (score1 && score2 ? ',score1, score2' : '') +' FROM `matchs` WHERE round_id = ? AND team1_id = ? AND team2_id = ? AND play_at = ?)', [score1 && score2 ? [matchday_id,team_1_id,team_2_id,play_at,score1,score2] : [matchday_id,team_1_id,team_2_id,play_at],matchday_id,team_1_id,team_2_id,play_at]);
-												connection.query(sql, function(err,rows) {
-													if (err) throw err;
-													connection.release();
+								if(score1 && score2){
+									getTeamIdByTeamName(team_1_name,(function(team_name,matchday_id,play_at,score_1,score_2){
+										return function(team_1_id){
+											getTeamIdByTeamName(team_name,function(team_2_id){
+												pool.getConnection(function(err, connection) {
+													var sql = mysql.format('UPDATE `matchs` SET ? WHERE round_id = ? AND team1_id = ? AND team2_id = ?', [{
+														score1:score_1,
+														score2:score_2,
+														play_at:play_at
+													},matchday_id,team_1_id,team_2_id]);
+													console.log(sql);
+													connection.query(sql, function(err,rows) {
+														if (err) throw err;
+														connection.release();
+													});
 												});
-											});
-										})
-									}
-								})(team_2_name,matchday_id,play_at,score1,score2))
+											})
+										}
+									})(team_2_name,matchday_id,play_at,score1,score2))
+								}
 								data_array.push(date);
 								//console.log([matchday_id,play_at,team_1_name,team_2_name].join('-------'));
 							};
-							updateRound(data_array);
 						}
 					})(trow));
 				});
@@ -105,21 +112,11 @@ pool.getConnection(function(err, connection) {
 function getTeamIdByTeamName(team_name,callback){
 	pool.getConnection(function(err, connection) {
 		var sql = mysql.format("SELECT id FROM team WHERE team_name = ?", [team_name]);
+		console.log(sql);
 		connection.query(sql, function(err,rows) {
 		    if (err) throw err;
 		    callback(rows[0].id)
 		    connection.release();
-		});
-	});
-}
-function updateRound(data_array){
-	pool.getConnection(function(err, connection) {
-		connection.query('UPDATE `rounds` SET ?', {
-			start_at:moment(data_array[0]).format('YYYY-MM-DD'),
-			end_at:moment(data_array[data_array.length - 1]).format('YYYY-MM-DD')
-		}, function(err,rows) {
-			if (err) throw err;
-			connection.release();
 		});
 	});
 }
@@ -128,20 +125,7 @@ function getRound(event_id,matchday,pos,callback){
 		connection.query('SELECT id FROM `rounds` WHERE event_id = ? AND name = ?', [event_id,matchday], function(err,rows) {
 			if(rows.length){
 				callback(rows[0].id)
-			} else {
-				insertRound(event_id,matchday,pos,callback);
 			}
-			connection.release();
-		});
-	});
-}
-function insertRound(event_id,matchday,pos,callback){
-	pool.getConnection(function(err, connection) {
-		var sql = mysql.format('INSERT INTO `rounds` (event_id,name,pos) VALUES (?)', [[event_id, matchday, pos]]);
-		console.log(sql);
-		connection.query(sql, function(err,rows) {
-			if (err) throw err;
-			getRound(event_id,matchday,pos,callback);
 			connection.release();
 		});
 	});
