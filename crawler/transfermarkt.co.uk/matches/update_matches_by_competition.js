@@ -1,7 +1,7 @@
 /**
  * @author nttdocomo
  */
-var http = require("http"), cheerio = require('cheerio'),StringDecoder = require('string_decoder').StringDecoder,mysql = require('mysql'),moment = require('moment'),Crawler = require("simplecrawler"),
+var http = require("http"), cheerio = require('cheerio'),StringDecoder = require('string_decoder').StringDecoder,mysql = require('mysql'),moment = require('moment'),moment_tz = require('moment-timezone'),Crawler = require("simplecrawler"),
 pool  = require('../pool'),trim = require('../utils').trim,
 host = 'http://www.transfermarkt.co.uk';
 crawler = new Crawler('www.transfermarkt.co.uk');
@@ -22,14 +22,11 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
     	season = $("select[name='saison_id']").find("option:selected").text(),
     	competition_url = $('#submenue > li').eq(1).find('a').attr('href'),
     	competition_id = competition_url.replace(/^\/\S+?\/([A-Z\d]{2,4})(\/\S+?)?(\/saison_id\/\d{4})?$/,'$1');
-    	console.log(year + season.replace(/\d{2}(\/\d{2})/,'$1'));
-    	console.log(competition_id);
 		var sql = mysql.format("SELECT events.id AS id FROM `events` JOIN (SELECT competition.id AS competitions_id FROM `competition` JOIN (SELECT * FROM `transfermarket_competition` WHERE competition_id = ?)`transfermarket_competition` ON transfermarket_competition.competition_name = competition.name)`competition` ON events.competition_id = competition.competitions_id JOIN (SELECT seasons.id AS seasons_id FROM `seasons` WHERE name = ?)`seasons` ON events.season_id = seasons_id", [competition_id,year + season.replace(/\d{2}(\/\d{2})/,'$1')]);
 		pool.getConnection(function(err, connection) {
 			connection.query(sql, function(err,rows) {
 			    if (err) throw err;
 			    var event_id = rows[0].id;
-			    console.log(event_id)
 			    connection.release();
 				tables.each(function(index,el){
 					var $el = $(el),
@@ -51,32 +48,37 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 								team_1_name = td.eq(3).find('img').attr('title'),
 								team_2_name = td.eq(5).find('img').attr('title'),
 								result = td.eq(4).find('a'),
-								result = result.length ? result.text().split(':') : undefined,
-								score1 = result ? result[0] : undefined,
-								score2 = result ? result[1] : undefined,
+								result = result.length ? result.text() : td.eq(4).text().replace(/\s?(\d{1,2}\:\d{1,2})\s?$/,"$1"),
+								score1,
+								score2,
 								time = time == '-' ? '00:00':time,
-								play_at = moment([date,time].join(' ')).format('YYYY-MM-DD HH:mm:ss');
-								console.log([matchday_id,play_at,team_1_name,score1,score2,team_2_name].join('<<<>>>'));
-								if(score1 && score2){
-									getTeamIdByTeamName(team_1_name,(function(team_name,matchday_id,play_at,score_1,score_2){
-										return function(team_1_id){
-											getTeamIdByTeamName(team_name,function(team_2_id){
-												pool.getConnection(function(err, connection) {
-													var sql = mysql.format('UPDATE `matchs` SET ? WHERE round_id = ? AND team1_id = ? AND team2_id = ?', [{
-														score1:score_1,
-														score2:score_2,
-														play_at:play_at
-													},matchday_id,team_1_id,team_2_id]);
-													console.log(sql);
-													connection.query(sql, function(err,rows) {
-														if (err) throw err;
-														connection.release();
-													});
+								//play_at = moment([date,time].join(' ')).format('YYYY-MM-DD HH:mm:ss');
+								play_at = moment.tz([date,time].join(' '), "MMM D, YYYY h:mm A", "Europe/Luxembourg").utc().format('YYYY-MM-DD HH:mm:ss');
+								if(/\d{1,2}\:\d{1,2}/.test(result)){
+									result = result.split(':');
+									score1 = result[0],
+									score2 = result[1],
+									console.log([matchday_id,play_at,team_1_name,score1,score2,team_2_name].join('<<<>>>'));
+								};
+								getTeamIdByTeamName(team_1_name,(function(team_name,matchday_id,play_at,score_1,score_2){
+									return function(team_1_id){
+										getTeamIdByTeamName(team_name,function(team_2_id){
+											var data = {play_at:play_at};
+											if(score_1 && score_2){
+												data.score1 = score_1;
+												data.score2 = score_2;
+											};
+											pool.getConnection(function(err, connection) {
+												var sql = mysql.format('UPDATE `matchs` SET ? WHERE round_id = ? AND team1_id = ? AND team2_id = ?', [data,matchday_id,team_1_id,team_2_id]);
+												//console.log(sql);
+												connection.query(sql, function(err,rows) {
+													if (err) throw err;
+													connection.release();
 												});
-											})
-										}
-									})(team_2_name,matchday_id,play_at,score1,score2))
-								}
+											});
+										})
+									}
+								})(team_2_name,matchday_id,play_at,score1,score2))
 								data_array.push(date);
 								//console.log([matchday_id,play_at,team_1_name,team_2_name].join('-------'));
 							};
@@ -100,33 +102,33 @@ crawler.start();*/
 pool.getConnection(function(err, connection) {
 	connection.query("SELECT transfermarket_competition.uri FROM `competition` JOIN `nation` ON competition.nation_id = nation.id JOIN `transfermarket_nation` ON nation.full_name = transfermarket_nation.name JOIN `transfermarket_competition` ON transfermarket_competition.nation_id = transfermarket_nation.id WHERE transfermarket_competition.competition_name IN (SELECT name FROM `competition`)", function(err,rows) {
 	    if (err) throw err;
+	    connection.release();
 	    for (var i = rows.length - 1; i >= 0; i--) {
 		    var path = rows[i].uri;
 		    path = path.replace('startseite','gesamtspielplan');
 	    	crawler.queueURL(host + path);
 	    };
-	    connection.release();
 	    crawler.start();
 	});
 });
 function getTeamIdByTeamName(team_name,callback){
 	pool.getConnection(function(err, connection) {
 		var sql = mysql.format("SELECT id FROM team WHERE team_name = ?", [team_name]);
-		console.log(sql);
 		connection.query(sql, function(err,rows) {
 		    if (err) throw err;
-		    callback(rows[0].id)
 		    connection.release();
+		    callback(rows[0].id)
 		});
 	});
 }
 function getRound(event_id,matchday,pos,callback){
 	pool.getConnection(function(err, connection) {
 		connection.query('SELECT id FROM `rounds` WHERE event_id = ? AND name = ?', [event_id,matchday], function(err,rows) {
+			if (err) throw err;
+			connection.release();
 			if(rows.length){
 				callback(rows[0].id)
 			}
-			connection.release();
 		});
 	});
 }

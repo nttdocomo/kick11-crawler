@@ -1,11 +1,18 @@
 /**
  * @author nttdocomo
  */
-var http = require("http"), cheerio = require('cheerio'),StringDecoder = require('string_decoder').StringDecoder,mysql = require('mysql'),moment = require('moment'),Crawler = require("simplecrawler"),
+var http = require("http"), cheerio = require('cheerio'),StringDecoder = require('string_decoder').StringDecoder,mysql = require('mysql'),moment = require('moment'),moment_tz = require('moment-timezone'),Crawler = require("simplecrawler"),
 pool  = require('../pool'),trim = require('../utils').trim,
 host = 'http://www.transfermarkt.co.uk';
-crawler = require('../crawler');
+crawler = new Crawler('www.transfermarkt.co.uk');
+crawler.maxConcurrency = 10;
+crawler.interval = 300;
+crawler.timeout = 5000;
 crawler.discoverResources = false;
+crawler.customHeaders = {
+	Cookie:'__qca=P0-912270038-1403184571295; 22ea10c3df12eecbacbf5e855c1fc2b3=4b2f77b042760e0b6c4403263173b81a02199e1da%3A4%3A%7Bi%3A0%3Bs%3A6%3A%22561326%22%3Bi%3A1%3Bs%3A9%3A%22nttdocomo%22%3Bi%3A2%3Bi%3A31536000%3Bi%3A3%3Ba%3A0%3A%7B%7D%7D; POPUPCHECK=1406040912765; PHPSESSID=kjuus3jlq0md5vhhq0hn2p7571; __utma=1.264986923.1403184483.1406010530.1406012399.139; __utmb=1.1.10.1406012399; __utmc=1; __utmz=1.1405646456.117.3.utmcsr=transfermarkt.com|utmccn=(referral)|utmcmd=referral|utmcct=/wettbewerbe/national/wettbewerbe/26'
+}
+crawler.userAgent = 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.153 Safari/537.36';
 crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
     var decoder = new StringDecoder('utf8');
     if(/^\/\S+\/gesamtspielplan\/wettbewerb\/\S+?$/.test(queueItem.path)){
@@ -43,12 +50,18 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 								team_1_name = td.eq(3).find('img').attr('title'),
 								team_2_name = td.eq(5).find('img').attr('title'),
 								result = td.eq(4).find('a'),
-								result = result.length ? result.text().split(':') : undefined,
-								score1 = result ? result[0] : undefined,
-								score2 = result ? result[1] : undefined,
+								result = result.length ? result.text() : td.eq(4).text().replace(/\s?(\d{1,2}\:\d{1,2})\s?$/,"$1"),
+								score1,
+								score2,
 								time = time == '-' ? '00:00':time,
-								play_at = moment([date,time].join(' ')).format('YYYY-MM-DD HH:mm:ss');
-								console.log([matchday_id,play_at,team_1_name,score1,score2,team_2_name].join('<<<>>>'));
+								//play_at = moment([date,time].join(' ')).format('YYYY-MM-DD HH:mm:ss');
+								play_at = moment.tz([date,time].join(' '), "MMM D, YYYY h:mm A", "Europe/Luxembourg").utc().format('YYYY-MM-DD HH:mm:ss');
+								if(/\d{1,2}\:\d{1,2}/.test(result)){
+									result = result.split(':');
+									score1 = result[0],
+									score2 = result[1],
+									console.log([matchday_id,play_at,team_1_name,score1,score2,team_2_name].join('<<<>>>'));
+								};
 								getTeamIdByTeamName(team_1_name,(function(team_name,matchday_id,play_at){
 									return function(team_1_id){
 										getTeamIdByTeamName(team_name,function(team_2_id){
@@ -131,7 +144,6 @@ function getRound(event_id,matchday,pos,callback){
 function insertRound(event_id,matchday,pos,callback){
 	pool.getConnection(function(err, connection) {
 		var sql = mysql.format('INSERT INTO `rounds` (event_id,name,pos) VALUES (?)', [[event_id, matchday, pos]]);
-		console.log(sql);
 		connection.query(sql, function(err,rows) {
 			if (err) throw err;
 			getRound(event_id,matchday,pos,callback);
