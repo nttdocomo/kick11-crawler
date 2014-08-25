@@ -1,9 +1,8 @@
 INSERT INTO transfer(taking_team_id,releasing_team_id,player_id,season,transfer_date,transfer_sum,contract_period,loan) SELECT taking_team.team_ref_id AS taking_team_id,releasing_team.team_ref_id AS releasing_team_id,transfermarket_player.player_ref_id AS player_id,transfermarket_transfer.season,transfermarket_transfer.transfer_date,transfermarket_transfer.transfer_sum,transfermarket_transfer.contract_period,transfermarket_transfer.loan FROM `transfermarket_team` taking_team 
-JOIN (SELECT * FROM `transfermarket_transfer` WHERE transfer_ref_id = 0 AND taking_team_id IN (SELECT id FROM `transfermarket_team`) AND releasing_team_id IN (SELECT id FROM `transfermarket_team`))`transfermarket_transfer` ON transfermarket_transfer.taking_team_id = taking_team.id 
+JOIN (SELECT * FROM `transfermarket_transfer` WHERE transfer_ref_id = 0 AND taking_team_id IN (SELECT id FROM `transfermarket_team` WHERE team_ref_id != 0) AND releasing_team_id IN (SELECT id FROM `transfermarket_team` WHERE team_ref_id != 0))`transfermarket_transfer` ON transfermarket_transfer.taking_team_id = taking_team.id 
 JOIN `transfermarket_team` releasing_team ON transfermarket_transfer.releasing_team_id = releasing_team.id 
 JOIN `transfermarket_player` ON transfermarket_transfer.player_id = transfermarket_player.id 
 WHERE CONCAT(taking_team.team_ref_id,'-',releasing_team.team_ref_id,'-',transfermarket_player.player_ref_id,'-',transfermarket_transfer.season) NOT IN (SELECT CONCAT(taking_team_id,'-',releasing_team_id,'-',player_id,'-',season) FROM `transfer`)
-
 (SELECT * FROM `transfermarket_transfer` WHERE taking_team_id IN (SELECT id FROM `transfermarket_team`) AND releasing_team_id IN (SELECT id FROM `transfermarket_team`))
 
 #按照转会日期

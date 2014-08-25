@@ -26,20 +26,70 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 		pool.getConnection(function(err, connection) {
 			connection.query(sql, function(err,rows) {
 			    if (err) throw err;
-			    var event_id = rows[0].id;
 			    connection.release();
+			    var event_id = rows[0].id;
 				tables.each(function(index,el){
 					var $el = $(el),
 					matchday = $el.find('.table-header').text(),
-					date,
 					data_array = [],
-					time,
 					play_at,
 					table = $el.find('> table'),
 					trow = table.find('> tbody > tr');
 					getRound(event_id,matchday,index+1,(function(tr){
 						return function(matchday_id){
-							for (var i = 0; i < tr.length; i++) {
+							var date,
+							time;
+							tr.each(function(i,row){
+								row = $(row);
+								var td = row.children(),
+								match_date = td.eq(0).find('a').text(),
+								match_time = trim(td.eq(1).text()),
+								team_1_id = td.eq(2).find('a').attr('href').replace(/\S+?(\d{1,})\/\S+?$/,'$1'),
+								team_2_id = td.eq(6).find('a').attr('href').replace(/\S+?(\d{1,})\/\S+?$/,'$1'),
+								team_1_name = td.eq(3).find('img').attr('title'),
+								team_2_name = td.eq(5).find('img').attr('title'),
+								result = td.eq(4).find('a'),
+								result = result.length ? result.text() : td.eq(4).text().replace(/\s?(\d{1,2}\:\d{1,2})\s?$/,"$1"),
+								score1,
+								score2;
+								if(!(/[A-Z]{1}[a-z]{2}\s\d{1,2}\,\s\d{4}/.test(match_date))){//Aug 30, 2014
+									match_date = date;
+								}
+								if(!(/\d{1,2}\:\d{1,2}\s[PM|AM]{2}/.test(match_time))){
+									if(match_time == '-'){
+										time = '12:00 AM'
+									}
+									match_time = time;
+								}
+								//play_at = moment([date,time].join(' ')).format('YYYY-MM-DD HH:mm:ss');
+								var play_at = moment.tz([match_date,match_time].join(' '), "MMM D, YYYY h:mm A", "Europe/Luxembourg").utc().format('YYYY-MM-DD HH:mm:ss');
+								if(/\d{1,2}\:\d{1,2}/.test(result)){
+									result = result.split(':');
+									score1 = result[0],
+									score2 = result[1];
+								};
+								getTeamIdByTeamName(team_1_name,function(team_1_id){
+									getTeamIdByTeamName(team_2_name,function(team_2_id){
+										var data = {play_at:play_at};
+										if(score1 && score1){
+											data.score1 = score1;
+											data.score2 = score2;
+										};
+										pool.getConnection(function(err, connection) {
+											var sql = mysql.format('UPDATE `matchs` SET ? WHERE round_id = ? AND team1_id = ? AND team2_id = ?', [data,matchday_id,team_1_id,team_2_id]);
+											//console.log(sql);
+											connection.query(sql, function(err,rows) {
+												if (err) throw err;
+												connection.release();
+											});
+										});
+									})
+								});
+								date = match_date;
+								time = match_time;
+								data_array.push(date);
+							});
+							/*for (var i = 0; i < tr.length; i++) {
 								var row = $(tr[i]),td = row.children(),
 								date = td.eq(0).find('a').text() || date,
 								time = trim(td.eq(1).text()) || time,
@@ -80,8 +130,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 									}
 								})(team_2_name,matchday_id,play_at,score1,score2))
 								data_array.push(date);
-								//console.log([matchday_id,play_at,team_1_name,team_2_name].join('-------'));
-							};
+							};*/
 						}
 					})(trow));
 				});
