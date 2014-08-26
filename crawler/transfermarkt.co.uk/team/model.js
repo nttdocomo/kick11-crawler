@@ -6,7 +6,7 @@ Team = function($){
 	this.$ = $;
 	this.is_club_team = !$('#verknupftevereine > img').attr('class');
     this.team_name = trim($('.spielername-profil').text().replace(/^\s+(.+?)\s+$/,'$1'));
-    this.club_url = $('#submenue > li').eq(1).find('a').attr('href');
+    this.club_url = $('#submenue > li').eq(1).find('a').attr('href').replace(/(^\/\S+?\/startseite\/verein\/\d+?)(\/saison_id\/\d{4})?$/,'$1');
 	this.team_id = this.club_url.replace(/^\/\S+?\/startseite\/verein\/(\d+?)(\/\S+)?$/,'$1');
     this.nation_id = $('[data-placeholder="Country"]').val();
     this.club_id = $('#verknupftevereine > img').attr('src') && $('#verknupftevereine > img').attr('src').replace(/^\S+?\/(\d{1,6})\w{0,1}\.png/,'$1');
@@ -113,6 +113,19 @@ Team.prototype = {
 				});
 			});
 		});
+	},
+	update_team_name:function(){
+		if(this.team_name){
+			var sql = mysql.format("UPDATE transfermarket_team SET ? WHERE id = ?", [{
+				team_name:this.team_name
+			},this.team_id]);
+			pool.getConnection(function(err, connection) {
+				connection.query(sql, function(err) {
+				    if (err) throw err;
+				    connection.release();
+				});
+			});
+		}
 	},
 	save:function(){
 		if(this.team_name){

@@ -44,8 +44,8 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 								var td = row.children(),
 								match_date = td.eq(0).find('a').text(),
 								match_time = trim(td.eq(1).text()),
-								team_1_id = td.eq(2).find('a').attr('href').replace(/\S+?(\d{1,})\/\S+?$/,'$1'),
-								team_2_id = td.eq(6).find('a').attr('href').replace(/\S+?(\d{1,})\/\S+?$/,'$1'),
+								team_1_id = td.eq(2).find('a').attr('href').replace(/\S+?\/(\d{1,})\/\S+?$/,'$1'),
+								team_2_id = td.eq(6).find('a').attr('href').replace(/\S+?\/(\d{1,})\/\S+?$/,'$1'),
 								team_1_name = td.eq(3).find('img').attr('title'),
 								team_2_name = td.eq(5).find('img').attr('title'),
 								result = td.eq(4).find('a'),
@@ -68,15 +68,15 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 									score1 = result[0],
 									score2 = result[1];
 								};
-								getTeamIdByTeamName(team_1_name,function(team_1_id){
-									getTeamIdByTeamName(team_2_name,function(team_2_id){
+								getTeamIdByTeamId(team_1_id,function(team1_id){
+									getTeamIdByTeamId(team_2_id,function(team2_id){
 										var data = {play_at:play_at};
 										if(score1 && score1){
 											data.score1 = score1;
 											data.score2 = score2;
 										};
 										pool.getConnection(function(err, connection) {
-											var sql = mysql.format('UPDATE `matchs` SET ? WHERE round_id = ? AND team1_id = ? AND team2_id = ?', [data,matchday_id,team_1_id,team_2_id]);
+											var sql = mysql.format('UPDATE `matchs` SET ? WHERE round_id = ? AND team1_id = ? AND team2_id = ?', [data,matchday_id,team1_id,team2_id]);
 											//console.log(sql);
 											connection.query(sql, function(err,rows) {
 												if (err) throw err;
@@ -160,12 +160,28 @@ pool.getConnection(function(err, connection) {
 	    crawler.start();
 	});
 });
+function getTeamIdByTeamId(team_id,callback){
+	pool.getConnection(function(err, connection) {
+		var sql = mysql.format("SELECT team_ref_id FROM transfermarket_team WHERE id = ?", [team_id]);
+		connection.query(sql, function(err,rows) {
+		    if (err) throw err;
+		    connection.release();
+		    if(!rows.length){
+		    	console.log(team_id)
+		    }
+		    callback(rows[0].team_ref_id)
+		});
+	});
+}
 function getTeamIdByTeamName(team_name,callback){
 	pool.getConnection(function(err, connection) {
 		var sql = mysql.format("SELECT id FROM team WHERE team_name = ?", [team_name]);
 		connection.query(sql, function(err,rows) {
 		    if (err) throw err;
 		    connection.release();
+		    if(!rows.length){
+		    	console.log(team_name)
+		    }
 		    callback(rows[0].id)
 		});
 	});
