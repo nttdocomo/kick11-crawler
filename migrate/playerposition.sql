@@ -1,1 +1,3 @@
 INSERT INTO `player2position`(player_id,position_id) SELECT transfermarket_player.player_ref_id,position.id FROM `position` JOIN `transfermarket_player` ON transfermarket_player.position = position.name WHERE CONCAT(transfermarket_player.player_ref_id,'-',position.id) NOT IN (SELECT CONCAT(player_id,'-',position_id) FROM `player2position`) AND transfermarket_player.player_ref_id != 0
+
+SELECT tm_player.player_ref_id,position.id FROM `position` JOIN (SELECT * FROM `transfermarket_player` WHERE player_ref_id != 0 AND player_ref_id NOT IN (SELECT player_id FROM `player2position`))`tm_player` ON tm_player.position = position.name
