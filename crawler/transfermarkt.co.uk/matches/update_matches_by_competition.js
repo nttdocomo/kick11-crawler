@@ -16,8 +16,9 @@ crawler.userAgent = 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHT
 crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
     var decoder = new StringDecoder('utf8');
     if(/^\/\S+\/gesamtspielplan\/wettbewerb\/\S+?$/.test(queueItem.path)){
+    	console.log(queueItem.path);
     	var $ = cheerio.load(decoder.write(responseBuffer)),
-    	tables = $('#main > .six.columns'),
+    	tables = $('#main > .row > .six.columns'),
     	year = $("select[name='saison_id']").find("option:selected").val(),
     	season = $("select[name='saison_id']").find("option:selected").text(),
     	competition_url = $('#submenue > li').eq(1).find('a').attr('href'),
@@ -77,6 +78,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 										};
 										pool.getConnection(function(err, connection) {
 											var sql = mysql.format('UPDATE `matchs` SET ? WHERE round_id = ? AND team1_id = ? AND team2_id = ?', [data,matchday_id,team1_id,team2_id]);
+											console.log(sql);
 											//console.log(sql);
 											connection.query(sql, function(err,rows) {
 												if (err) throw err;
@@ -140,10 +142,13 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 }).on('complete',function(){
 	console.log('complete');
 }).on('fetcherror',function(queueItem, response){
+	console.log('fetcherror');
 	crawler.queueURL(host + queueItem.path);
 }).on('fetchtimeout',function(queueItem, response){
+	console.log('fetchtimeout');
 	crawler.queueURL(host + queueItem.path);
 }).on('fetchclienterror',function(queueItem, response){
+	console.log('fetchclienterror');
 	crawler.queueURL(host + queueItem.path);
 });
 /*crawler.queueURL(host + '/cristiano-ronaldo/transfers/spieler/8198');
