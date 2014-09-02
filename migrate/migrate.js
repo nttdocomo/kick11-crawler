@@ -27,7 +27,7 @@ function updateTransferMarketClub(){
 }
 function inserTeam(){
 	var sql = "INSERT INTO `team`(`team_name`,`owner_id`,`type`) SELECT original_team.team_name,club.id,original_team.type FROM (SELECT * FROM `transfermarket_team` WHERE type = 2 AND team_name NOT IN (SELECT `team_name` FROM `team`))`original_team` JOIN `transfermarket_club` ON original_team.owner_id = transfermarket_club.id JOIN `club` ON transfermarket_club.club_ref_id = club.id";
-	excute(sql,callback);
+	excute(sql,updateTransfermarketTeam);
 }
 function updateTransfermarketTeam(){
 	var sql = "UPDATE `transfermarket_team` JOIN `team` ON transfermarket_team.team_name = team.team_name SET transfermarket_team.team_ref_id = team.id WHERE transfermarket_team.team_ref_id = 0";
