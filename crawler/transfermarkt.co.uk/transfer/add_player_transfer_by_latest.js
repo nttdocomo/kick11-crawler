@@ -129,26 +129,29 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
     }
 }).on('complete',function(){
 	console.log('complete');
-	var sql = mysql.format("SELECT id, profile_uri FROM transfermarket_player WHERE id IN ?", [[players.map(function(element){
-		return element.id
-	})]]);
-	pool.getConnection(function(err, connection) {
-		connection.query(sql, function(err,rows) {
-		    if (err) throw err;
-		    connection.release();
-		    players.forEach(function(player){
-		    	var index = rows.findIndex(function(element, index, array){
-		    		return element.id == player.id
-		    	});
-		    	if(index > -1){
-		    		crawler.queueURL(host + player.profile_uri.replace('profil','korrektur'));
-		    	} else {
-		    		crawler.queueURL(host + player.profile_uri);
-		    	}
-		    })
-		    crawler.start();
+	if(players.length){
+		var sql = mysql.format("SELECT id, profile_uri FROM transfermarket_player WHERE id IN ?", [[players.map(function(element){
+			return element.id
+		})]]);
+		pool.getConnection(function(err, connection) {
+			connection.query(sql, function(err,rows) {
+			    if (err) throw err;
+			    connection.release();
+			    players.forEach(function(player){
+			    	var index = rows.findIndex(function(element, index, array){
+			    		return element.id == player.id
+			    	});
+			    	if(index > -1){
+			    		crawler.queueURL(host + player.profile_uri.replace('profil','korrektur'));
+			    	} else {
+			    		crawler.queueURL(host + player.profile_uri);
+			    	}
+			    })
+			    crawler.start();
+			    players = [];
+			});
 		});
-	});
+	}
 }).on('fetcherror',function(queueItem, response){
 	crawler.queueURL(host + queueItem.path);
 }).on('fetchtimeout',function(queueItem, response){
