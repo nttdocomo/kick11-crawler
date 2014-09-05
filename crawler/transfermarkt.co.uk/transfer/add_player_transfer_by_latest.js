@@ -16,7 +16,8 @@ crawler.customHeaders = {
 }
 crawler.userAgent = 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.153 Safari/537.36';
 var players = [],
-transfers = [];
+transfers = [],
+update_transfers = [];
 crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
     var decoder = new StringDecoder('utf8'),
     transfer;
@@ -72,6 +73,16 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 				    	} else {
 				    		transfers.push([id,season,transfer_date,transfer_sum,player_id,loan]);
 				    	}
+				    } else {
+				    	update_transfers.push({
+				    		'id':id,
+				    		'season':season,
+				    		'transfer_date':transfer_date,
+				    		'transfer_sum':transfer_sum,
+				    		'player_id':player_id,
+				    		'contract_period':contract_period,
+				    		'loan':loan
+				    	})
 				    }
 				});
 			});
@@ -83,7 +94,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
     	var $ = cheerio.load(decoder.write(responseBuffer)),
 		transfer_table = $('.responsive-table > table'),transfer_tbody = transfer_table.find('>tbody'),transfers_tr = transfer_tbody.find(' > tr');
 		transfers_tr.each(function(index,el){
-			var $el = $(el);
+			var $el = $(el),sql;
 			if(typeof($el.children().last().find('a').attr('href')) !== 'undefined'){
 				var id = $el.children().last().find('a').attr('href').replace(/\S+?\/(\d+)$/,'$1'),
 				releasing_team_url = $el.children().eq(2).find('a').attr('href'),
@@ -115,7 +126,21 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 					if (transfer[0] == id){
 						transfer.push(releasing_team_id);
 						transfer.push(taking_team_id);
-						var sql = mysql.format("INSERT INTO transfermarket_transfer (id,season,transfer_date,transfer_sum,player_id,"+(transfer.length == 9 ? "contract_period,":"")+"loan,releasing_team_id,taking_team_id) VALUES ?", [[transfer]]);
+						sql = mysql.format("INSERT INTO transfermarket_transfer (id,season,transfer_date,transfer_sum,player_id,"+(transfer.length == 9 ? "contract_period,":"")+"loan,releasing_team_id,taking_team_id) VALUES ?", [[transfer]]);
+						pool.getConnection(function(err, connection) {
+							connection.query(sql, function(err,rows) {
+							    if (err) throw err;
+							    connection.release();
+							});
+						});
+					};
+			    }
+			    for (var i = 0, update_transfer, length = update_transfers.length; i < length; i++) {
+					update_transfer = update_transfers[i];
+					if (update_transfer.id == id){
+						update_transfer.releasing_team_id = releasing_team_id;
+						update_transfer.taking_team_id = taking_team_id;
+						sql = mysql.format("UPDATE transfermarket_transfer SET ? WHERE id = ?", [update_transfer,update_transfer.id]);
 						pool.getConnection(function(err, connection) {
 							connection.query(sql, function(err,rows) {
 							    if (err) throw err;
