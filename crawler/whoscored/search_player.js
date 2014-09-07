@@ -5,7 +5,7 @@ var http = require("http"), cheerio = require('cheerio'),StringDecoder = require
 Crawler = require("simplecrawler");
 host = 'http://www.whoscored.com';
 crawler = new Crawler('www.whoscored.com');
-crawler.maxConcurrency = 10;
+crawler.maxConcurrency = 2;
 crawler.interval = 300;
 crawler.timeout = 5000;
 crawler.discoverResources = false;
@@ -49,11 +49,14 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 	console.log(unfoundId)
 }).on('fetcherror',function(queueItem, response){
 	console.log('fetcherror')
+	crawler.queueURL(host + queueItem.path);
 }).on('fetchtimeout',function(queueItem, response){
 	console.log('fetchtimeout')
+	crawler.queueURL(host + queueItem.path);
 }).on('fetchclienterror',function(queueItem, errorData){
 	console.log('fetchclienterror')
-	console.log(errorData)
+	crawler.queueURL(host + queueItem.path);
+	console.log(queueItem.path)
 });
 pool.getConnection(function(err, connection) {
 	connection.query("SELECT name FROM player WHERE id NOT IN (SELECT player1_id FROM player_player)", function(err,rows) {

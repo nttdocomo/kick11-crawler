@@ -16,7 +16,8 @@ crawler.customHeaders = {
 	Cookie:'__qca=P0-912270038-1403184571295; 22ea10c3df12eecbacbf5e855c1fc2b3=4b2f77b042760e0b6c4403263173b81a02199e1da%3A4%3A%7Bi%3A0%3Bs%3A6%3A%22561326%22%3Bi%3A1%3Bs%3A9%3A%22nttdocomo%22%3Bi%3A2%3Bi%3A31536000%3Bi%3A3%3Ba%3A0%3A%7B%7D%7D; POPUPCHECK=1406040912765; PHPSESSID=kjuus3jlq0md5vhhq0hn2p7571; __utma=1.264986923.1403184483.1406010530.1406012399.139; __utmb=1.1.10.1406012399; __utmc=1; __utmz=1.1405646456.117.3.utmcsr=transfermarkt.com|utmccn=(referral)|utmcmd=referral|utmcct=/wettbewerbe/national/wettbewerbe/26'
 };
 crawler.userAgent = 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1985.125 Safari/537.36';
-var transfers = [];
+var transfers = [],
+update_transfers = [];
 crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
     var decoder = new StringDecoder('utf8'),sql,
     $ = cheerio.load(decoder.write(responseBuffer));
@@ -80,6 +81,16 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 				    	} else {
 				    		transfers.push([id,season,transfer_date,transfer_sum,player_id,loan]);
 				    	}
+				    } else {
+				    	update_transfers.push({
+				    		'id':id,
+				    		'season':season,
+				    		'transfer_date':transfer_date,
+				    		'transfer_sum':transfer_sum,
+				    		'player_id':player_id,
+				    		'contract_period':contract_period,
+				    		'loan':loan
+				    	})
 				    }
 				});
 			});
@@ -124,6 +135,20 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 						transfer.push(releasing_team_id);
 						transfer.push(taking_team_id);
 						var sql = mysql.format("INSERT INTO transfermarket_transfer (id,season,transfer_date,transfer_sum,player_id,"+(transfer.length == 9 ? "contract_period,":"")+"loan,releasing_team_id,taking_team_id) VALUES ?", [[transfer]]);
+						pool.getConnection(function(err, connection) {
+							connection.query(sql, function(err,rows) {
+							    if (err) throw err;
+							    connection.release();
+							});
+						});
+					};
+			    }
+			    for (var i = 0, update_transfer, length = update_transfers.length; i < length; i++) {
+					update_transfer = update_transfers[i];
+					if (update_transfer.id == id){
+						update_transfer.releasing_team_id = releasing_team_id;
+						update_transfer.taking_team_id = taking_team_id;
+						sql = mysql.format("UPDATE transfermarket_transfer SET ? WHERE id = ?", [update_transfer,update_transfer.id]);
 						pool.getConnection(function(err, connection) {
 							connection.query(sql, function(err,rows) {
 							    if (err) throw err;

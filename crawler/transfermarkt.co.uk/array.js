@@ -27,3 +27,18 @@ if (!Array.prototype.findIndex) {
     }
   });
 }
+if (!Array.prototype.intersect) {
+  Object.defineProperty(Array.prototype, 'intersect', {
+    enumerable: false,
+    configurable: true,
+    writable: true,
+    value: function(array) {
+      var rest = Array.prototype.slice.call(arguments, 1);
+      return _.filter(_.uniq(array), function(item) {
+        return _.every(rest, function(other) {
+          return _.indexOf(other, item) >= 0;
+        });
+      });
+    }
+  });
+}
