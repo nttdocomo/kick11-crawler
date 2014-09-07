@@ -1,9 +1,9 @@
 /**
  * @author nttdocomo
  */
-var http = require("http"), mysql = require('mysql'),
-pool  = require('../crawler/transfermarkt.co.uk/pool'),
-inserPlayerPosition = function(){
+var mysql = require('mysql'),
+excute  = require('../crawler/transfermarkt.co.uk/excute');
+module.exports = function(){
 	function getPlayerProfile(){
 		var sql = "SELECT player_ref_id,position FROM `transfermarket_player` WHERE player_ref_id != 0";
 		pool.getConnection(function(err, connection) {
@@ -33,12 +33,16 @@ inserPlayerPosition = function(){
 			    if (err) throw err;
 			    connection.release();
 			    if(!rows.length){
-			    	console.log([player_id,position_id])
+			    	inserPlayerPosition(player_id,position_id)
 			    }
 			});
 		});
 	}
+	function inserPlayerPosition(player_id,position_id){
+		excute(mysql.format("INSERT INTO `player2position` SET ?",{
+    		'player_id':player_id,
+    		'position_id':position_id
+    	}));
+	}
 	getPlayerProfile();
-}
-module.exports = inserPlayerPosition;
-inserPlayerPosition()
+};
