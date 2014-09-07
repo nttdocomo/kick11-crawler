@@ -2,7 +2,7 @@
  * @author nttdocomo
  */
 var mysql = require('mysql'),
-var pool = require('../crawler/transfermarkt.co.uk/pool'),
+pool = require('../crawler/transfermarkt.co.uk/pool'),
 excute  = require('../crawler/transfermarkt.co.uk/excute');
 module.exports = function(){
 	function getPlayerProfile(){
