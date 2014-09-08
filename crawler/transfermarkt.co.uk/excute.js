@@ -7,8 +7,7 @@ module.exports = function (sql,callback){
 		connection.query(sql, function(err,result) {
 		    if (err) throw err;
 		    connection.release();
-		    console.log('effect ' + result.affectedRows + ' rows');
-		    callback && callback();
+		    callback && callback(result);
 		});
 	});
 }

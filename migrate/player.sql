@@ -4,3 +4,9 @@ INSERT INTO `player`(`name`,`date_of_birth`,`height`,`foot`) SELECT `full_name`,
 UPDATE `transfermarket_player` JOIN `player` ON CONCAT(transfermarket_player.full_name,transfermarket_player.date_of_birth) = CONCAT(player.name,player.date_of_birth) SET transfermarket_player.player_ref_id = player.id WHERE transfermarket_player.player_ref_id = 0
 
 UPDATE `transfermarket_player` JOIN (SELECT player.id,CONCAT(player.name,'-',player.date_of_birth) AS name_date_of_birth FROM (SELECT * FROM `transfermarket_player` WHERE player_ref_id = 0)`transfermarket_player` JOIN `player` ON CONCAT(transfermarket_player.full_name,'-',transfermarket_player.date_of_birth) = CONCAT(player.name,'-',player.date_of_birth))`player` ON CONCAT(transfermarket_player.full_name,'-',transfermarket_player.date_of_birth) = player.name_date_of_birth SET transfermarket_player.player_ref_id = player.id
+
+#查找重复记录
+SELECT id, date_of_birth, profile_uri, transfermarket_player.full_name FROM transfermarket_player
+INNER JOIN (SELECT full_name FROM transfermarket_player
+GROUP BY full_name HAVING count(id) > 1) dup ON transfermarket_player.full_name = dup.full_name
+ORDER BY transfermarket_player.full_name

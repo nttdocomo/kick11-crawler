@@ -1,7 +1,8 @@
 /**
  * @author nttdocomo
  */
-var trim = require('../utils').trim,connection = require("../db"), mysql = require('mysql'),pool  = require('../pool'),moment = require('moment'),
+var trim = require('../utils').trim,connection = require("../db"), mysql = require('mysql'),pool  = require('../pool'),moment = require('moment'),moment_tz = require('moment-timezone'),
+excute  = require('../excute'),
 Player = function($){
 	var date_of_birth = $(".auflistung th:contains('Date of birth:')" ).next().text().replace(/^\s+(.+?)\s+$/,'$1').replace(/^(\w{3}\s{1}\d{1,2},\s{1}\d{4})\s{1}.+/,'$1'),
 	nation_flag = $( "th:contains('Nationality:')" ).next().find('img');
@@ -25,19 +26,17 @@ Player = function($){
 Player.prototype = {
 	update:function(pool){
 		var sql = mysql.format("UPDATE transfermarket_player SET ? WHERE id = ?", [{
+			full_name:this.full_name,
 			name_in_native_country:this.name_in_native_country,
 			date_of_birth:this.date_of_birth,
 			height:this.height,
 			market_value:this.market_value,
 			foot:this.foot,
-			nation_id:this.nation_id
+			nation_id:this.nation_id,
+			position:this.position,
+			updated_at:moment().utc().format('YYYY-MM-DD HH:mm:ss')
 		},this.player_id]);
-		pool.getConnection(function(err, connection) {
-			connection.query(sql, function(err) {
-			    if (err) throw err;
-			    connection.release();
-			});
-		});
+		excute(sql);
 	},
 	save:function(){
 		var sql = mysql.format("INSERT INTO transfermarket_player (full_name,name_in_native_country,date_of_birth,nation_id,height,market_value,foot,position,profile_uri,id) SELECT ? FROM dual WHERE NOT EXISTS(SELECT id FROM transfermarket_player WHERE id = ?)", [[this.full_name,this.name_in_native_country,this.date_of_birth,this.nation_id,this.height,this.market_value,this.foot,this.position,this.profile_uri,this.player_id],this.player_id]);

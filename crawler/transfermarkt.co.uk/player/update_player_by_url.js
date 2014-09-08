@@ -4,6 +4,7 @@
 var http = require("http"), cheerio = require('cheerio'),StringDecoder = require('string_decoder').StringDecoder,
 Player = require('./model'),Crawler = require("simplecrawler"),
 pool  = require('../pool'),
+excute  = require('../excute'),
 host = 'http://www.transfermarkt.co.uk';
 crawler = new Crawler('www.transfermarkt.co.uk');
 crawler.maxConcurrency = 10;
@@ -20,9 +21,20 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
     }
 }).on('complete',function(){
 	console.log('complete');
+}).on('fetcherror',function(queueItem, response){
+	crawler.queueURL(host + queueItem.path);
+}).on('fetchtimeout',function(queueItem, response){
+	crawler.queueURL(host + queueItem.path);
+}).on('fetchclienterror',function(queueItem, response){
+	crawler.queueURL(host + queueItem.path);
 });
-crawler.queueURL(host + '/cristiano-ronaldo/profil/spieler/8198');
-crawler.start();
+excute("SELECT profile_uri FROM transfermarket_player WHERE height IS NULL OR height IS NULL OR date_of_birth = '0000-00-00' ORDER BY id DESC",function(result){
+	for (var i = result.length - 1; i >= 0; i--) {
+	    var path = result[i].profile_uri;
+    	crawler.queueURL(host + path);
+    };
+    crawler.start();
+})
 /*pool.getConnection(function(err, connection) {
 	connection.query("SELECT profile_uri FROM transfermarket_player WHERE height IS NULL ORDER BY id DESC", function(err,rows) {
 	    if (err) throw err;
