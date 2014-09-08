@@ -28,7 +28,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 }).on('fetchclienterror',function(queueItem, response){
 	crawler.queueURL(host + queueItem.path);
 });
-excute("SELECT profile_uri FROM transfermarket_player WHERE height IS NULL OR height IS NULL OR date_of_birth = '0000-00-00' ORDER BY id DESC",function(result){
+excute("SELECT profile_uri FROM transfermarket_player WHERE height IS NULL OR height = 0 OR date_of_birth = '0000-00-00' ORDER BY id DESC",function(result){
 	for (var i = result.length - 1; i >= 0; i--) {
 	    var path = result[i].profile_uri;
     	crawler.queueURL(host + path);
