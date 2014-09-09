@@ -28,18 +28,18 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 			var $el = $(el),
 			id = $el.val();
 			//var sql = mysql.format("SELECT 1 FROM `transfermarket_transfer` WHERE id = ? LIMIT 1", [id]);
+			var player_id = $('#submenue > li').eq(1).find('> a').attr('href').replace(/\S+?\/(\d{1,9})$/,'$1'),
+			season = $el.next().children().eq(0).find('select').val(),
+			transfer_date = $el.next().children().eq(3).find('input').val(),
+			month = $el.next().children().eq(4).find('select').val(),
+			loan = $el.next().children().eq(5).find('select').val(),
+			transfer_sum = $el.next().children().eq(7).find('input').val(),
+			contract_period = [$el.next().next().children().eq(0).find('input').eq(2).val(),$el.next().next().children().eq(0).find('input').eq(1).val(),$el.next().next().children().eq(0).find('input').eq(0).val()].join('-'),
+			transfer_date = /\d{2}\.\d{2}\.\d{4}/.test(transfer_date) ? transfer_date.replace(/(\d{2})\.(\d{2})\.(\d{4})/,'$3-$2-$1') : moment(month + ' 1,' + season).format('YYYY-MM-DD'),
+			transfer_sum = /\d/.test(transfer_sum) ? transfer_sum.replace(/\./g,'') : 0;
+			contract_period = /\d{4}\-\d{2}\-\d{2}/.test(contract_period) ? contract_period : undefined;
 			excute(mysql.format("SELECT 1 FROM `transfermarket_transfer` WHERE id = ? LIMIT 1", [id]),function(result){
 				if(!result.length){
-					var player_id = $('#submenue > li').eq(1).find('> a').attr('href').replace(/\S+?\/(\d{1,9})$/,'$1'),
-					season = $el.next().children().eq(0).find('select').val(),
-					transfer_date = $el.next().children().eq(3).find('input').val(),
-					month = $el.next().children().eq(4).find('select').val(),
-					loan = $el.next().children().eq(5).find('select').val(),
-					transfer_sum = $el.next().children().eq(7).find('input').val(),
-					contract_period = [$el.next().next().children().eq(0).find('input').eq(2).val(),$el.next().next().children().eq(0).find('input').eq(1).val(),$el.next().next().children().eq(0).find('input').eq(0).val()].join('-'),
-					transfer_date = /\d{2}\.\d{2}\.\d{4}/.test(transfer_date) ? transfer_date.replace(/(\d{2})\.(\d{2})\.(\d{4})/,'$3-$2-$1') : moment(month + ' 1,' + season).format('YYYY-MM-DD'),
-					transfer_sum = /\d/.test(transfer_sum) ? transfer_sum.replace(/\./g,'') : 0;
-					contract_period = /\d{4}\-\d{2}\-\d{2}/.test(contract_period) ? contract_period : undefined;
 			    	if(contract_period){
 			    		transfers.push([id,season,transfer_date,transfer_sum,player_id,contract_period,loan]);
 			    	} else {

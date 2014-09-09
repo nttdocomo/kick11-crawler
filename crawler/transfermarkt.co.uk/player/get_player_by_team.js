@@ -5,6 +5,7 @@ var http = require("http"), cheerio = require('cheerio'),connection = require(".
 Player = require('./model'),moment = require('moment'),
 trim = require('../utils').trim,
 pool  = require('../pool'),
+excute  = require('../excute'),
 Crawler = require("simplecrawler"),
 host = 'http://www.transfermarkt.co.uk',
 crawler = new Crawler('www.transfermarkt.co.uk');
@@ -22,30 +23,39 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
     var decoder = new StringDecoder('utf8'),sql,
     $ = cheerio.load(decoder.write(responseBuffer));
     if(/^\/\S+?\/startseite\/verein\/\d+?(\/saison_id\/\d{4})?$/i.test(queueItem.path)){
-	    var team = new Team($);
-	    //team.save_team_player(pool)
-	    team.update_team_name()
-	    team.get_player_url().forEach(function(url){
-	    	if(/^\/\S+\/nationalmannschaft\/spieler\/\d{1,9}$/.test(url)){
-	    		url = url.replace(/nationalmannschaft/,'profil');
-	    	}
-    		var id = url.replace(/^\/\S+\/profil\/spieler\/(\d{1,9})$/,'$1'),
-    		sql = mysql.format("SELECT 1 FROM transfermarket_player WHERE id = ? limit 1;", [id]);
-			pool.getConnection(function(err, connection) {
-				connection.query(sql, function(err,rows) {
-				    if (err) throw err;
-				    connection.release();
-				    if(!rows.length){
-				    	console.log(id + ' is not in the database, it will first get the player');
-				    	crawler.queueURL(host + url);
-				    } else {
-				    	console.log(id + ' is in the database, it will start to get the transfer');
-				    	crawler.queueURL(host + url.replace('profil','korrektur'));
-				    }
-				});
-			});
-	    });
-    	team.save();
+    	var team_id = queueItem.path.replace(/^\/\S+?\/startseite\/verein\/(\d+?)(\/\S+)?$/,'$1'),team = new Team($);
+    	excute("SLECT 1 FROM `transfermarket_team` WHERE id = " + team_id + " AND team_ref_id IN (SELECT team_id FROM `events_teams`) LIMIT 1",function(result){
+    		if(result.length){
+			    //team.save_team_player(pool)
+			    team.get_player_url().forEach(function(url){
+			    	if(/^\/\S+\/nationalmannschaft\/spieler\/\d{1,9}$/.test(url)){
+			    		url = url.replace(/nationalmannschaft/,'profil');
+			    	}
+		    		var id = url.replace(/^\/\S+\/profil\/spieler\/(\d{1,9})$/,'$1'),
+		    		sql = mysql.format("SELECT 1 FROM transfermarket_player WHERE id = ? limit 1;", [id]);
+					pool.getConnection(function(err, connection) {
+						connection.query(sql, function(err,rows) {
+						    if (err) throw err;
+						    connection.release();
+						    if(!rows.length){
+						    	console.log(id + ' is not in the database, it will first get the player');
+						    	crawler.queueURL(host + url);
+						    } else {
+						    	console.log(id + ' is in the database, it will start to get the transfer');
+						    	crawler.queueURL(host + url.replace('profil','korrektur'));
+						    }
+						});
+					});
+			    });
+    		}
+    	})
+		excute("SLECT 1 FROM `transfermarket_team` WHERE id = " + team_id + " LIMIT 1",function(result){
+			if(result.length){
+				team.update_team_name()
+			} else {
+				team.save();
+			}
+		})
     }
     if(/^\/\S+\/profil\/spieler\/\d{1,9}$/.test(queueItem.path)){
 	    var player = new Player($),path = queueItem.path;
@@ -65,17 +75,17 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 				connection.query("SELECT 1 FROM `transfermarket_transfer` WHERE id = ? LIMIT 1", [id], function(err,rows) {
 				    if (err) throw err;
 				    connection.release();
+					var player_id = $('#submenue > li').eq(1).find('> a').attr('href').replace(/\S+?\/(\d{1,9})$/,'$1'),
+					season = $el.next().children().eq(0).find('select').val(),
+					transfer_date = $el.next().children().eq(3).find('input').val(),
+					month = $el.next().children().eq(4).find('select').val(),
+					loan = $el.next().children().eq(5).find('select').val(),
+					transfer_sum = $el.next().children().eq(7).find('input').val(),
+					contract_period = [$el.next().next().children().eq(0).find('input').eq(2).val(),$el.next().next().children().eq(0).find('input').eq(1).val(),$el.next().next().children().eq(0).find('input').eq(0).val()].join('-'),
+					transfer_date = /\d{2}\.\d{2}\.\d{4}/.test(transfer_date) ? transfer_date.replace(/(\d{2})\.(\d{2})\.(\d{4})/,'$3-$2-$1') : moment(month + ' 1,' + season).format('YYYY-MM-DD'),
+					transfer_sum = /\d/.test(transfer_sum) ? transfer_sum.replace(/\./g,'') : 0;
+					contract_period = /\d{4}\-\d{2}\-\d{2}/.test(contract_period) ? contract_period : undefined;
 				    if(!rows.length){
-						var player_id = $('#submenue > li').eq(1).find('> a').attr('href').replace(/\S+?\/(\d{1,9})$/,'$1'),
-						season = $el.next().children().eq(0).find('select').val(),
-						transfer_date = $el.next().children().eq(3).find('input').val(),
-						month = $el.next().children().eq(4).find('select').val(),
-						loan = $el.next().children().eq(5).find('select').val(),
-						transfer_sum = $el.next().children().eq(7).find('input').val(),
-						contract_period = [$el.next().next().children().eq(0).find('input').eq(2).val(),$el.next().next().children().eq(0).find('input').eq(1).val(),$el.next().next().children().eq(0).find('input').eq(0).val()].join('-'),
-						transfer_date = /\d{2}\.\d{2}\.\d{4}/.test(transfer_date) ? transfer_date.replace(/(\d{2})\.(\d{2})\.(\d{4})/,'$3-$2-$1') : moment(month + ' 1,' + season).format('YYYY-MM-DD'),
-						transfer_sum = /\d/.test(transfer_sum) ? transfer_sum.replace(/\./g,'') : 0;
-						contract_period = /\d{4}\-\d{2}\-\d{2}/.test(contract_period) ? contract_period : undefined;
 				    	if(contract_period){
 				    		transfers.push([id,season,transfer_date,transfer_sum,player_id,contract_period,loan]);
 				    	} else {
