@@ -24,7 +24,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
     $ = cheerio.load(decoder.write(responseBuffer));
     if(/^\/\S+?\/startseite\/verein\/\d+?(\/saison_id\/\d{4})?$/i.test(queueItem.path)){
     	var team_id = queueItem.path.replace(/^\/\S+?\/startseite\/verein\/(\d+?)(\/\S+)?$/,'$1'),team = new Team($);
-    	excute("SLECT 1 FROM `transfermarket_team` WHERE id = " + team_id + " AND team_ref_id IN (SELECT team_id FROM `events_teams`) LIMIT 1",function(result){
+    	excute(mysql.format("SELECT 1 FROM `transfermarket_team` WHERE id = ? AND team_ref_id IN (SELECT team_id FROM `events_teams`) LIMIT 1", [team_id]),function(result){
     		if(result.length){
 			    //team.save_team_player(pool)
 			    team.get_player_url().forEach(function(url){
@@ -49,7 +49,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 			    });
     		}
     	})
-		excute("SLECT 1 FROM `transfermarket_team` WHERE id = " + team_id + " LIMIT 1",function(result){
+		excute("SELECT 1 FROM `transfermarket_team` WHERE id = " + team_id + " LIMIT 1",function(result){
 			if(result.length){
 				team.update_team_name()
 			} else {
