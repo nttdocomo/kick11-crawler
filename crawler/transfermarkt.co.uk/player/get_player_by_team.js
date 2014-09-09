@@ -31,7 +31,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 			    	if(/^\/\S+\/nationalmannschaft\/spieler\/\d{1,9}$/.test(url)){
 			    		url = url.replace(/nationalmannschaft/,'profil');
 			    	}
-		    		var id = url.replace(/^\/\S+\/profil\/spieler\/(\d{1,9})$/,'$1'),
+		    		var id = url.replace(/^\/\S+\/profil\/spieler\/(\d{1,9})$/,'$1');
 		    		excute(mysql.format("SELECT 1 FROM transfermarket_player WHERE id = ? limit 1;", [id]),function(rows){
 		    			if(!rows.length){
 					    	console.log(id + ' is not in the database, it will first get the player');
