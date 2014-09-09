@@ -112,10 +112,13 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 }).on('complete',function(){
 	console.log('complete');
 }).on('fetcherror',function(queueItem, response){
+	console.log('fetcherror');
 	crawler.queueURL(host + queueItem.path);
 }).on('fetchtimeout',function(queueItem, response){
+	console.log('fetchtimeout');
 	crawler.queueURL(host + queueItem.path);
 }).on('fetchclienterror',function(queueItem, response){
+	console.log('fetchclienterror');
 	crawler.queueURL(host + queueItem.path);
 });
 /*crawler.queueURL(host + '/cristiano-ronaldo/transfers/spieler/8198');
