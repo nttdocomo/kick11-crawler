@@ -2,6 +2,7 @@
  * @author nttdocomo
  */
 var trim = require('../utils').trim,connection = require("../db"), mysql = require('mysql'),Player = require('../player/model'),moment = require('moment'),pool  = require('../pool'),
+excute  = require('../excute'),
 Team = function($){
 	this.$ = $;
 	this.is_club_team = !$('#verknupftevereine > img').attr('class');
@@ -119,23 +120,13 @@ Team.prototype = {
 			var sql = mysql.format("UPDATE transfermarket_team SET ? WHERE id = ?", [{
 				team_name:this.team_name
 			},this.team_id]);
-			pool.getConnection(function(err, connection) {
-				connection.query(sql, function(err) {
-				    if (err) throw err;
-				    connection.release();
-				});
-			});
+			excute(sql);
 		}
 	},
 	save:function(){
 		if(this.team_name){
 			var sql = mysql.format("INSERT INTO transfermarket_team (team_name, id, order_by, type, owner_id, nation_id, profile_uri) SELECT ? FROM dual WHERE NOT EXISTS(SELECT id FROM transfermarket_team WHERE id = ?)", [[this.team_name,this.team_id,0,(this.is_club_team? 2:1),(this.is_club_team ? this.club_id : this.nation_id),this.nation_id, this.club_url],this.team_id]);
-			pool.getConnection(function(err, connection) {
-				connection.query(sql, function(err) {
-				    if (err) throw err;
-				    connection.release();
-				});
-			});
+			excute(sql);
 		}
 	},
 	update_owner_id:function(connection){

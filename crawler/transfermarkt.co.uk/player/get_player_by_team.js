@@ -4,7 +4,6 @@
 var http = require("http"), cheerio = require('cheerio'),connection = require("../db"), mysql = require('mysql'),StringDecoder = require('string_decoder').StringDecoder,Team = require('../team/model'),
 Player = require('./model'),moment = require('moment'),
 trim = require('../utils').trim,
-pool  = require('../pool'),
 excute  = require('../excute'),
 Crawler = require("simplecrawler"),
 host = 'http://www.transfermarkt.co.uk',

@@ -40,12 +40,7 @@ Player.prototype = {
 	},
 	save:function(){
 		var sql = mysql.format("INSERT INTO transfermarket_player (full_name,name_in_native_country,date_of_birth,nation_id,height,market_value,foot,position,profile_uri,id) SELECT ? FROM dual WHERE NOT EXISTS(SELECT id FROM transfermarket_player WHERE id = ?)", [[this.full_name,this.name_in_native_country,this.date_of_birth,this.nation_id,this.height,this.market_value,this.foot,this.position,this.profile_uri,this.player_id],this.player_id]);
-		pool.getConnection(function(err, connection) {
-			connection.query(sql, function(err) {
-			    if (err) throw err;
-			    connection.release();
-			});
-		});
+		excute(sql);
 	},
 	update_date_of_birth:function(connection){
 		var sql = mysql.format("UPDATE transfermarkt_player SET date_of_birth = ? WHERE date_of_birth = '0000-00-00' AND id = ?",[this.date_of_birth,this.player_id]);
