@@ -17,7 +17,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
     player;
     if(/^\/\S+\/profil\/spieler\/\d{1,6}$/.test(queueItem.path)){
 	    player = new Player(cheerio.load(decoder.write(responseBuffer)));
-	    player.update(pool);
+	    player.update();
     }
 }).on('complete',function(){
 	console.log('complete');

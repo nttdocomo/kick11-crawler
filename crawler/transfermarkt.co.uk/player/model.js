@@ -24,7 +24,7 @@ Player = function($){
 	}
 }
 Player.prototype = {
-	update:function(pool){
+	update:function(){
 		var sql = mysql.format("UPDATE transfermarket_player SET ? WHERE id = ?", [{
 			full_name:this.full_name,
 			name_in_native_country:this.name_in_native_country,
