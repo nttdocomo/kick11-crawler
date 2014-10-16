@@ -1,9 +1,24 @@
 /**
  * @author nttdocomo
  */
-var http = require("http"), fs = require('fs'),cheerio = require('cheerio'),mysql = require('mysql'),Crawler = require("simplecrawler"), iconv = require('iconv-lite'),
-excute  = require('../transfermarkt.co.uk/excute'),
-host = 'http://www.fm007.cn',
+var fs = require('fs'),mysql = require('mysql'),
+excute  = require('../transfermarkt.co.uk/excute'),StringDecoder = require('string_decoder').StringDecoder;
+/*charaterMap = {'á':'a',
+'ä':'a',
+'à':'a',
+'Á':'A',
+'í':'i',
+'î':'i',
+'ö':'o',
+'ó':'o',
+'Ö':'O',
+'é':'e',
+'ë':'e',
+'ê':'e',
+'è':'e',
+'É':'E',
+'ü':'u',
+'ñ':'n'};
 crawler = new Crawler('www.fm007.cn');
 crawler.maxConcurrency = 5;
 crawler.interval = 500;
@@ -37,61 +52,34 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 }).on('fetchclienterror',function(queueItem, errorData){
 	console.log('fetchclienterror')
 	//crawler.queueURL(host + queueItem.path);
-});
+});*/
 excute("CREATE TABLE IF NOT EXISTS `fm_player` (\
 	`id` int(10) unsigned NOT NULL AUTO_INCREMENT,\
 	`fm_player_id` int(10) unsigned NOT NULL,\
 	`player_id` int(10) unsigned NOT NULL,\
 	PRIMARY KEY (`id`)\
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8;");
-excute("SELECT name FROM player WHERE id NOT IN (SELECT player_id FROM `fm_player`)",function(rows) {
-    rows.forEach(function(player){
-    	crawler.queueURL(host + '/player/'+player.name.split(' ').join('-') + '.html');
-    })
-    crawler.start();
+fs.readFile('./22222.csv',function(err,data){
+	var decoder = new StringDecoder('utf8'),
+	lines = decoder.write(data).split(/\r\n/);
+	excute("SELECT name,id FROM player WHERE id NOT IN (SELECT player_id FROM `fm_player`)",function(rows) {
+		var inserts = [];
+	    rows.forEach(function(player){
+	    	var name = player.name;
+			lines.forEach(function(line,i){
+				if(i>0 && line){
+					var result = line.split(/\;/),
+					player_name = result[0].replace(/"/g,'').replace(/(\w+?),\s(\w+)/g,'$2 $1'),
+					id = result[2].replace(/"/g,'');
+					if(player_name == name){
+						inserts.push([id,player.id]);
+						//excute(mysql.format("INSERT INTO `fm_player` SET ?",{fm_player_id:id,player_id:player.id}));
+						//console.log(mysql.format("INSERT INTO `fm_player` SET ?",{fm_player_id:id,player_id:player.id}))
+						return false;
+					}
+				}
+			});
+	    })
+		excute(mysql.format("INSERT INTO `fm_player`(fm_player_id,player_id) VALUES ?",[inserts]));
+	})
 })
-/*
-crawler.queueURL(host + '/player/'+'Aaron Lennon'.split(' ').join('-') + '.html');
-crawler.start();
-var post_data = querystring.stringify({
-	'mid':17,
-	'dopost':'search',
-	'name' : 'Aaron Lennon'
-});
-var options = {
-	hostname: 'www.fm007.cn',
-	port: 80,
-	path: '/plus/advancedsearch.php',
-	method: 'POST',
-	headers: {
-		'Content-Type': 'application/x-www-form-urlencoded',
-		'Content-Length': post_data.length,
-		'Host':'www.fm007.cn',
-		'Origin':'http://www.fm007.cn',
-		'Referer':'http://www.fm007.cn/plus/advancedsearch.php',
-		'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2062.103 Safari/537.36'
-	}
-};
-var content = '';
-var req = http.request(options, function(res) {
-	res.setEncoding('utf8');
-	res.on('data', function (chunk) {
-		content += chunk;
-	});
-	res.on('end', function () {
-		var $ = cheerio.load(content),
-		$results = $('.table_s1').find('table tr');
-		if($results.length && $results.length == 1){
-			console.log($results.find('td').first().find('a').attr('href'));
-			crawler.queueURL(host + $results.find('td').first().find('a').attr('href'));
-		}
-		crawler.start();
-	});
-});
-
-req.on('error', function(e) {
-	console.log('problem with request: ' + e.message);
-});
-req.write(post_data);
-req.end();*/
-//crawler.queueURL(host + '/Search/?t=Willy+Caballero');

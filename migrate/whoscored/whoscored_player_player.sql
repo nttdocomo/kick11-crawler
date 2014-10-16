@@ -1,0 +1,3 @@
+INSERT INTO `whoscored_player_player`(whoscored_player_id,player_id) SELECT whoscored_player.id,player.id FROM `whoscored_player` JOIN `player` ON player.name = whoscored_player.name WHERE whoscored_player.id NOT IN (SELECT whoscored_player_id FROM `whoscored_player_player`) AND player.id NOT IN (SELECT player_id FROM `whoscored_player_player`)
+
+SELECT id,name FROM `whoscored_player` WHERE id NOT IN (SELECT whoscored_player_id FROM `whoscored_player_player`)

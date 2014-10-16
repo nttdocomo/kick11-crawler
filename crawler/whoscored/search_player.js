@@ -1,7 +1,7 @@
 /**
  * @author nttdocomo
  */
-var http = require("http"), cheerio = require('cheerio'),StringDecoder = require('string_decoder').StringDecoder,mysql = require('mysql'),moment = require('moment'),pool  = require('../transfermarkt.co.uk/pool'),
+var http = require("http"), cheerio = require('cheerio'),excute = require('../transfermarkt.co.uk/excute'),StringDecoder = require('string_decoder').StringDecoder,mysql = require('mysql'),moment = require('moment'),pool  = require('../transfermarkt.co.uk/pool'),
 Crawler = require("simplecrawler");
 host = 'http://www.whoscored.com';
 crawler = new Crawler('www.whoscored.com');
@@ -10,7 +10,6 @@ crawler.interval = 300;
 crawler.timeout = 5000;
 crawler.discoverResources = false;
 crawler.userAgent = 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.153 Safari/537.36';
-var unfoundPath = [],unfoundId = [],moreThanOnePlayer = [];
 crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
     var decoder = new StringDecoder('utf8'),$ = cheerio.load(decoder.write(responseBuffer)),table = $('.search-result').find("h2:contains('Players:')"),player_id,player_name;
     if(table.length){
@@ -58,16 +57,20 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 	crawler.queueURL(host + queueItem.path);
 	console.log(queueItem.path)
 });
-pool.getConnection(function(err, connection) {
-	connection.query("SELECT name FROM player WHERE id NOT IN (SELECT player1_id FROM player_player)", function(err,rows) {
-	    if (err) throw err;
-	    connection.release();
-	    rows.forEach(function(player){
-	    	//console.log(player.name.split(' ').join('+'))
-	    	crawler.queueURL(host + '/Search/?t='+player.name.split(' ').join('+'));
-	    })
-	    crawler.start();
-	});
+excute("CREATE TABLE IF NOT EXISTS `whoscored_player_player` (\
+	`id` int(10) unsigned NOT NULL AUTO_INCREMENT,\
+	`whoscored_player_id` int(10) unsigned NOT NULL,\
+	`player_id` int(10) unsigned NOT NULL,\
+	PRIMARY KEY (`id`)\
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;");
+excute("SELECT name FROM player WHERE id NOT IN (SELECT player_id FROM whoscored_player_player)", function(rows) {
+    if (err) throw err;
+    connection.release();
+    rows.forEach(function(player){
+    	//console.log(player.name.split(' ').join('+'))
+    	crawler.queueURL(host + '/Search/?t='+player.name.split(' ').join('+'));
+    })
+    crawler.start();
 });
 //crawler.queueURL(host + '/Search/?t=Willy+Caballero');
 //crawler.start();
