@@ -6,56 +6,79 @@ pool  = require('../transfermarkt.co.uk/pool'),moment = require('moment'),
 input_match_id = process.argv[2],
 host = 'http://www.whoscored.com';
 _ = require('underscore');
-module.exports = function(queueItem, responseBuffer, response){
+module.exports = function(queueItem, responseBuffer, response, match_id){
     var decoder = new StringDecoder('utf8'),
-    $ = cheerio.load(decoder.write(responseBuffer)),
-    match_id = queueItem.path.replace(/^\/\w+?\/(\d{1,})\/\w+$/,'$1');
-    //console.log($('script').eq(16).html().replace(/\n/ig,'\\n').replace(/\s/ig,'\\s').replace(/\t/ig,'\\t'));
-    $('script').each(function(i,script){
-        var html = $(script).html().replace(/[\s|\n]/ig,"");
-
-        if(/^var\S+?(\[\[\[.+?\])\;\S+?\)\;$/.test(html)){
-            html = $(script).html().replace(/[\n|\r]/ig,'').replace(/\s{2,}/ig,'').replace(/\s(\;)/ig,'$1').replace(/(\,)\s(\d)/ig,'$1$2');
-            //console.log($(script).html().replace(/\n/ig,'').replace(/\s{2,}/ig,'').replace(/\s/ig,'\\s').replace(/\t/ig,''));
-            //console.log(html.replace(/.+?(\[\[\[.+\,\d\])\;.+/,'$1'))
-            /*fs.open('./index.html', 'w', 0666, function(e, fd) {
-                if (e) {
-                  console.log('错误信息：' + e);
+    matchCentre2 = JSON.parse(decoder.write(responseBuffer));
+    if(matchCentre2 !== null){
+        var playerIdNameDictionary = matchCentre2.playerIdNameDictionary,
+        events = matchCentre2.events,
+        goals_events = events.filter(function(event){
+            return event.type.value == 16;
+        })
+        for (id in playerIdNameDictionary) {
+            excute(mysql.format('SELECT 1 FROM whoscored_player WHERE id = ? LIMIT 1',[id]),function(rows){
+                if(rows.length){
+                    excute(mysql.format('UPDATE whoscored_player SET ? WHERE id = ?',[{name:playerIdNameDictionary[id]},id]))
                 } else {
-                  fs.write(fd, html.replace(/.+?(\[\[\[.+\,\d\])\;.+/,'$1'), 0, 'utf8', function(e) {
-                    if (e) {
-                      console.log('出错信息：' + e);
-                    } else {
-                      fs.closeSync(fd);
-                    }
-                  });
+                    excute(mysql.format('INSERT INTO whoscored_player (id,name) SELECT ? FROM dual WHERE NOT EXISTS(SELECT id FROM whoscored_player WHERE id = ?)',[[id,playerIdNameDictionary[id]],id]))
+                }
+            });
+        };
+        goals_events.forEach(function(event){
+            var eventId = event.id,
+            minute = event.minute,
+            team_id = event.teamId,
+            player_id = event.playerId,
+            player_name = playerIdNameDictionary[player_id],
+            period = event.period,
+            offset = 0;
+            if(period.value == 1 && minute > 45){
+                offset = minute - 45
+                minute = 45;
+            }
+            if(period.value == 2 && minute > 90){
+                offset = minute - 90
+                minute = 90;
+            }
+            /*excute(mysql.format('SELECT 1 FROM whoscored_player WHERE id = ? LIMIT 1',[player_id]),function(rows){
+                if(rows.length){
+                    excute(mysql.format('UPDATE whoscored_player SET ? WHERE id = ?',[{name:player_name},player_id]))
+                } else {
+                    excute(mysql.format('INSERT INTO whoscored_player SET ?',{id:player_id,name:player_name}))
                 }
             });*/
-            var data = eval(html.replace(/.+?(\[\[\[.+\,\d\])\;.+/,'$1'))[0],
-            match_summary = data[0],
-            events = data[1][0];
-            events.forEach(function(event){
-                var minute = event[0],
-                event_summary = event[1].length ? event[1][0] : event[2][0],
-                team_id = match_summary[event[1].length ? 0 : 1],
-                player_id = event_summary[6],
-                player_name = event_summary[0],
-                event_name = event_summary[2],assists_player,assists_player_id;
-                excute(mysql.format('INSERT INTO whoscored_player (id,name) SELECT ? FROM dual WHERE NOT EXISTS(SELECT id FROM whoscored_player WHERE id = ?)', [[player_id,player_name],player_id]));
-                if(event_name == 'goal' || event_name == 'owngoal'){
-                    assists_player = event_summary[1];
-                    assists_player_id = event_summary[7];
-                    score1 = event_summary[3].replace(/[\(|\)]/g,'').split('-')[0];
-                    score2 = event_summary[3].replace(/[\(|\)]/g,'').split('-')[1];
-                    console.log(player_id,match_id,team_id,minute,score1,score2)
-                    var row_data = [player_id,match_id,team_id,minute,score1,score2];
-                    if(event_name == 'owngoal'){
-                        row_data.push(1);
-                    }
-                    row_data.push(moment.utc().format('YYYY-MM-DD hh:mm:ss'));
-                    excute(mysql.format('INSERT INTO whoscored_goals (player_id,match_id,team_id,minute,score1,score2,'+(event_name == 'owngoal' ? 'owngoal,':'')+'created_at) SELECT ? FROM dual WHERE NOT EXISTS(SELECT id FROM whoscored_goals WHERE player_id = ? AND match_id = ? AND team_id = ? AND minute = ?)', [row_data,player_id,match_id,team_id,minute]));
+            //INSERT EVENT
+            excute(mysql.format('SELECT 1 FROM whoscored_events WHERE id = ? LIMIT 1',[eventId]),function(rows){
+                var goal = {};
+                if(event.hasOwnProperty('isOwnGoal') && event.isOwnGoal){
+                    goal.owngoal = event.isOwnGoal;
                 }
-            })
-        }
-    })
+                if(rows.length){
+                    excute(mysql.format('UPDATE whoscored_events SET ? WHERE id = ?',[{
+                        player_id:player_id,
+                        match_id:match_id,
+                        team_id:team_id,
+                        minute:minute,
+                        offset:offset,
+                        updated_at:moment.utc().format('YYYY-MM-DD hh:mm:ss')
+                    },eventId]));
+                    goal.updated_at = moment.utc().format('YYYY-MM-DD hh:mm:ss');
+                    excute(mysql.format('UPDATE whoscored_goals SET ? WHERE event_id = ?',[goal,eventId]))
+                } else {
+                    excute(mysql.format('INSERT INTO whoscored_events SET ?',{
+                        id:eventId,
+                        player_id:player_id,
+                        match_id:match_id,
+                        team_id:team_id,
+                        minute:minute,
+                        offset:offset,
+                        created_at:moment.utc().format('YYYY-MM-DD hh:mm:ss')
+                    }));
+                    goal.event_id = eventId;
+                    goal.created_at = moment.utc().format('YYYY-MM-DD hh:mm:ss')
+                    excute(mysql.format('INSERT INTO whoscored_goals SET ?',goal))
+                }
+            });
+        })
+    }
 };
