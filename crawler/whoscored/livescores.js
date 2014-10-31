@@ -5,7 +5,6 @@ var http = require("http"), fs = require('fs'), cheerio = require('cheerio'),exc
 Crawler = require("simplecrawler"),get_matches = require('./get_matches'),get_goals = require('./get_goals'),get_stages = require('./get_stages'),
 input_date = process.argv[2],
 host = 'http://www.whoscored.com';
-_ = require('underscore');
 crawler = new Crawler('www.whoscored.com');
 crawler.maxConcurrency = 2;
 crawler.interval = 500;
