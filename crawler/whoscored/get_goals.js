@@ -5,7 +5,6 @@ var fs = require('fs'), cheerio = require('cheerio'),excute = require('../transf
 pool  = require('../transfermarkt.co.uk/pool'),moment = require('moment'),
 input_match_id = process.argv[2],
 host = 'http://www.whoscored.com';
-_ = require('underscore');
 module.exports = function(queueItem, responseBuffer, response, match_id){
     var decoder = new StringDecoder('utf8'),
     matchCentre2 = JSON.parse(decoder.write(responseBuffer));
