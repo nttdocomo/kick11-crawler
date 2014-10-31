@@ -47,13 +47,13 @@ module.exports = function(queueItem, responseBuffer, response, match_id){
                 }
             });*/
             //INSERT EVENT
-            excute(mysql.format('SELECT 1 FROM whoscored_events WHERE id = ? LIMIT 1',[eventId]),function(rows){
+            excute(mysql.format('SELECT 1 FROM whoscored_match_events WHERE id = ? LIMIT 1',[eventId]),function(rows){
                 var goal = {};
                 if(event.hasOwnProperty('isOwnGoal') && event.isOwnGoal){
                     goal.owngoal = event.isOwnGoal;
                 }
                 if(rows.length){
-                    excute(mysql.format('UPDATE whoscored_events SET ? WHERE id = ?',[{
+                    excute(mysql.format('UPDATE whoscored_match_events SET ? WHERE id = ?',[{
                         player_id:player_id,
                         match_id:match_id,
                         team_id:team_id,
@@ -64,7 +64,7 @@ module.exports = function(queueItem, responseBuffer, response, match_id){
                     goal.updated_at = moment.utc().format('YYYY-MM-DD hh:mm:ss');
                     excute(mysql.format('UPDATE whoscored_goals SET ? WHERE event_id = ?',[goal,eventId]))
                 } else {
-                    excute(mysql.format('INSERT INTO whoscored_events SET ?',{
+                    excute(mysql.format('INSERT INTO whoscored_match_events SET ?',{
                         id:eventId,
                         player_id:player_id,
                         match_id:match_id,
