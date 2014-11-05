@@ -46,7 +46,15 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
     console.log('fetchclienterror')
 });
 if(input_date){
-    crawler.queueURL(host + '/matchesfeed/?d=' + input_date);
+    if(input_date.length == 6){
+        crawler.queueURL(host + '/matchesfeed/?d=' + input_date);
+    }
+    if(input_date.length == 4){
+        var start = moment.utc(input_date + "-01-01").valueOf(), end = moment.utc().valueOf();
+        for (var i = end; i >= start; i-=24*60*60*1000) {
+            crawler.queueURL(host + '/matchesfeed/?d=' + moment.utc(i).format('YYYYMMDD'));
+        };
+    }
 } else {
     crawler.queueURL(host + '/matchesfeed/?d=' + moment.utc().format('YYYYMMDD'));
 }
