@@ -1,13 +1,12 @@
 /**
  * @author nttdocomo
  */
-var fs = require('fs'), cheerio = require('cheerio'),excute = require('../transfermarkt.co.uk/excute'),StringDecoder = require('string_decoder').StringDecoder,mysql = require('mysql'),moment = require('moment'),moment_tz = require('moment-timezone'),
-pool  = require('../transfermarkt.co.uk/pool'),moment = require('moment'),
+var excute = require('../../excute'),StringDecoder = require('string_decoder').StringDecoder,mysql = require('mysql'),moment = require('moment'),moment_tz = require('moment-timezone'),
+moment = require('moment'),
 input_match_id = process.argv[2],
 host = 'http://www.whoscored.com';
-module.exports = function(queueItem, responseBuffer, response, match_id){
-    var decoder = new StringDecoder('utf8'),
-    matchCentre2 = JSON.parse(decoder.write(responseBuffer));
+module.exports = function(content, match_id){
+    var matchCentre2 = JSON.parse(content);
     if(matchCentre2 !== null){
         var playerIdNameDictionary = matchCentre2.playerIdNameDictionary,
         events = matchCentre2.events,

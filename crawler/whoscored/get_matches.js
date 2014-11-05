@@ -1,7 +1,7 @@
 /**
  * @author nttdocomo
  */
-var fs = require('fs'), cheerio = require('cheerio'),excute = require('../transfermarkt.co.uk/excute'),StringDecoder = require('string_decoder').StringDecoder,mysql = require('mysql'),
+var excute = require('../../excute'),StringDecoder = require('string_decoder').StringDecoder,mysql = require('mysql'),
 moment = require('moment'),moment_tz = require('moment-timezone');
 module.exports = function(matches,date){
 	return matches.map(function(match){
@@ -11,7 +11,7 @@ module.exports = function(matches,date){
             team1_name = match[5],
             team2_id = match[8],
             team2_name = match[9],
-            play_at = moment.tz([date,match[3]].join(' '),"Europe/London").utc().format('YYYY-MM-DD hh:mm'),
+            play_at = moment.tz([date,match[3]].join(' '),"Europe/London").utc().format('YYYY-MM-DD HH:mm'),
             score = match[12];
             excute(mysql.format('INSERT INTO whoscored_teams (id,name) SELECT ? FROM dual WHERE NOT EXISTS(SELECT id FROM whoscored_teams WHERE id = ?)', [[team1_id,team1_name],team1_id]));
             excute(mysql.format('INSERT INTO whoscored_teams (id,name) SELECT ? FROM dual WHERE NOT EXISTS(SELECT id FROM whoscored_teams WHERE id = ?)', [[team2_id,team2_name],team2_id]));
