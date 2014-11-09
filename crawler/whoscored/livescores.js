@@ -46,7 +46,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
     console.log('fetchclienterror')
 });
 if(input_date){
-    if(input_date.length == 6){
+    if(input_date.length == 8){
         crawler.queueURL(host + '/matchesfeed/?d=' + input_date);
     }
     if(input_date.length == 4){
