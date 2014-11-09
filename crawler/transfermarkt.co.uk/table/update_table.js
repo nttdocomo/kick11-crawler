@@ -1,4 +1,4 @@
-var pool  = require('../pool');
+var pool  = require('../../../pool');
 pool.getConnection(function(err, connection) {
 	connection.query("SELECT * FROM `events_teams`", function(err,rows) {
 	    if (err) throw err;
