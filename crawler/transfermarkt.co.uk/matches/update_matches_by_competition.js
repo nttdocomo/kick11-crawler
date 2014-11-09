@@ -2,8 +2,8 @@
  * @author nttdocomo
  */
 var http = require("http"), cheerio = require('cheerio'),StringDecoder = require('string_decoder').StringDecoder,mysql = require('mysql'),moment = require('moment'),moment_tz = require('moment-timezone'),Crawler = require("simplecrawler"),
-pool  = require('../pool'),trim = require('../utils').trim,
-host = 'http://www.transfermarkt.co.uk';
+pool  = require('../../../pool'),trim = require('../utils').trim,
+host = 'http://www.transfermarkt.co.uk',
 crawler = new Crawler('www.transfermarkt.co.uk');
 crawler.maxConcurrency = 10;
 crawler.interval = 300;

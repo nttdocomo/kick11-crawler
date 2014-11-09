@@ -1,7 +1,7 @@
 /**
  * @author nttdocomo
  */
-var http = require("http"), fs = require('fs'),moment = require('moment'),path = require('path'),connection = require("./db"), mysql = require('mysql'), mkdirs = require("./mkdirs");
+var http = require("http"), fs = require('fs'),moment = require('moment'),path = require('path'),connection = require("../../db"), mysql = require('mysql'), mkdirs = require("./mkdirs");
 var get_or_read_file = function(request_url,callback){
 	var options = {
 		hostname:'www.transfermarkt.co.uk',
