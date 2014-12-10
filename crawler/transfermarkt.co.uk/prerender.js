@@ -31,7 +31,7 @@ var http = require("http");
 
 var options = {
     host: 'www.kick11.us',
-    path: '/?_escaped_fragment_=team/4/'
+    path: '/?_escaped_fragment_='
 };
 
 http.get(options, function (http_res) {
