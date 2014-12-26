@@ -53,7 +53,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 	console.log('fetchclienterror')
 	//crawler.queueURL(host + queueItem.path);
 });*/
-excute("CREATE TABLE IF NOT EXISTS `fm_player` (\
+excute("CREATE TABLE IF NOT EXISTS `fm_player_player` (\
 	`id` int(10) unsigned NOT NULL AUTO_INCREMENT,\
 	`fm_player_id` int(10) unsigned NOT NULL,\
 	`player_id` int(10) unsigned NOT NULL,\
@@ -80,6 +80,6 @@ fs.readFile('./22222.csv',function(err,data){
 				}
 			});
 	    })
-		excute(mysql.format("INSERT INTO `fm_player`(fm_player_id,player_id) VALUES ?",[inserts]));
+		excute(mysql.format("INSERT INTO `fm_player_player`(fm_player_id,player_id) VALUES ?",[inserts]));
 	})
 })
