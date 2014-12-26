@@ -2,7 +2,7 @@
  * @author nttdocomo
  */
 var fs = require('fs'),mysql = require('mysql'),
-excute  = require('../transfermarkt.co.uk/excute'),StringDecoder = require('string_decoder').StringDecoder;
+excute  = require('../../excute'),StringDecoder = require('string_decoder').StringDecoder;
 //csv_name = process.argv[2];
 excute("CREATE TABLE IF NOT EXISTS `fm_player` (\
 	`id` int(10) unsigned NOT NULL,\
@@ -18,10 +18,12 @@ fs.readFile('../../data/fm/2015.csv',function(err,data){
 		if(i>0 && line){
 			var result = line.split(/\;/),
 			player_name = result[0].replace(/"/g,'').replace(/(\w+?),\s(\w+)/g,'$2 $1'),
-			date_of_birth = result[2].replace(/"/g,'').replace(/(\d{2})\.\d{2}\.\d{4}/g,'$3-$2-$1');
+			date_of_birth = result[2].replace(/"/g,'').replace(/(\d{2})\.(\d{2})\.(\d{4})/,'$3-$2-$1');
 			id = result[3].replace(/"/g,'');
 			players.push([id,player_name,date_of_birth]);
 		}
 	});
-	excute(mysql.format("INSERT INTO `fm_player`(id,name,date_of_birth) VALUES ?",[players]));
+	excute(mysql.format("INSERT INTO `fm_player`(id,name,date_of_birth) VALUES ?",[players]),function(){
+		console.log('complete!');
+	});
 })
