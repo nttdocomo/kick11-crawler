@@ -1,8 +1,11 @@
 /**
  * @author nttdocomo
  */
-var trim = require('../utils').trim,connection = require("../db"), mysql = require('mysql'),Player = require('../player/model'),moment = require('moment'),pool  = require('../pool'),
-excute  = require('../excute'),
+var trim = require('../utils').trim,
+mysql = require('mysql'),
+moment = require('moment'),
+Player = require('../player/model'),
+excute  = require('../../../excute'),
 Team = function($){
 	this.$ = $;
 	this.is_club_team = !$('#verknupftevereine > img').attr('class');
@@ -16,7 +19,7 @@ Team.prototype = {
 	is_club:function(){
 		return this.is_club_team && this.team_id == this.club_id;
 	},
-	save_player:function(pool){
+	save_player:function(){
 		var $=this.$;
 		$('#yw1 > table > tbody > tr').each(function(index,el){
 			var $el = $(el),
@@ -33,12 +36,7 @@ Team.prototype = {
 			}
 			if(id){
 				var sql = mysql.format("INSERT INTO transfermarket_player (id,full_name,date_of_birth,position,nation_id,profile_uri) SELECT ? FROM dual WHERE NOT EXISTS(SELECT id,full_name,date_of_birth,position,nation_id,profile_uri FROM transfermarket_player WHERE id = ?)", [[id,name,date_of_birth,position,nation_id,url],id]);
-				pool.getConnection(function(err, connection) {
-					connection.query(sql, function(err) {
-					    if (err) throw err;
-					    connection.release();
-					});
-				});
+				excute(sql);
 			}
 		});
 	},
@@ -103,16 +101,11 @@ Team.prototype = {
 			connection.release();
 		}
 	},
-	save_team_player:function(pool){
+	save_team_player:function(){
 		var teamplayers = this.get_team_player();
 		teamplayers.forEach(function(teamplayer){
 			var sql = mysql.format("INSERT INTO transfermarket_team_player (team_id, player_id) SELECT ? FROM dual WHERE NOT EXISTS(SELECT team_id,player_id FROM transfermarket_team_player WHERE team_id = ? AND player_id = ?)", [teamplayer,teamplayer[0],teamplayer[1]]);
-			pool.getConnection(function(err, connection) {
-				connection.query(sql, function(err) {
-				    if (err) throw err;
-				    connection.release();
-				});
-			});
+			excute(sql);
 		});
 	},
 	update_team_name:function(){
