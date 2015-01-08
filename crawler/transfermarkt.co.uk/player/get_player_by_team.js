@@ -13,7 +13,7 @@ excute  = require('../../../excute'),
 Crawler = require("simplecrawler"),
 host = 'http://www.transfermarkt.co.uk',
 crawler = new Crawler('www.transfermarkt.co.uk');
-crawler.maxConcurrency = 1;
+crawler.maxConcurrency = 2;
 crawler.interval = 500;
 crawler.timeout = 5000;
 crawler.discoverResources = false;
@@ -145,8 +145,6 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 		})
 		console.log('Complete update the transfer of ' + queueItem.path.replace(/^\/\S+\/transfers\/spieler\/(\d{1,9})$/,'$1'));
     };
-}).on('complete',function(){
-	console.log('complete');
 }).on('fetcherror',function(queueItem, response){
 	crawler.queueURL(host + queueItem.path);
 }).on('fetchtimeout',function(queueItem, response){
@@ -154,11 +152,18 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 }).on('fetchclienterror',function(queueItem, response){
 	crawler.queueURL(host + queueItem.path);
 });
-excute("SELECT profile_uri FROM transfermarket_team WHERE team_ref_id IN (SELECT team_id FROM events_teams)", function(rows) {
-    for (var i = rows.length - 1; i >= 0; i--) {
-	    var path = rows[i].profile_uri;
-	    path = path.replace(/(^\/\S+?\/startseite\/verein\/\d+?)(\/saison_id\/\d{4})?$/,'$1')
-    	crawler.queueURL(host + path);
-    };
-    crawler.start();
-});
+var get_player_by_team = function(cb){
+	crawler.on('complete',function(){
+		console.log('complete');
+		cb();
+	});
+	excute("SELECT profile_uri FROM transfermarket_team WHERE team_ref_id IN (SELECT team_id FROM events_teams)", function(rows) {
+	    for (var i = rows.length - 1; i >= 0; i--) {
+		    var path = rows[i].profile_uri;
+		    path = path.replace(/(^\/\S+?\/startseite\/verein\/\d+?)(\/saison_id\/\d{4})?$/,'$1')
+	    	crawler.queueURL(host + path);
+	    };
+	    crawler.start();
+	});
+}
+module.exports.get_player_by_team = get_player_by_team;

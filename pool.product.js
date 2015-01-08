@@ -3,7 +3,7 @@
  */
 var mysql = require('mysql');
 module.exports = mysql.createPool({
-	connectionLimit : 1,
+	connectionLimit : 2,
 	host : 'localhost',
 	user : 'root',
 	database : 'kickeleven',
