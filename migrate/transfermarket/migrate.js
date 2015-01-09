@@ -1,4 +1,7 @@
-var excute = require('../../excute'),mysql = require('mysql'),player = require('./player'),club = require('./club'),team = require('./team'),transfer = require('./transfer'),
+var player = require('./player'),
+club = require('./club'),
+team = require('./team'),
+transfer = require('./transfer'),
 migrate = function(){
 	player.migrate(function(){
 		club.migrate(function(){

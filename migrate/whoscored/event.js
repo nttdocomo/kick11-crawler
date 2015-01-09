@@ -1,5 +1,5 @@
-var excute = require('../../excute'),asyncLoop = require('../../asyncLoop'),mysql = require('mysql'),
-get_team = function(match,cb){
+var excute = require('../../excute'),asyncLoop = require('../../asyncLoop'),mysql = require('mysql'),_=require('underscore'),
+get_team = function(whoscored_match_event,cb){
 	excute(mysql.format('SELECT team_id FROM whoscored_team_team WHERE whoscored_team_id = ?',[[whoscored_match_event.team_id]]),function(team){
 		if(team.length){
 			cb({
@@ -42,26 +42,14 @@ get_event_id_for_goal_event = function(event_id,cb){
 	excute(mysql.format('SELECT event_id FROM `whoscored_event_event` WHERE whoscored_event_id = ? AND event_id NOT IN (SELECT event_id FROM `goal_events`)',[event_id]),cb)
 },
 insert_goal_event = function(match_events_id,whoscored_match_event_id,cb){
-	console.log('start insert_goal_event');
 	excute(mysql.format('SELECT * FROM `whoscored_goals` WHERE event_id = ?',[whoscored_match_event_id]),function(rows){
 		if(rows.length){
 			var row = rows[0];
 			excute(mysql.format('INSERT INTO `goal_events` SET ?',{
-				event_id:match_events_id
-				penalty = row.penalty;
-				owngoal = row.owngoal;
+				event_id:match_events_id,
+				penalty : row.penalty,
+				owngoal : row.owngoal,
 			}),cb)
-			/*rows.forEach(function(row){
-				get_event_id_for_goal_event(row.event_id,function(results){
-					var goal_event = {};
-					if(results.length){
-						goal_event.event_id = results[0].event_id;
-						goal_event.penalty = row.penalty;
-						goal_event.owngoal = row.owngoal;
-						excute(mysql.format('INSERT INTO `goal_events` SET ?',goal_event))
-					}
-				})
-			})*/
 			
 		}
 	})
@@ -115,6 +103,8 @@ migrate = function(cb){
 								loop.next()
 							})
 						})
+					} else {
+						loop.next()
 					}
 				})
 			}, function(){

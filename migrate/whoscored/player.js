@@ -10,7 +10,7 @@ migrate = function(cb){
 				var whoscored_player = players[loop.iteration()];
 				get_player(whoscored_player,function(player){
 					if(player.length){
-						var player = player[0];
+						player = player[0];
 						excute(mysql.format('INSERT INTO `whoscored_player_player` SET ?',{
 							whoscored_player_id:whoscored_player.id,
 							player_id:player.id

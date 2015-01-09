@@ -4,7 +4,7 @@ get_team = function(team,cb){
 },
 migrate = function(cb){
 	console.log('start to insert whoscored_team_team');
-	excute('SELECT * FROM `whoscored_team` WHERE id NOT IN (SELECT whoscored_team_id FROM `whoscored_team_team`)',function(teams){
+	excute('SELECT * FROM `whoscored_teams` WHERE id NOT IN (SELECT whoscored_team_id FROM `whoscored_team_team`)',function(teams){
 		if(teams.length){
 			asyncLoop(teams.length, function(loop){
 				var whoscored_team = teams[loop.iteration()];
