@@ -8,7 +8,7 @@ migrate = require('../../../migrate/transfermarket/migrate').migrate;
 host = 'http://www.transfermarkt.co.uk';
 require('../array');
 crawler = new Crawler('www.transfermarkt.co.uk');
-crawler.maxConcurrency = 2;
+crawler.maxConcurrency = 3;
 crawler.interval = 300;
 crawler.timeout = 5000;
 crawler.discoverResources = false;
@@ -23,8 +23,16 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
     var decoder = new StringDecoder('utf8'),
     $ = cheerio.load(decoder.write(responseBuffer)),
     transfer;
-    if(/^\/statistik\/letztetransfers(\?\S+?){0,1}$/.test(queueItem.path)){
+    ///transfers/letztetransfers/statistik
+    if(/^\/transfers\/letztetransfers\/statistik(\?\S+?){0,1}$/.test(queueItem.path) || /^\/statistik\/letztetransfers(\?\S+?){0,1}$/.test(queueItem.path)){
+		console.log(queueItem.path)
     	var $ = cheerio.load(decoder.write(responseBuffer));
+    	if(queueItem.path == '/transfers/letztetransfers/statistik'){
+    		$('#yw2 > .page:not(:nth-child(3)) > a').each(function(i,el){
+    			var $el = $(el);
+    			crawler.queueURL(host + $el.attr('href'));
+    		})
+    	}
     	$('a[class="spielprofil_tooltip"]').each(function(index,el){
     		var $el = $(el),id = $el.attr('id'),profile_uri = $el.attr('href');
     		if(id){
@@ -184,6 +192,14 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 }).on('fetchclienterror',function(queueItem, response){
 	crawler.queueURL(host + queueItem.path);
 });
-crawler.queueURL(host + '/statistik/letztetransfers');
-crawler.queueURL(host + '/statistik/letztetransfers?page=2');
+crawler.queueURL(host + '/transfers/letztetransfers/statistik');
+/*crawler.queueURL(host + '/transfers/letztetransfers/statistik?page=2');
+crawler.queueURL(host + '/transfers/letztetransfers/statistik?page=3');
+crawler.queueURL(host + '/transfers/letztetransfers/statistik?page=4');
+crawler.queueURL(host + '/transfers/letztetransfers/statistik?page=5');
+crawler.queueURL(host + '/transfers/letztetransfers/statistik?page=6');
+crawler.queueURL(host + '/transfers/letztetransfers/statistik?page=7');
+crawler.queueURL(host + '/transfers/letztetransfers/statistik?page=8');
+crawler.queueURL(host + '/transfers/letztetransfers/statistik?page=9');
+crawler.queueURL(host + '/transfers/letztetransfers/statistik?page=10');*/
 crawler.start();

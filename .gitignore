@@ -45,9 +45,5 @@ static/tmp
 bower_components
 
 # Files to ignore
-urls.py
 crawler/transfermarkt.co.uk/pool.js
 pool.js
-static/js/config.js
-static/js/admin/config.js
-templates/index.html

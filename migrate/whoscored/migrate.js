@@ -65,7 +65,7 @@ insert_whoscored_event_event = function(match_events_id,whoscored_match_event_id
 },
 get_event_id_for_goal_event = function(event_id,callback){
 	excute(mysql.format('SELECT event_id FROM `whoscored_event_event` WHERE whoscored_event_id = ? AND event_id NOT IN (SELECT event_id FROM `goal_events`)',[event_id]),callback)
-}
+},
 insert_goal_event = function(){
 	console.log('insert_goal_event');
 	excute(mysql.format('SELECT * FROM `whoscored_goals`'),function(rows){
