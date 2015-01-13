@@ -3,6 +3,7 @@
  */
 var http = require("http"), excute = require('../../excute'),StringDecoder = require('string_decoder').StringDecoder,mysql = require('mysql'),moment = require('moment'),moment_tz = require('moment-timezone'),
 Crawler = require("simplecrawler"),get_matches = require('./get_matches'),get_goals = require('./get_goals'),get_stages = require('./get_stages'),
+migrate = require('../../migrate/whoscored/migrate').migrate,
 input_date = process.argv[2],
 host = 'http://www.whoscored.com',
 crawler = new Crawler('www.whoscored.com');
@@ -37,6 +38,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 }).on('complete',function(){
     console.log(crawler.queue.length)
     console.log('complete')
+    migrate()
 }).on('fetcherror',function(queueItem, response){
     console.log('fetcherror')
 }).on('fetchtimeout',function(queueItem, response){
@@ -55,9 +57,26 @@ if(input_date){
             crawler.queueURL(host + '/matchesfeed/?d=' + moment.utc(i).format('YYYYMMDD'));
         };
     }
+    crawler.start();
 } else {
-    crawler.queueURL(host + '/matchesfeed/?d=' + moment.utc().format('YYYYMMDD'));
+    excute('SELECT play_at FROM `whoscored_matches` ORDER BY `play_at` DESC LIMIT 1',function(matches){
+        if(matches.length){
+            var match = matches[0],
+            play_at = match.play_at;
+            var now = moment(),
+            diff = now.diff(moment(play_at).add(1,'days'), 'days');
+            console.log(now.format('YYYYMMDD'))
+            console.log(moment(play_at).add(1,'days').format('YYYYMMDD'))
+            for (var i = diff - 1; i >= 0; i--) {
+                var begin = moment(play_at).add(1,'days');
+                var date = begin.add(i,'days').format('YYYYMMDD')
+                console.log(date);
+                crawler.queueURL(host + '/matchesfeed/?d=' + date);
+            };
+        }
+        crawler.start();
+    })
+    //crawler.queueURL(host + '/matchesfeed/?d=' + moment.utc().format('YYYYMMDD'));
 }
-crawler.start();
 //http://www.whoscored.com/matchesfeed/?d=20141021
 //http://www.whoscored.com/tournamentsfeed/9155/Fixtures/?d=2014W42&isAggregate=false
