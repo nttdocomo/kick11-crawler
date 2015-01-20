@@ -1,10 +1,7 @@
 /**
  * @author nttdocomo
  */
-var excute = require('../../excute'),StringDecoder = require('string_decoder').StringDecoder,mysql = require('mysql'),moment = require('moment'),moment_tz = require('moment-timezone'),
-moment = require('moment'),
-input_match_id = process.argv[2],
-host = 'http://www.whoscored.com';
+var excute = require('../../excute'),StringDecoder = require('string_decoder').StringDecoder,mysql = require('mysql'),moment = require('moment'),moment_tz = require('moment-timezone');
 module.exports = function(content, match_id){
     var matchCentre2 = JSON.parse(content);
     if(matchCentre2 !== null){
@@ -13,15 +10,6 @@ module.exports = function(content, match_id){
         goals_events = events.filter(function(event){
             return event.type.value == 16;
         })
-        for (id in playerIdNameDictionary) {
-            excute(mysql.format('SELECT 1 FROM whoscored_player WHERE id = ? LIMIT 1',[id]),function(rows){
-                if(rows.length){
-                    excute(mysql.format('UPDATE whoscored_player SET ? WHERE id = ?',[{name:playerIdNameDictionary[id]},id]))
-                } else {
-                    excute(mysql.format('INSERT INTO whoscored_player (id,name) SELECT ? FROM dual WHERE NOT EXISTS(SELECT id FROM whoscored_player WHERE id = ?)',[[id,playerIdNameDictionary[id]],id]))
-                }
-            });
-        };
         goals_events.forEach(function(event){
             var eventId = event.id,
             minute = event.minute,

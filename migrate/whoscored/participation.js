@@ -58,30 +58,16 @@ preExcuteFunc = [get_match,get_team,get_player],
 afterInsertMatchEventsCalls = [insert_whoscored_event_event,insert_goal_event],
 migrate = function(cb){
 	console.log('start create tables');
-	excute("CREATE TABLE IF NOT EXISTS `match_events` (\
-`id` int(10) unsigned NOT NULL AUTO_INCREMENT,\
-  `player_id` int(10) unsigned NOT NULL,\
-  `match_id` int(10) unsigned NOT NULL,\
-  `team_id` int(10) unsigned NOT NULL,\
-  `minute` tinyint(3) unsigned NOT NULL,\
-  `offset` tinyint(2) unsigned NOT NULL DEFAULT '0',\
-  PRIMARY KEY (`id`)\
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
-	excute("CREATE TABLE IF NOT EXISTS `whoscored_event_event` (\
-`id` int(10) unsigned NOT NULL AUTO_INCREMENT,\
-  `whoscored_event_id` int(10) unsigned NOT NULL,\
-  `event_id` int(10) unsigned NOT NULL,\
-  PRIMARY KEY (`id`)\
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
-
-	excute('CREATE TABLE IF NOT EXISTS `whoscored_event_event` (`id` int(10) unsigned NOT NULL AUTO_INCREMENT,`whoscored_event_id` int(10) unsigned NOT NULL,`event_id` int(10) unsigned NOT NULL,PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;');
-	excute("CREATE TABLE IF NOT EXISTS `goal_events` (\
-`id` int(10) unsigned NOT NULL AUTO_INCREMENT,\
-  `event_id` int(10) unsigned NOT NULL,\
-  `penalty` tinyint(1) NOT NULL DEFAULT '0',\
-  `owngoal` tinyint(1) NOT NULL DEFAULT '0',\
-  PRIMARY KEY (`id`)\
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
+	excute("CREATE TABLE IF NOT EXISTS `participation` (\
+		`id` int(10) unsigned NOT NULL AUTO_INCREMENT,\
+		`event_id` int(10) unsigned NOT NULL,\
+		`apps` tinyint(2) unsigned NOT NULL,\
+		`goals` tinyint(2) unsigned NOT NULL,\
+		`assists` tinyint(2) unsigned NOT NULL,\
+		`yellow_card` tinyint(2) unsigned NOT NULL DEFAULT '0',\
+		`red_card` tinyint(2) unsigned NOT NULL DEFAULT '0',\
+		PRIMARY KEY (`id`)\
+	) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
 	console.log('start to insert match_event');
 	excute('SELECT * FROM `whoscored_match_events` WHERE id NOT IN (SELECT whoscored_event_id FROM `whoscored_event_event`) AND match_id IN (SELECT whoscored_match_id FROM `whoscored_match_match`)',function(whoscored_match_events){
 		if(whoscored_match_events.length){

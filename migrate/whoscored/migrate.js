@@ -7,7 +7,9 @@ migrate = function(){
 	player.migrate(function(){
 		team.migrate(function(){
 			match.migrate(function(){
-				event.migrate(function(){})
+				event.migrate(function(){
+					
+				})
 			})
 		})
 	});
