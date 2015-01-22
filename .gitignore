@@ -41,6 +41,8 @@ validation-report.json
 
 # Folders to ignore
 node_modules
+query
+test
 static/tmp
 bower_components
 

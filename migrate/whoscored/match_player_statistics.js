@@ -22,7 +22,7 @@ init_func = [function(cb){
         cb()
 	});
 },function(cb){
-	excute(mysql.format('SELECT ? FROM `match_player_statistics`',[columns]),function(rows){
+	excute(mysql.format('SELECT ? FROM `match_player_statistics`',[columns]).replace(/'/g,''),function(rows){
 		match_player_statistics = rows;
         cb()
 	});
@@ -54,6 +54,7 @@ migrate = function(){
 		console.log('初始化结束');
 		asyncLoop(whoscored_match_player_statistics.length,function(loop){
 			var whoscored_match_player_statistic = whoscored_match_player_statistics[loop.iteration()],
+			exist_match_player_statistic,
 			player = _.find(player_player,function(player){
 				return player.whoscored_player_id == whoscored_match_player_statistic.playerId;
 			}),
