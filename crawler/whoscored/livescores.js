@@ -42,7 +42,7 @@ isInItems = function(items){
     }
 },
 crawler = new Crawler('www.whoscored.com');
-crawler.maxConcurrency = 2;
+crawler.maxConcurrency = 4;
 crawler.interval = 500;
 crawler.timeout = 15000;
 crawler.discoverResources = false;

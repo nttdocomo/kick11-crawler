@@ -10,7 +10,7 @@ statistics = [],
 keys = [],
 fields = {},
 crawler = new Crawler('www.whoscored.com');
-crawler.maxConcurrency = 2;
+crawler.maxConcurrency = 4;
 crawler.interval = 500;
 crawler.timeout = 15000;
 crawler.discoverResources = false;
@@ -51,7 +51,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 						alter_sql.push('ALTER TABLE whoscored_match_player_statistics ADD '+column+' varchar(30) DEFAULT NULL')
 					}
 					if(typeof(playerTableStat[column]) == 'number'){
-						alter_sql.push('ALTER TABLE whoscored_match_player_statistics ADD '+column+' smallint DEFAULT 0')
+						alter_sql.push('ALTER TABLE whoscored_match_player_statistics ADD '+column+' smallint UNSIGNED DEFAULT 0')
 					}
 					if(typeof(playerTableStat[column]) == 'boolean'){
 						alter_sql.push('ALTER TABLE whoscored_match_player_statistics ADD '+column+' boolean DEFAULT 0')
