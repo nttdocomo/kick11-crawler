@@ -44,7 +44,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 }).on('fetchclienterror',function(queueItem, errorData){
     console.log('fetchclienterror')
 });
-excute('SELECT id FROM `whoscored_player`',function(rows){
+excute('SELECT id FROM `whoscored_player` WHERE date_of_birth IS NULL OR height IS NULL OR weight IS NULL',function(rows){
     rows.forEach(function(row){
         crawler.queueURL(host + '/Players/'+row.id)
     })
