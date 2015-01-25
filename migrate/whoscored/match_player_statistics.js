@@ -46,10 +46,10 @@ init_func = [function(cb){
 migrate = function(){
 	console.log('开始复制比赛统计');
 	asyncLoop(init_func.length,function(loop){
-	    var func = init_func[loop.iteration()];
+		var func = init_func[loop.iteration()];
 	    func(function(){
-	        loop.next();
-	    })
+	    	setImmediate(loop.next)
+	    });
 	},function(){
 		console.log('初始化结束');
 		asyncLoop(whoscored_match_player_statistics.length,function(loop){
@@ -63,16 +63,7 @@ migrate = function(){
 			}),
 			match = _.find(match_match,function(match){
 				return match.whoscored_match_id == whoscored_match_player_statistic.matchId;
-			}),player_id,team_id,match_id;
-			/*if(player){
-				console.log('get player')
-			}
-			if(team){
-				console.log('get team')
-			}
-			if(match){
-				console.log('get match')
-			}*/
+			});
 			if(player && team && match){
 				player_id = player.player_id;
 				team_id = team.team_id;
@@ -85,18 +76,18 @@ migrate = function(){
 					whoscored_match_player_statistic.teamId = team_id;
 					whoscored_match_player_statistic.matchId = match_id;
 					excute(mysql.format('INSERT INTO `match_player_statistics` SET ?',whoscored_match_player_statistic),function(result){
-						loop.next();
+						setImmediate(loop.next)
 					});
 				} else {
-					loop.next();
+					setImmediate(loop.next)
 				}
 			} else {
-				loop.next();
+				setImmediate(loop.next)
 			}
 		},function(){
 			console.log('复制比赛统计完毕');
-		})
-	})
+		});
+	});
 };
 //module.exports.migrate = migrate;
 migrate()
