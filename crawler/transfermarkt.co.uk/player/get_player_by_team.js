@@ -162,4 +162,3 @@ excute("SELECT profile_uri FROM transfermarket_team WHERE team_ref_id IN (SELECT
     };
     crawler.start();
 });
-module.exports.get_player_by_team = get_player_by_team;
