@@ -1,31 +1,49 @@
 /**
  * @author nttdocomo
  */
-var http = require("http"),
-cheerio = require('cheerio'),
-mysql = require('mysql'),
-moment = require('moment'),
-StringDecoder = require('string_decoder').StringDecoder,
-connection = require("../../../db"),
-Team = require('../team/model'),
-Player = require('./model'),
-excute  = require('../../../excute'),
-Crawler = require("simplecrawler"),
-host = 'http://www.transfermarkt.co.uk',
+var http = require("http"), cheerio = require('cheerio'),StringDecoder = require('string_decoder').StringDecoder,mysql = require('mysql'),moment = require('moment'),
+Transfer = require('./model'),Player = require('../player/model'),Team = require('../team/model'),Crawler = require("simplecrawler"),
+excute = require('../../../excute'),
+update_team_id = process.argv[2],
+migrate = require('../../../migrate/transfermarket/migrate').migrate,
+host = 'http://www.transfermarkt.co.uk';
+require('../array');
 crawler = new Crawler('www.transfermarkt.co.uk');
-crawler.maxConcurrency = 2;
-crawler.interval = 500;
+crawler.maxConcurrency = 3;
+crawler.interval = 300;
 crawler.timeout = 5000;
 crawler.discoverResources = false;
 crawler.customHeaders = {
-	Cookie:'POPUPCHECK=1419841166132; __utma=1.692075973.1419751813.1419751813.1419754691.2; __utmb=1.3.10.1419754691; __utmc=1; __utmz=1.1419751813.1.1.utmcsr=(direct)|utmccn=(direct)|utmcmd=(none); TMSESSID=j0r48dldbo63rq7ohalpne9486; 22ea10c3df12eecbacbf5e855c1fc2b3=a8929849dfc1e9967b757427b43d5fdba30c368fa%3A4%3A%7Bi%3A0%3Bs%3A6%3A%22561326%22%3Bi%3A1%3Bs%3A9%3A%22nttdocomo%22%3Bi%3A2%3Bi%3A31536000%3Bi%3A3%3Ba%3A0%3A%7B%7D%7D; _mcreg=1'
-};
+	Cookie:'22ea10c3df12eecbacbf5e855c1fc2b3=a8929849dfc1e9967b757427b43d5fdba30c368fa%3A4%3A%7Bi%3A0%3Bs%3A6%3A%22561326%22%3Bi%3A1%3Bs%3A9%3A%22nttdocomo%22%3Bi%3A2%3Bi%3A31536000%3Bi%3A3%3Ba%3A0%3A%7B%7D%7D; TMSESSID=jm7m7atphgpl1tov46dfo423d2; _mcreg=1; POPUPCHECK=1420683410764; __utmt=1; __utma=1.692075973.1419751813.1420597004.1420599060.7; __utmb=1.57.7.1420601652807; __utmc=1; __utmz=1.1419751813.1.1.utmcsr=(direct)|utmccn=(direct)|utmcmd=(none)'
+}
 crawler.userAgent = 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/38.0.2125.111 Safari/537.36';
-var transfers = [],
+var players = [],
+transfers = [],
 update_transfers = [];
 crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
-    var decoder = new StringDecoder('utf8'),sql,
-    $ = cheerio.load(decoder.write(responseBuffer));
+    var decoder = new StringDecoder('utf8'),
+    $ = cheerio.load(decoder.write(responseBuffer)),
+    transfer;
+    ///transfers/letztetransfers/statistik
+    if(/^\/transfers\/letztetransfers\/statistik(\?\S+?){0,1}$/.test(queueItem.path) || /^\/statistik\/letztetransfers(\?\S+?){0,1}$/.test(queueItem.path)){
+		console.log(queueItem.path)
+    	var $ = cheerio.load(decoder.write(responseBuffer));
+    	if(queueItem.path == '/transfers/letztetransfers/statistik'){
+    		$('#yw2 > .page:not(:nth-child(3)) > a').each(function(i,el){
+    			var $el = $(el);
+    			crawler.queueURL(host + $el.attr('href'));
+    		})
+    	}
+    	$('a[class="spielprofil_tooltip"]').each(function(index,el){
+    		var $el = $(el),id = $el.attr('id'),profile_uri = $el.attr('href');
+    		if(id){
+    			players.push({
+    				id:id,
+    				profile_uri:profile_uri
+    			});
+    		}
+    	})
+    };
     if(/^\/\S+?\/startseite\/verein\/\d+?(\/saison_id\/\d{4})?$/i.test(queueItem.path)){
     	var team_id = queueItem.path.replace(/^\/\S+?\/startseite\/verein\/(\d+?)(\/\S+)?$/,'$1'),team = new Team($);
     	excute(mysql.format("SELECT 1 FROM `transfermarket_team` WHERE id = ? AND team_ref_id IN (SELECT team_id FROM `events_teams`) LIMIT 1", [team_id]),function(result){
@@ -62,7 +80,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 	    path = path.replace('profil','korrektur');
     	crawler.queueURL(host + path);
     }
-    if(/^\/\S+\/korrektur\/spieler\/\d{1,9}$/.test(queueItem.path)){
+    if(/^\/\S+\/korrektur\/spieler\/\d{1,6}$/.test(queueItem.path)){
     	var $ = cheerio.load(decoder.write(responseBuffer));
 		transfer_table = $('#transfers'),transfer_tbody = transfer_table.find('>tbody'),transfers_id = transfer_tbody.find(' > input[id$="trans_id"]');
 		transfers_id.each(function(index,el){
@@ -102,7 +120,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 	    var path = queueItem.path.replace('korrektur','transfers');
     	crawler.queueURL(host + path);
     };
-    if(/^\/\S+\/transfers\/spieler\/\d{1,9}$/.test(queueItem.path)){
+    if(/^\/\S+\/transfers\/spieler\/\d{1,6}$/.test(queueItem.path)){
     	var $ = cheerio.load(decoder.write(responseBuffer)),
 		transfer_table = $('.responsive-table > table'),transfer_tbody = transfer_table.find('>tbody'),transfers_tr = transfer_tbody.find(' > tr');
 		transfers_tr.each(function(index,el){
@@ -144,9 +162,30 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 			};
 		})
 		console.log('Complete update the transfer of ' + queueItem.path.replace(/^\/\S+\/transfers\/spieler\/(\d{1,9})$/,'$1'));
-    };
+    }
 }).on('complete',function(){
-	console.log('complete fetch');
+	console.log('complete');
+	if(players.length){
+		var sql = mysql.format("SELECT id, profile_uri FROM transfermarket_player WHERE id IN ?", [[players.map(function(element){
+			return element.id
+		})]]);
+		excute(sql, function(rows) {
+		    players.forEach(function(player){
+		    	var index = rows.findIndex(function(element, index, array){
+		    		return element.id == player.id
+		    	});
+		    	if(index > -1){
+		    		crawler.queueURL(host + player.profile_uri.replace('profil','korrektur'));
+		    	} else {
+		    		crawler.queueURL(host + player.profile_uri);
+		    	}
+		    })
+		    crawler.start();
+		    players = [];
+		});
+	} else {
+		migrate()
+	}
 }).on('fetcherror',function(queueItem, response){
 	crawler.queueURL(host + queueItem.path);
 }).on('fetchtimeout',function(queueItem, response){
@@ -154,12 +193,29 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 }).on('fetchclienterror',function(queueItem, response){
 	crawler.queueURL(host + queueItem.path);
 });
-excute("SELECT profile_uri FROM transfermarket_team WHERE team_ref_id IN (SELECT team_id FROM events_teams)", function(rows) {
-    for (var i = rows.length - 1; i >= 0; i--) {
-	    var path = rows[i].profile_uri;
-	    path = path.replace(/(^\/\S+?\/startseite\/verein\/\d+?)(\/saison_id\/\d{4})?$/,'$1')
-    	crawler.queueURL(host + path);
-    };
-    crawler.start();
-});
-module.exports.get_player_by_team = get_player_by_team;
+if(update_player_id){
+	excute("SELECT profile_uri FROM transfermarket_team WHERE id = " + update_team_id,function(result){
+		if(result.length){
+			crawler.queueURL(host + result[0].profile_uri.replace('profil','korrektur'));
+			crawler.start();
+		}
+	});
+} else {
+	excute("SELECT DISTINCT(transfermarket_player.profile_uri) FROM (SELECT transfer_ref_id FROM `transfermarket_transfer` WHERE player_id = 0)`no_player_transfers` JOIN `transfer` ON transfer.id = no_player_transfers.transfer_ref_id JOIN `player` ON transfer.player_id = player.id JOIN `transfermarket_player` ON transfermarket_player.player_ref_id = player.id",function(result){
+		for (var i = result.length - 1; i >= 0; i--) {
+		    var path = result[i].profile_uri;
+		    path = path.replace('profil','korrektur');
+	    	crawler.queueURL(host + path);
+	    };
+	    crawler.start();
+	});
+	/*excute("SELECT profile_uri FROM transfermarket_player",function(result){
+		for (var i = result.length - 1; i >= 0; i--) {
+		    var path = result[i].profile_uri;
+		    path = path.replace('profil','korrektur');
+	    	crawler.queueURL(host + path);
+	    };
+	    crawler.start();
+	});*/
+}
+crawler.start();

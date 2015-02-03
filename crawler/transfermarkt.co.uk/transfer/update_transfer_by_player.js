@@ -5,7 +5,7 @@ var http = require("http"), cheerio = require('cheerio'),StringDecoder = require
 Transfer = require('./model'),Crawler = require("simplecrawler"),
 Team = require('../team/model'),
 pool  = require('../pool'),
-host = 'http://www.transfermarkt.co.uk';
+host = 'http://www.transfermarkt.co.uk',
 crawler = new Crawler('www.transfermarkt.co.uk');
 crawler.maxConcurrency = 10;
 crawler.interval = 300;

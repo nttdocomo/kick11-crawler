@@ -9,6 +9,7 @@ columns = [],
 statistics = [],
 keys = [],
 fields = {},
+whoscored_players = [],
 crawler = new Crawler('www.whoscored.com');
 crawler.maxConcurrency = 4;
 crawler.interval = 500;
@@ -44,6 +45,12 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 						unknow_columns.push(i)
 					}
 				}
+			}
+			if(whoscored_players.indexOf(playerTableStat.playerId) < 0){
+				excute(mysql.format('INSERT INTO whoscored_player SET ?',{
+	                id:playerTableStat.playerId,
+	                name:playerTableStat.name,
+	            }))
 			}
 			if(unknow_columns.length){
 				_.each(unknow_columns,function(column){
@@ -186,6 +193,13 @@ var init_func = [function(cb){
 },function(cb){
 	excute('SELECT playerId,teamId,matchId FROM whoscored_match_player_statistics',function(result){
 		statistics = result;
+		cb()
+	});
+},function(cb){
+	excute('SELECT id FROM whoscored_player',function(result){
+		whoscored_players = _.map(result,function(player){
+			return player.id;
+		})
 		cb()
 	});
 }];

@@ -3,6 +3,8 @@
  */
 var http = require("http"), cheerio = require('cheerio'),StringDecoder = require('string_decoder').StringDecoder,mysql = require('mysql'),moment = require('moment'),moment_tz = require('moment-timezone'),Crawler = require("simplecrawler"),
 pool  = require('../../../pool'),trim = require('../utils').trim,
+excute = require('../../../excute'),
+asyncLoop = require('../../../asyncLoop'),
 host = 'http://www.transfermarkt.co.uk',
 crawler = new Crawler('www.transfermarkt.co.uk');
 crawler.maxConcurrency = 10;
@@ -23,117 +25,74 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
     	competition_url = $('#submenue > li').eq(1).find('a').attr('href'),
     	competition_id = competition_url.replace(/^\/\S+?\/([A-Z\d]{2,4})(\/\S+?)?(\/saison_id\/\d{4})?$/,'$1');
 		var sql = mysql.format("SELECT events.id AS id FROM `events` JOIN (SELECT competition.id AS competitions_id FROM `competition` JOIN (SELECT * FROM `transfermarket_competition` WHERE competition_id = ?)`transfermarket_competition` ON transfermarket_competition.competition_name = competition.name)`competition` ON events.competition_id = competition.competitions_id JOIN (SELECT seasons.id AS seasons_id FROM `seasons` WHERE name = ?)`seasons` ON events.season_id = seasons_id", [competition_id,year + season.replace(/\d{2}(\/\d{2})/,'$1')]);
-		pool.getConnection(function(err, connection) {
-			connection.query(sql, function(err,rows) {
-			    if (err) throw err;
-			    connection.release();
-			    var event_id = rows[0].id;
-				tables.each(function(index,el){
-					var $el = $(el),
-					matchday = $el.find('.table-header').text(),
-					data_array = [],
-					play_at,
-					table = $el.find('> table'),
-					trow = table.find('> tbody > tr');
-					getRound(event_id,matchday,index+1,(function(tr){
-						return function(matchday_id){
-							var date,
-							time;
-							tr.each(function(i,row){
-								row = $(row);
-								var td = row.children(),
-								match_date = td.eq(0).find('a').text(),
-								match_time = trim(td.eq(1).text()),
-								team_1_id = td.eq(2).find('a').attr('href').replace(/\S+?\/(\d{1,})\/\S+?$/,'$1'),
-								team_2_id = td.eq(6).find('a').attr('href').replace(/\S+?\/(\d{1,})\/\S+?$/,'$1'),
-								team_1_name = td.eq(3).find('img').attr('title'),
-								team_2_name = td.eq(5).find('img').attr('title'),
-								result = td.eq(4).find('a'),
-								result = result.length ? result.text() : td.eq(4).text().replace(/\s?(\d{1,2}\:\d{1,2})\s?$/,"$1"),
-								score1,
-								score2;
-								if(!(/[A-Z]{1}[a-z]{2}\s\d{1,2}\,\s\d{4}/.test(match_date))){//Aug 30, 2014
-									match_date = date;
+		excute(sql,function(rows) {
+		    var event_id = rows[0].id;
+		    asyncLoop(tables.length,function(loop){
+		    	var table = tables[loop.iteration()],
+		    	$el = $(table),
+				matchday = $el.find('.table-header').text(),
+				data_array = [],
+				play_at,
+				table = $el.find('> table'),
+				trow = table.find('> tbody > tr');
+		    },function(){})
+			tables.each(function(index,el){
+				var $el = $(el),
+				matchday = $el.find('.table-header').text(),
+				data_array = [],
+				play_at,
+				table = $el.find('> table'),
+				trow = table.find('> tbody > tr');
+				getRound(event_id,matchday,index+1,(function(tr){
+					return function(matchday_id){
+						var date,
+						time;
+						tr.each(function(i,row){
+							row = $(row);
+							var td = row.children(),
+							match_date = td.eq(0).find('a').text(),
+							match_time = trim(td.eq(1).text()),
+							team_1_id = td.eq(2).find('a').attr('href').replace(/\S+?\/(\d{1,})\/\S+?$/,'$1'),
+							team_2_id = td.eq(6).find('a').attr('href').replace(/\S+?\/(\d{1,})\/\S+?$/,'$1'),
+							team_1_name = td.eq(3).find('img').attr('title'),
+							team_2_name = td.eq(5).find('img').attr('title'),
+							result = td.eq(4).find('a'),
+							result = result.length ? result.text() : td.eq(4).text().replace(/\s?(\d{1,2}\:\d{1,2})\s?$/,"$1"),
+							score1,
+							score2;
+							if(!(/[A-Z]{1}[a-z]{2}\s\d{1,2}\,\s\d{4}/.test(match_date))){//Aug 30, 2014
+								match_date = date;
+							}
+							if(!(/\d{1,2}\:\d{1,2}\s[PM|AM]{2}/.test(match_time))){
+								if(match_time == '-'){
+									time = '12:00 AM'
 								}
-								if(!(/\d{1,2}\:\d{1,2}\s[PM|AM]{2}/.test(match_time))){
-									if(match_time == '-'){
-										time = '12:00 AM'
-									}
-									match_time = time;
-								}
-								//play_at = moment([date,time].join(' ')).format('YYYY-MM-DD HH:mm:ss');
-								var play_at = moment.tz([match_date,match_time].join(' '), "MMM D, YYYY h:mm A", "Europe/Luxembourg").utc().format('YYYY-MM-DD HH:mm:ss');
-								if(/\d{1,2}\:\d{1,2}/.test(result)){
-									result = result.split(':');
-									score1 = result[0],
-									score2 = result[1];
-								};
-								getTeamIdByTeamId(team_1_id,function(team1_id){
-									getTeamIdByTeamId(team_2_id,function(team2_id){
-										var data = {play_at:play_at};
-										if(score1 && score1){
-											data.score1 = score1;
-											data.score2 = score2;
-										};
-										pool.getConnection(function(err, connection) {
-											var sql = mysql.format('UPDATE `matchs` SET ? WHERE round_id = ? AND team1_id = ? AND team2_id = ?', [data,matchday_id,team1_id,team2_id]);
-											//console.log(sql);
-											connection.query(sql, function(err,rows) {
-												if (err) throw err;
-												connection.release();
-											});
-										});
-									})
-								});
-								date = match_date;
-								time = match_time;
-								data_array.push(date);
+								match_time = time;
+							}
+							//play_at = moment([date,time].join(' ')).format('YYYY-MM-DD HH:mm:ss');
+							var play_at = moment.tz([match_date,match_time].join(' '), "MMM D, YYYY h:mm A", "Europe/Luxembourg").utc().format('YYYY-MM-DD HH:mm:ss');
+							if(/\d{1,2}\:\d{1,2}/.test(result)){
+								result = result.split(':');
+								score1 = result[0],
+								score2 = result[1];
+							};
+							getTeamIdByTeamId(team_1_id,function(team1_id){
+								getTeamIdByTeamId(team_2_id,function(team2_id){
+									var data = {play_at:play_at};
+									if(score1 && score1){
+										data.score1 = score1;
+										data.score2 = score2;
+									};
+									var sql = mysql.format('UPDATE `matchs` SET ? WHERE round_id = ? AND team1_id = ? AND team2_id = ?', [data,matchday_id,team1_id,team2_id]);
+									excute(sql);
+								})
 							});
-							/*for (var i = 0; i < tr.length; i++) {
-								var row = $(tr[i]),td = row.children(),
-								date = td.eq(0).find('a').text() || date,
-								time = trim(td.eq(1).text()) || time,
-								team_1_id = td.eq(2).find('a').attr('href').replace(/\S+?(\d{1,})\/\S+?$/,'$1'),
-								team_2_id = td.eq(6).find('a').attr('href').replace(/\S+?(\d{1,})\/\S+?$/,'$1'),
-								team_1_name = td.eq(3).find('img').attr('title'),
-								team_2_name = td.eq(5).find('img').attr('title'),
-								result = td.eq(4).find('a'),
-								result = result.length ? result.text() : td.eq(4).text().replace(/\s?(\d{1,2}\:\d{1,2})\s?$/,"$1"),
-								score1,
-								score2,
-								time = time == '-' ? '00:00':time,
-								//play_at = moment([date,time].join(' ')).format('YYYY-MM-DD HH:mm:ss');
-								play_at = moment.tz([date,time].join(' '), "MMM D, YYYY h:mm A", "Europe/Luxembourg").utc().format('YYYY-MM-DD HH:mm:ss');
-								if(/\d{1,2}\:\d{1,2}/.test(result)){
-									result = result.split(':');
-									score1 = result[0],
-									score2 = result[1],
-									console.log([matchday_id,play_at,team_1_name,score1,score2,team_2_name].join('<<<>>>'));
-								};
-								getTeamIdByTeamName(team_1_name,(function(team_name,matchday_id,play_at,score_1,score_2){
-									return function(team_1_id){
-										getTeamIdByTeamName(team_name,function(team_2_id){
-											var data = {play_at:play_at};
-											if(score_1 && score_2){
-												data.score1 = score_1;
-												data.score2 = score_2;
-											};
-											pool.getConnection(function(err, connection) {
-												var sql = mysql.format('UPDATE `matchs` SET ? WHERE round_id = ? AND team1_id = ? AND team2_id = ?', [data,matchday_id,team_1_id,team_2_id]);
-												//console.log(sql);
-												connection.query(sql, function(err,rows) {
-													if (err) throw err;
-													connection.release();
-												});
-											});
-										})
-									}
-								})(team_2_name,matchday_id,play_at,score1,score2))
-								data_array.push(date);
-							};*/
-						}
-					})(trow));
-				});
+							date = match_date;
+							time = match_time;
+							data_array.push(date);
+						});
+					}
+				})(trow));
 			});
 		});
     };
@@ -151,17 +110,13 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 });
 /*crawler.queueURL(host + '/cristiano-ronaldo/transfers/spieler/8198');
 crawler.start();*/
-pool.getConnection(function(err, connection) {
-	connection.query("SELECT transfermarket_competition.uri FROM `competition` JOIN `nation` ON competition.nation_id = nation.id JOIN `transfermarket_nation` ON nation.full_name = transfermarket_nation.name JOIN `transfermarket_competition` ON transfermarket_competition.nation_id = transfermarket_nation.id WHERE transfermarket_competition.competition_name IN (SELECT name FROM `competition`)", function(err,rows) {
-	    if (err) throw err;
-	    connection.release();
-	    for (var i = rows.length - 1; i >= 0; i--) {
-		    var path = rows[i].uri;
-		    path = path.replace('startseite','gesamtspielplan');
-	    	crawler.queueURL(host + path);
-	    };
-	    crawler.start();
-	});
+excute("SELECT transfermarket_competition.uri FROM `competition` JOIN `nation` ON competition.nation_id = nation.id JOIN `transfermarket_nation` ON nation.full_name = transfermarket_nation.name JOIN `transfermarket_competition` ON transfermarket_competition.nation_id = transfermarket_nation.id WHERE transfermarket_competition.competition_name IN (SELECT name FROM `competition`)", function(rows) {
+    for (var i = rows.length - 1; i >= 0; i--) {
+	    var path = rows[i].uri;
+	    path = path.replace('startseite','gesamtspielplan');
+    	crawler.queueURL(host + path);
+    };
+    crawler.start();
 });
 function getTeamIdByTeamId(team_id,callback){
 	pool.getConnection(function(err, connection) {
