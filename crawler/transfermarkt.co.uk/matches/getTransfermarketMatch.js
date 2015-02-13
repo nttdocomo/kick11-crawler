@@ -12,6 +12,9 @@ excute = require('../../../excute'),
 asyncLoop = require('../../../asyncLoop'),
 _ = require('underscore'),
 host = 'http://www.transfermarkt.co.uk',
+seasons = [],
+competitions = [],
+events = [],
 crawler = new Crawler('www.transfermarkt.co.uk');
 crawler.maxConcurrency = 2;
 crawler.interval = 300;
@@ -37,22 +40,26 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
                 var season_id = query.saison_id,
                 competition_id = queueItem.path.match(/.*?([A-Z0-9]{1,5}).*?/)[1];
                 console.log(queueItem.path.match(/.*?([A-Z0-9]{1,5}).*?/)[1])
-                excute('INSERT INTO `transfermarket_season` SET id = ' + season_id);
-                excute('SELECT id FROM `transfermarket_competition` WHERE competition_id = ' + competition_id,function(competition){
-                    excute(mysql.format('SELECT * FROM `transfermarket_event` WHERE season_id = ? AND competition_id = ? LIMIT 1',[season_id,competition.id]),function(rows){
-                        if(rows.length){
-                            matches(rows[0].id,tables)
-                        } else {
-                            excute(mysql.format('INSERT INTO `transfermarket_event` SET ?',{
-                                season_id:season_id,
-                                competition_id:competition.id
-                            }),function(result){
-                                var event_id = result.insertId;
-                                matches(event_id,tables)
-                            });
-                        }
-                    })
+                if(seasons.indexOf(season_id) < 0){
+                    excute('INSERT INTO `transfermarket_season` SET id = ' + season_id);
+                }
+                var competition = _.find(competitions,function(item){
+                    return item.competition_id == competition_id;
+                }),
+                transfermarket_event = _.find(events,function(item){
+                    return item.season_id == season_id && item.competition_id == competition.id;
                 });
+                if(transfermarket_event){
+                    matches(transfermarket_event.id,tables)
+                } else {
+                    excute(mysql.format('INSERT INTO `transfermarket_event` SET ?',{
+                        season_id:season_id,
+                        competition_id:competition.id
+                    }),function(result){
+                        var event_id = result.insertId;
+                        matches(event_id,tables)
+                    });
+                }
             }
         }
     };
@@ -79,34 +86,7 @@ excute("SELECT transfermarket_competition.uri FROM `competition` JOIN `nation` O
     crawler.start();
 });
 var init_func = [function(cb){
-    excute('SELECT id FROM whoscored_stages',function(rows){//先从数据库里将所有stages取出来
-        if(rows.length){
-            stages = rows.map(function(stage){
-                return stage.id;
-            })
-        }
-        cb()
-    });
-},function(cb){
-    excute('SELECT id FROM whoscored_regions',function(rows){//先从数据库里将所有regions取出来、
-        if(rows.length){
-            regions = rows.map(function(region){
-                return region.id;
-            })
-        }
-        cb()
-    });
-},function(cb){
-    excute('SELECT id FROM whoscored_tournaments',function(rows){//先从数据库里将所有tournaments取出来
-        if(rows.length){
-            tournaments = rows.map(function(tournament){
-                return tournament.id;
-            })
-        }
-        cb()
-    });
-},function(cb){
-    excute('SELECT id FROM whoscored_seasons',function(rows){//先从数据库里将所有regions取出来
+    excute('SELECT id FROM `transfermarket_season`',function(rows){//先从数据库里将所有stages取出来
         if(rows.length){
             seasons = rows.map(function(season){
                 return season.id;
@@ -115,16 +95,19 @@ var init_func = [function(cb){
         cb()
     });
 },function(cb){
-    excute("CREATE TABLE IF NOT EXISTS `whoscored_registration` (\
-        `id` int(10) unsigned NOT NULL AUTO_INCREMENT,\
-        `match_id` int(10) unsigned NOT NULL,\
-        `player_id` int(10) unsigned NOT NULL,\
-        `shirt_no` tinyint(3) unsigned DEFAULT NULL,\
-        `team_id` int(10) unsigned NOT NULL,\
-        `is_first_eleven` boolean NOT NULL DEFAULT '0',\
-        `is_man_of_the_match` boolean NOT NULL DEFAULT '0',\
-        PRIMARY KEY (`id`)\
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;",cb)
+    excute('SELECT id,competition_id FROM `transfermarket_competition`',function(rows){//先从数据库里将所有stages取出来
+        if(rows.length){
+            seasons = rows
+        }
+        cb()
+    });
+},function(cb){
+    excute('SELECT * FROM `transfermarket_event`',function(rows){//先从数据库里将所有stages取出来
+        if(rows.length){
+            events = rows
+        }
+        cb()
+    });
 }]
 function matches(event_id,tables){
     asyncLoop(tables.length, function(loop){

@@ -50,7 +50,9 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 				excute(mysql.format('INSERT INTO whoscored_player SET ?',{
 	                id:playerTableStat.playerId,
 	                name:playerTableStat.name,
-	            }))
+	            }),function(result){
+					whoscored_players.push(result.insertId);
+	            })
 			}
 			if(unknow_columns.length){
 				_.each(unknow_columns,function(column){
