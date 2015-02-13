@@ -51,7 +51,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 	                id:playerTableStat.playerId,
 	                name:playerTableStat.name,
 	            }),function(result){
-					whoscored_players.push(result.insertId);
+					whoscored_players.push(playerTableStat.playerId);
 	            })
 			}
 			if(unknow_columns.length){
