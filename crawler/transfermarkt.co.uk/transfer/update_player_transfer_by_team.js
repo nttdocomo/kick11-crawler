@@ -218,4 +218,3 @@ if(update_team_id){
 	    crawler.start();
 	});*/
 }
-crawler.start();
