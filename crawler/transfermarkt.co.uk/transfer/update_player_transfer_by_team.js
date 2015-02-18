@@ -193,7 +193,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 }).on('fetchclienterror',function(queueItem, response){
 	crawler.queueURL(host + queueItem.path);
 });
-if(update_player_id){
+if(update_team_id){
 	excute("SELECT profile_uri FROM transfermarket_team WHERE id = " + update_team_id,function(result){
 		if(result.length){
 			crawler.queueURL(host + result[0].profile_uri.replace('profil','korrektur'));
