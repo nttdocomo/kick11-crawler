@@ -42,17 +42,20 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 				data_array = [],
 				play_at,
 				table = $el.find('> table'),
-				trow = table.find('> tbody > tr').eq(1);
+				trow = table.find('> tbody > tr');
 				getRound(event_id,matchday,index+1,(function(tr){
 					return function(matchday_id){
 						var date,
 						time;
 						tr.each(function(i,row){
 							row = $(row);
-							var td = row.children(),
-							match_date = td.eq(0).find('a').text(),
-							match_time = trim(td.eq(1).text());
-							var team_1_id = td.eq(2).find('a').attr('href').replace(/\S+?\/(\d{1,})\/\S+?$/,'$1'),
+							var td = row.children();
+							if(td.length < 2){
+								return true;
+							}
+							var match_date = td.eq(0).find('a').text(),
+							match_time = trim(td.eq(1).text()),
+							team_1_id = td.eq(2).find('a').attr('href').replace(/\S+?\/(\d{1,})\/\S+?$/,'$1'),
 							team_2_id = td.eq(6).find('a').attr('href').replace(/\S+?\/(\d{1,})\/\S+?$/,'$1'),
 							team_1_name = td.eq(3).find('img').attr('title'),
 							team_2_name = td.eq(5).find('img').attr('title'),
