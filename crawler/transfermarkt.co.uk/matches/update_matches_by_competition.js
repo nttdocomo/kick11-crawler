@@ -27,7 +27,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 		var sql = mysql.format("SELECT events.id AS id FROM `events` JOIN (SELECT competition.id AS competitions_id FROM `competition` JOIN (SELECT * FROM `transfermarket_competition` WHERE competition_id = ?)`transfermarket_competition` ON transfermarket_competition.competition_name = competition.name)`competition` ON events.competition_id = competition.competitions_id JOIN (SELECT seasons.id AS seasons_id FROM `seasons` WHERE name = ?)`seasons` ON events.season_id = seasons_id", [competition_id,year + season.replace(/\d{2}(\/\d{2})/,'$1')]);
 		excute(sql,function(rows) {
 		    var event_id = rows[0].id;
-		    asyncLoop(tables.length,function(loop){
+		    /*asyncLoop(tables.length,function(loop){
 		    	var table = tables[loop.iteration()],
 		    	$el = $(table),
 				matchday = $el.find('.table-header').text(),
@@ -35,14 +35,14 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 				play_at,
 				table = $el.find('> table'),
 				trow = table.find('> tbody > tr');
-		    },function(){})
+		    },function(){})*/
 			tables.each(function(index,el){
 				var $el = $(el),
 				matchday = $el.find('.table-header').text(),
 				data_array = [],
 				play_at,
 				table = $el.find('> table'),
-				trow = table.find('> tbody > tr');
+				trow = table.find('> tbody > tr').eq(1);
 				getRound(event_id,matchday,index+1,(function(tr){
 					return function(matchday_id){
 						var date,
@@ -51,8 +51,8 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 							row = $(row);
 							var td = row.children(),
 							match_date = td.eq(0).find('a').text(),
-							match_time = trim(td.eq(1).text()),
-							team_1_id = td.eq(2).find('a').attr('href').replace(/\S+?\/(\d{1,})\/\S+?$/,'$1'),
+							match_time = trim(td.eq(1).text());
+							var team_1_id = td.eq(2).find('a').attr('href').replace(/\S+?\/(\d{1,})\/\S+?$/,'$1'),
 							team_2_id = td.eq(6).find('a').attr('href').replace(/\S+?\/(\d{1,})\/\S+?$/,'$1'),
 							team_1_name = td.eq(3).find('img').attr('title'),
 							team_2_name = td.eq(5).find('img').attr('title'),
