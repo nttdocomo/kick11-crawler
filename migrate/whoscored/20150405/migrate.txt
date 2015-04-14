@@ -1,0 +1,4 @@
+ALTER TABLE `whoscored_matches` CHANGE `score1i` `score1_1st` TINYINT(2) UNSIGNED NULL DEFAULT NULL;
+ALTER TABLE `whoscored_matches` CHANGE `score2i` `score2_1st` TINYINT(2) UNSIGNED NULL DEFAULT NULL;
+
+INSERT INTO `kickeleven`.`whoscored_team_team` (`id`, `whoscored_team_id`, `team_id`) VALUES (NULL, '4673', '2286'), (NULL, '2538', '2671'),(NULL, '2530', '773');

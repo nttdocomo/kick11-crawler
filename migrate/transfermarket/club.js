@@ -47,3 +47,6 @@ migrate_transfermarket_clubs = function(cb){
 	})
 }
 module.exports.migrate = migrate;
+module.exports.get_club_by_id = function(id,cb){
+	excute(mysql.format('SELECT club_ref_id FROM transfermarket_club WHERE id = ? AND club_ref_id != 0',[id]),cb)
+};
