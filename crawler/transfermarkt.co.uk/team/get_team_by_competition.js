@@ -2,9 +2,10 @@
  * @author nttdocomo
  */
 var cheerio = require('cheerio'), StringDecoder = require('string_decoder').StringDecoder,
-pool  = require('../pool'),
+excute = require('../../../promiseExcute'),mysql = require('mysql'),
 fs = require('fs'),
 url = require('url'),
+promiseCrawler = require('../../../crawler'),
 urls = [];
 Competition = require('../competition/model'),
 Team = require('./model'),
@@ -24,12 +25,12 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
     	competition.get_teams_url().forEach(function(url){
     		crawler.queueURL(host + url.replace(/(^\/\S+?\/startseite\/verein\/\d+?)\/saison_id\/\d{4}$/,'$1'));
     	});
-    	competition.save_competition_team(pool);
+    	competition.save_competition_team();
     };
     if(/^\/\S+?\/startseite\/verein\/\d+?$/i.test(queueItem.path)){//competition
     	decoder = new StringDecoder('utf8');
     	var team = new Team(cheerio.load(decoder.write(responseBuffer)));
-    	team.save(pool)
+    	team.save()
     };
 }).on('complete',function(){
 	console.log('complete');
@@ -67,13 +68,12 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 	/^\/\S+?\/startseite\/pokalwettbewerb\/\S+?$/i.test(parsedURL.path) || 
 	/^\/\S+?\/startseite\/verein\/\d+?$/i.test(parsedURL.path));
 });
-pool.getConnection(function(err, connection) {
-	connection.query("SELECT uri FROM transfermarket_competition WHERE competition_id = 'L1'", function(err,rows) {
-	    if (err) throw err;
-	    connection.release();
-	    for (var i = rows.length - 1; i >= 0; i--) {
-	    	crawler.queueURL(host + rows[i].uri);
+excute("SELECT uri FROM transfermarket_competition WHERE competition_ref_id != 0").then(function(competitions) {
+	if(competitions.length){
+	    for (var i = competitions.length - 1; i >= 0; i--) {
+	    	console.log(competitions[i].uri)
+	    	crawler.queueURL(host + competitions[i].uri);
 	    };
-		crawler.start();
-	});
+	}
+	crawler.start();
 });

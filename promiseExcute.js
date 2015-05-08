@@ -9,7 +9,6 @@ module.exports = function (sql){
 			connection.query(sql, function(err,result) {
 			    connection.release();
 			    if (err) {
-			    	console.log(err)
 			    	reject(err)
 			    } else {
 			    	resolve(result)

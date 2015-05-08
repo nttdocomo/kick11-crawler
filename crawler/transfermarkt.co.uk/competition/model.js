@@ -1,7 +1,10 @@
 /**
  * @author nttdocomo
  */
-var trim = require('../utils').trim,connection = require("../db"), mysql = require('mysql'),Player = require('../player/model')
+var trim = require('../utils').trim,
+excute = require("../../../excute"),
+mysql = require('mysql'),
+Player = require('../player/model')
 Competition = function($){
 	this.$ = $;
 	var flag_img = $('.profilheader').eq(0).find('tr').eq(0).find('td').find('img'),
@@ -46,25 +49,15 @@ Competition.prototype = {
 			});
 		});
 	},
-	save:function(pool){
+	save:function(){
 		var sql = mysql.format("INSERT INTO transfermarket_competition (competition_name,competition_id,competition_level,competition_type,nation_id,uri) SELECT ? FROM dual WHERE NOT EXISTS(SELECT competition_id FROM transfermarket_competition WHERE competition_id = ?)", [[this.competition_name,this.competition_id,this.competition_level,this.competition_type,this.nation_id,this.uri],this.competition_id]);
-		pool.getConnection(function(err, connection) {
-			connection.query(sql, function(err) {
-			    if (err) throw err;
-			    connection.release();
-			});
-		});
+		excute(sql);
 	},
-	save_competition_team:function(pool){
+	save_competition_team:function(){
 		var me = this, teams_id = this.get_teams_id();
 		teams_id.forEach(function(team_id){
 			var sql = mysql.format("INSERT INTO transfermarket_competition_team (competition_id, team_id) SELECT ? FROM dual WHERE NOT EXISTS(SELECT competition_id,team_id FROM transfermarket_competition_team WHERE competition_id = ? AND team_id = ?)", [[me.competition_id,team_id],me.competition_id,team_id]);
-			pool.getConnection(function(err, connection) {
-				connection.query(sql, function(err) {
-				    if (err) throw err;
-				    connection.release();
-				});
-			});
+			excute(sql);
 		});
 	},
 	get_teams_id:function(){
