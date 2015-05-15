@@ -54,12 +54,15 @@ crawler.customHeaders = {
     Cookie:'__gads=ID=7400c9eb48861252:T=1407717687:S=ALNI_MZbNZufnguyMAdt6A2DXy8Hirg7oA; ebNewBandWidth_.www.whoscored.com=863%3A1408183698417; ui=nttdocomo:bjmU8NSBC0WzoKOkAO-9TQ:3619521175:SHKLWvTkwNCw4YKgZQA0cg8IkHCbOnpSkXIJdsjHZI8; ua=nttdocomo:bjmU8NSBC0WzoKOkAO-9TQ:3619521175:Cmahf0NIXa_v-sD8BkI3Tg9HVIkTt2NruY5jcRetDrM; mp_430958bdb5bff688df435b09202804d9_mixpanel=%7B%22distinct_id%22%3A%20%22148d138493249-047e04049-4748012e-1fa400-148d138493396%22%2C%22%24initial_referrer%22%3A%20%22http%3A%2F%2Fwww.whoscored.com%2FMatches%2F829543%2FLive%22%2C%22%24initial_referring_domain%22%3A%20%22www.whoscored.com%22%7D; _gat=1; _ga=GA1.2.458243098.1407717765'
 };
 crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
+    var con = this.wait();
     var decoder = new StringDecoder('utf8'),content,matchesfeed;
     //console.log(decoder.write(responseBuffer));
     if(/^\/matchesfeed\/\?d\=\d{8}$/.test(queueItem.path)){
         matchesfeed = eval(decoder.write(responseBuffer));
         //将teams里没有的team放到teams;
-        get_stages(matchesfeed[1],isInItems(stages));
+        get_stages(matchesfeed[1],isInItems(stages)).then(function(){
+            return get_regions(matchesfeed[1],isInItems(regions))
+        });
         get_regions(matchesfeed[1],isInItems(regions));
         get_seasons(matchesfeed[1],isInItems(seasons));
         get_tournaments(matchesfeed[1],isInItems(tournaments));
