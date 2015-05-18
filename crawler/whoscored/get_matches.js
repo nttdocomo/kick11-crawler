@@ -1,16 +1,20 @@
 /**
  * @author nttdocomo
  */
-var excute = require('../../promiseExcute'),StringDecoder = require('string_decoder').StringDecoder,mysql = require('mysql'),
-moment = require('moment'),moment_tz = require('moment-timezone');
+var excute = require('../../promiseExcute'),
+StringDecoder = require('string_decoder').StringDecoder,
+mysql = require('mysql'),
+moment = require('moment'),
+moment_tz = require('moment-timezone'),
+match = require('./match');
 module.exports = function(match,date){
-    var stage_id = match[0],
-    match_id = match[1],
-    team1_id = match[4],
-    team2_id = match[8],
-    play_at = moment.tz([date,match[3]].join(' '),"Europe/London").utc().format('YYYY-MM-DD HH:mm'),
-    score = match[12];
-    return excute(mysql.format('SELECT 1 FROM whoscored_matches WHERE id = ? LIMIT 1',[match_id])).then(function(rows){
+    var match_id = match[1];
+    return match.get_match_by_id(match_id).then(function(rows){
+        var stage_id = match[0],
+        team1_id = match[4],
+        team2_id = match[8],
+        play_at = moment.tz([date,match[3]].join(' '),"Europe/London").utc().format('YYYY-MM-DD HH:mm'),
+        score = match[12];
         var values = {
             'team1_id':team1_id,
             'team2_id':team2_id,
@@ -25,7 +29,7 @@ module.exports = function(match,date){
             values.id = match_id;
             return excute(mysql.format('INSERT INTO whoscored_matches  SET ?', values));
         } else {
-            return excute(mysql.format('UPDATE whoscored_matches  SET ? WHERE id = ?', [values,match_id]));
+            return excute(mysql.format('UPDATE whoscored_matches SET ? WHERE id = ?', [values,match_id]));
         }
-    });
+    })
 };
