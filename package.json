@@ -1,0 +1,36 @@
+{
+  "name": "kick11-crawler",
+  "version": "0.0.1",
+  "description": "kick11.us data fetch",
+  "main": "main.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "mysql": "~2.6.1",
+    "rsvp": "~3.0.18",
+    "cheerio": "~0.19.0",
+    "simplecrawler": "~0.3.10",
+    "iconv-lite": "~0.4.7",
+    "moment": "~2.10.2",
+    "underscore": "~1.8.3",
+    "moment-timezone": "~0.3.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "test",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nttdocomo/kick11-crawler.git"
+  },
+  "keywords": [
+    "kick11"
+  ],
+  "author": "nttdocomo",
+  "license": "BSD-2-Clause",
+  "bugs": {
+    "url": "https://github.com/nttdocomo/kick11-crawler/issues"
+  }
+}

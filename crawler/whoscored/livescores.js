@@ -11,7 +11,7 @@ Crawler = require("simplecrawler"),
 whoscored_registration = require('./whoscored_registration'),
 get_player = require('./get_player'),
 get_team = require('./get_team'),
-get_match = require('./get_matches').get_match,
+get_match = require('./get_matches'),
 get_goals = require('./get_goals'),
 get_stages = require('./get_stages'),
 get_regions = require('./get_regions'),
@@ -54,32 +54,44 @@ crawler.customHeaders = {
     Cookie:'__gads=ID=7400c9eb48861252:T=1407717687:S=ALNI_MZbNZufnguyMAdt6A2DXy8Hirg7oA; ebNewBandWidth_.www.whoscored.com=863%3A1408183698417; ui=nttdocomo:bjmU8NSBC0WzoKOkAO-9TQ:3619521175:SHKLWvTkwNCw4YKgZQA0cg8IkHCbOnpSkXIJdsjHZI8; ua=nttdocomo:bjmU8NSBC0WzoKOkAO-9TQ:3619521175:Cmahf0NIXa_v-sD8BkI3Tg9HVIkTt2NruY5jcRetDrM; mp_430958bdb5bff688df435b09202804d9_mixpanel=%7B%22distinct_id%22%3A%20%22148d138493249-047e04049-4748012e-1fa400-148d138493396%22%2C%22%24initial_referrer%22%3A%20%22http%3A%2F%2Fwww.whoscored.com%2FMatches%2F829543%2FLive%22%2C%22%24initial_referring_domain%22%3A%20%22www.whoscored.com%22%7D; _gat=1; _ga=GA1.2.458243098.1407717765'
 };
 crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
-    var con = this.wait();
-    var decoder = new StringDecoder('utf8'),content,matchesfeed;
+    var next = this.wait();
+    var decoder = new StringDecoder('utf8'),content,matchesfeed,matchCentre2;
     //console.log(decoder.write(responseBuffer));
     if(/^\/matchesfeed\/\?d\=\d{8}$/.test(queueItem.path)){
         matchesfeed = eval(decoder.write(responseBuffer));
         //将teams里没有的team放到teams;
         get_stages(matchesfeed[1],isInItems(stages)).then(function(){
             return get_regions(matchesfeed[1],isInItems(regions))
-        });
-        get_regions(matchesfeed[1],isInItems(regions));
-        get_seasons(matchesfeed[1],isInItems(seasons));
-        get_tournaments(matchesfeed[1],isInItems(tournaments));
-        matchesfeed[2].forEach(function(match){
-            var match_id = match[1];
-            crawler.queueURL(host + '/MatchesFeed/'+match_id+'/MatchCentre2');
-            get_match(match,queueItem.path.replace(/^\/matchesfeed\/\?d\=(\d{4})(\d{2})(\d{2})$/,"$1-$2-$3"))
-            get_team(match,isInItems(teams))
-        })
+        }).then(function(){
+            return get_seasons(matchesfeed[1],isInItems(seasons));
+        }).then(function(){
+            return get_tournaments(matchesfeed[1],isInItems(tournaments));
+        }).then(function(){
+            return matchesfeed[2].reduce(function(sequence, match){
+                var match_id = match[1];
+                crawler.queueURL(host + '/MatchesFeed/'+match_id+'/MatchCentre2');
+                return get_match(match,queueItem.path.replace(/^\/matchesfeed\/\?d\=(\d{4})(\d{2})(\d{2})$/,"$1-$2-$3")).then(function(){
+                    return get_team(match,isInItems(teams))
+                })
+            },Promise.resole())
+        }).then(next);
     };
     if(/^\/MatchesFeed\/(\d{1,})\/MatchCentre2$/.test(queueItem.path)){
-        content = decoder.write(responseBuffer)
+        content = decoder.write(responseBuffer);
+        var match_id = queueItem.path.replace(/^\/MatchesFeed\/(\d{1,})\/MatchCentre2$/,"$1");
         if(content !== null){
-            get_player(content,isInItems(players))
-            //get_matches(content,isInItems(matches));
-            whoscored_registration(content, queueItem.path.replace(/^\/MatchesFeed\/(\d{1,})\/MatchCentre2$/,"$1"))
-            get_goals(content, queueItem.path.replace(/^\/MatchesFeed\/(\d{1,})\/MatchCentre2$/,"$1"))
+            matchCentre2 = JSON.parse(content);
+            if(matchCentre2 !== null){
+                get_player(matchCentre2).then(function(){
+                    return whoscored_registration(matchCentre2, match_id)
+                }).then(function(){
+                    return get_goals(content, match_id)
+                }).then(next)
+            } else {
+                next()
+            }
+        } else {
+            next()
         }
     }
 }).on('complete',function(){

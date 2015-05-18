@@ -1,14 +1,18 @@
 /**
  * @author nttdocomo
  */
- var excute = require('../../excute'),mysql = require('mysql');
+ var excute = require('../../promiseExcute'),mysql = require('mysql');
 module.exports = function(stages,fn){
-    stages.forEach(function(stage){
-        var season_id = stage[6];
-        if(!fn(season_id)){
-            excute(mysql.format('INSERT INTO whoscored_seasons SET ?',{
-	        	id:season_id
-	        }));
-        }
+	return Promise.resolve().then(function(){
+        return stages.filter(function(stage){
+            return !fn(stage[6]);
+        }).reduce(function(sequence, stage){
+            var season_id = stage[6];
+            return sequence.then(function(){
+            	return excute(mysql.format('INSERT INTO whoscored_seasons SET ?',{
+		        	id:season_id
+		        }));
+		    });
+        },Promise.resolve())
     })
 };
