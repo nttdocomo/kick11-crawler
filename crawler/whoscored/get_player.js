@@ -9,7 +9,7 @@ module.exports = function(matchCentre2){
     players = home.players.concat(away.players);
     return players.reduce(function(sequence, player){
         return sequence.then(function(){
-            return excute(mysql.format('SELECT 1 FROM whoscored_player WHERE id = ? LIMIT 1',[player_id])).then(function(rows){
+            return excute(mysql.format('SELECT 1 FROM whoscored_player WHERE id = ? LIMIT 1',[player.playerId])).then(function(rows){
                 var data = {
                     name:player.name,
                     height:player.height,

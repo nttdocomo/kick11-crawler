@@ -82,7 +82,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
                     console.log('get player complete!')
                     return whoscored_registration(matchCentre2, match_id)
                 }).then(function(){
-                    return get_goals(content, match_id)
+                    return get_goals(matchCentre2, match_id)
                 }).then(function(){
                     console.log('all event complete')
                     next()

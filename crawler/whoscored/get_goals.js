@@ -63,5 +63,5 @@ module.exports = function(matchCentre2, match_id){
                 }
             });
         })
-    },promise.resolve())
+    },Promise.resolve())
 };
