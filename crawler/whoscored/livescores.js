@@ -2,7 +2,7 @@
  * @author nttdocomo
  */
 var http = require("http"),
-excute = require('../../excute'),
+excute = require('../../promiseExcute'),
 StringDecoder = require('string_decoder').StringDecoder,
 mysql = require('mysql'),
 moment = require('moment'),
@@ -22,72 +22,71 @@ _ = require('underscore'),
 asyncLoop = require('../../asyncLoop'),
 input_date = process.argv[2],
 host = 'http://www.whoscored.com',
-regions = [],
-tournaments = [],
-seasons = [],
-stages = [],
-matches = [],
-teams = [],
-players = [],
-isInItems = function(items){
-    return function(id){
-        if(_.isString(id)){
-            id = parseInt(id)
-        }
-        var isInDataBase = _.contains(items, id);
-        if(!isInDataBase){
-            items.push(id)
-        }
-        return isInDataBase;
-    }
-},
 crawler = new Crawler('www.whoscored.com');
-crawler.maxConcurrency = 4;
-crawler.interval = 500;
+crawler.maxConcurrency = 1;
+crawler.interval = 1000;
 crawler.timeout = 30000;
 crawler.discoverResources = false;
-crawler.userAgent = 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/38.0.2125.104 Safari/537.36';
+crawler.userAgent = 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.101 Safari/537.36';
 crawler.customHeaders = {
     Host:'www.whoscored.com',
     Referer:'http://www.whoscored.com/LiveScores',
     'X-Requested-With':'XMLHttpRequest',
-    Cookie:'__gads=ID=7400c9eb48861252:T=1407717687:S=ALNI_MZbNZufnguyMAdt6A2DXy8Hirg7oA; ebNewBandWidth_.www.whoscored.com=863%3A1408183698417; ui=nttdocomo:bjmU8NSBC0WzoKOkAO-9TQ:3619521175:SHKLWvTkwNCw4YKgZQA0cg8IkHCbOnpSkXIJdsjHZI8; ua=nttdocomo:bjmU8NSBC0WzoKOkAO-9TQ:3619521175:Cmahf0NIXa_v-sD8BkI3Tg9HVIkTt2NruY5jcRetDrM; mp_430958bdb5bff688df435b09202804d9_mixpanel=%7B%22distinct_id%22%3A%20%22148d138493249-047e04049-4748012e-1fa400-148d138493396%22%2C%22%24initial_referrer%22%3A%20%22http%3A%2F%2Fwww.whoscored.com%2FMatches%2F829543%2FLive%22%2C%22%24initial_referring_domain%22%3A%20%22www.whoscored.com%22%7D; _gat=1; _ga=GA1.2.458243098.1407717765'
+    Cookie:'__gads=ID=e173268caa0f2b07:T=1432013869:S=ALNI_MaOSzNoD7wlFKgTdXpQP7oqPIlfag; OX_plg=swf|shk|pm; _gat=1; OX_sd=3; _ga=GA1.2.744658120.1432013868'
 };
+crawler.useProxy = true;
+crawler.proxyHostname = "127.0.0.1";
+crawler.proxyPort="8087";
 crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
     var next, decoder = new StringDecoder('utf8'),content,matchesfeed,matchCentre2;
     //console.log(decoder.write(responseBuffer));
     if(/^\/matchesfeed\/\?d\=\d{8}$/.test(queueItem.path)){
+        console.log('matchesfeed')
         matchesfeed = eval(decoder.write(responseBuffer));
         next = this.wait();
         //将teams里没有的team放到teams;
         get_stages(matchesfeed[1]).then(function(){
+            console.log('get stages complete!')
             return get_regions(matchesfeed[1])
         }).then(function(){
+            console.log('get regions complete!')
             return get_seasons(matchesfeed[1]);
         }).then(function(){
+            console.log('get seasons complete!')
             return get_tournaments(matchesfeed[1]);
         }).then(function(){
+            console.log('get tournaments complete!')
             return matchesfeed[2].reduce(function(sequence, match){
                 var match_id = match[1];
                 crawler.queueURL(host + '/MatchesFeed/'+match_id+'/MatchCentre2');
-                return get_match(match,queueItem.path.replace(/^\/matchesfeed\/\?d\=(\d{4})(\d{2})(\d{2})$/,"$1-$2-$3")).then(function(){
-                    return get_team(match,isInItems(teams))
+                return sequence.then(function(){
+                    return get_match(match,queueItem.path.replace(/^\/matchesfeed\/\?d\=(\d{4})(\d{2})(\d{2})$/,"$1-$2-$3")).then(function(){
+                        return get_team(match)
+                    })
                 })
-            },Promise.resole())
-        }).then(next);
+            },Promise.resolve())
+        }).then(function(){
+            console.log('all match complete')
+            next()
+        });
     };
     if(/^\/MatchesFeed\/(\d{1,})\/MatchCentre2$/.test(queueItem.path)){
         content = decoder.write(responseBuffer);
         var match_id = queueItem.path.replace(/^\/MatchesFeed\/(\d{1,})\/MatchCentre2$/,"$1");
-        if(content !== null){
+        if(content !== null && content != 'null'){
             matchCentre2 = JSON.parse(content);
             if(matchCentre2 !== null){
+                console.log('MatchesFeed started');
                 next = this.wait();
                 get_player(matchCentre2).then(function(){
+                    console.log('get player complete!')
                     return whoscored_registration(matchCentre2, match_id)
                 }).then(function(){
                     return get_goals(content, match_id)
-                }).then(next)
+                }).then(function(){
+                    console.log('all event complete')
+                    next()
+                })
             }
         }
     }
@@ -96,52 +95,18 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
     console.log('complete')
     migrate()
 }).on('fetcherror',function(queueItem, response){
-    console.log('fetcherror')
+    console.log('fetcherror');
+    console.log(queueItem.path)
+    crawler.queueURL(host + queueItem.path);
 }).on('fetchtimeout',function(queueItem, response){
     crawler.queueURL(host + queueItem.path);
     console.log('fetchtimeout:' + queueItem.path)
 }).on('fetchclienterror',function(queueItem, errorData){
     console.log('fetchclienterror')
+    crawler.queueURL(host + queueItem.path);
 });
 //初始化函数，目的是将当前数据库的的数据取出，用来查询数据是否存在，而不再用SELECT做查询而占用SQL连接。
-var init_func = [function(cb){
-    excute('SELECT id FROM whoscored_stages',function(rows){//先从数据库里将所有stages取出来
-        if(rows.length){
-            stages = rows.map(function(stage){
-                return stage.id;
-            })
-        }
-        cb()
-    });
-},function(cb){
-    excute('SELECT id FROM whoscored_regions',function(rows){//先从数据库里将所有regions取出来、
-        if(rows.length){
-            regions = rows.map(function(region){
-                return region.id;
-            })
-        }
-        cb()
-    });
-},function(cb){
-    excute('SELECT id FROM whoscored_tournaments',function(rows){//先从数据库里将所有tournaments取出来
-        if(rows.length){
-            tournaments = rows.map(function(tournament){
-                return tournament.id;
-            })
-        }
-        cb()
-    });
-},function(cb){
-    excute('SELECT id FROM whoscored_seasons',function(rows){//先从数据库里将所有regions取出来
-        if(rows.length){
-            seasons = rows.map(function(season){
-                return season.id;
-            })
-        }
-        cb()
-    });
-},function(cb){
-    excute("CREATE TABLE IF NOT EXISTS `whoscored_registration` (\
+excute("CREATE TABLE IF NOT EXISTS `whoscored_registration` (\
         `id` int(10) unsigned NOT NULL AUTO_INCREMENT,\
         `match_id` int(10) unsigned NOT NULL,\
         `player_id` int(10) unsigned NOT NULL,\
@@ -150,14 +115,7 @@ var init_func = [function(cb){
         `is_first_eleven` boolean NOT NULL DEFAULT '0',\
         `is_man_of_the_match` boolean NOT NULL DEFAULT '0',\
         PRIMARY KEY (`id`)\
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;",cb)
-}]
-asyncLoop(init_func.length,function(loop){
-    var func = init_func[loop.iteration()];
-    func(function(){
-        loop.next();
-    })
-},function(){
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;").then(function(){
     console.log('初始化结束......');
     if(input_date){
         if(input_date.length == 8){
@@ -171,7 +129,7 @@ asyncLoop(init_func.length,function(loop){
         }
         crawler.start();
     } else {
-        excute('SELECT play_at FROM `whoscored_matches` ORDER BY `play_at` DESC LIMIT 1',function(matches){
+        excute('SELECT play_at FROM `whoscored_matches` ORDER BY `play_at` DESC LIMIT 1').then(function(matches){
             if(matches.length){
                 var match = matches[0],
                 play_at = match.play_at;
@@ -191,6 +149,7 @@ asyncLoop(init_func.length,function(loop){
         //crawler.queueURL(host + '/matchesfeed/?d=' + moment.utc().format('YYYYMMDD'));
     }
 })
+
 
 //http://www.whoscored.com/matchesfeed/?d=20141021
 //http://www.whoscored.com/tournamentsfeed/9155/Fixtures/?d=2014W42&isAggregate=false

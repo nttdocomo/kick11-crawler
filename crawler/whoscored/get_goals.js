@@ -1,16 +1,19 @@
 /**
  * @author nttdocomo
  */
-var excute = require('../../excute'),StringDecoder = require('string_decoder').StringDecoder,mysql = require('mysql'),moment = require('moment'),moment_tz = require('moment-timezone');
-module.exports = function(content, match_id){
-    var matchCentre2 = JSON.parse(content);
-    if(matchCentre2 !== null){
-        var playerIdNameDictionary = matchCentre2.playerIdNameDictionary,
-        events = matchCentre2.events,
-        goals_events = events.filter(function(event){
-            return event.type.value == 16;
-        })
-        goals_events.forEach(function(event){
+var excute = require('../../promiseExcute'),
+StringDecoder = require('string_decoder').StringDecoder,
+mysql = require('mysql'),
+moment = require('moment'),
+moment_tz = require('moment-timezone');
+module.exports = function(matchCentre2, match_id){
+    var playerIdNameDictionary = matchCentre2.playerIdNameDictionary,
+    events = matchCentre2.events,
+    goals_events = events.filter(function(event){
+        return event.type.value == 16;
+    })
+    return goals_events.reduce(function(sequence,event){
+        return sequence.then(function(){
             var eventId = event.id,
             minute = event.minute,
             team_id = event.teamId,
@@ -26,32 +29,25 @@ module.exports = function(content, match_id){
                 offset = minute - 90
                 minute = 90;
             }
-            /*excute(mysql.format('SELECT 1 FROM whoscored_player WHERE id = ? LIMIT 1',[player_id]),function(rows){
-                if(rows.length){
-                    excute(mysql.format('UPDATE whoscored_player SET ? WHERE id = ?',[{name:player_name},player_id]))
-                } else {
-                    excute(mysql.format('INSERT INTO whoscored_player SET ?',{id:player_id,name:player_name}))
-                }
-            });*/
-            //INSERT EVENT
-            excute(mysql.format('SELECT 1 FROM whoscored_match_events WHERE id = ? LIMIT 1',[eventId]),function(rows){
+            return excute(mysql.format('SELECT 1 FROM whoscored_match_events WHERE id = ? LIMIT 1',[eventId])).then(function(rows){
                 var goal = {};
                 if(event.hasOwnProperty('isOwnGoal') && event.isOwnGoal){
                     goal.owngoal = event.isOwnGoal;
                 }
                 if(rows.length){
-                    excute(mysql.format('UPDATE whoscored_match_events SET ? WHERE id = ?',[{
+                    return excute(mysql.format('UPDATE whoscored_match_events SET ? WHERE id = ?',[{
                         player_id:player_id,
                         match_id:match_id,
                         team_id:team_id,
                         minute:minute,
                         offset:offset,
                         updated_at:moment.utc().format('YYYY-MM-DD hh:mm:ss')
-                    },eventId]));
-                    goal.updated_at = moment.utc().format('YYYY-MM-DD hh:mm:ss');
-                    excute(mysql.format('UPDATE whoscored_goals SET ? WHERE event_id = ?',[goal,eventId]))
+                    },eventId])).then(function(){
+                        goal.updated_at = moment.utc().format('YYYY-MM-DD hh:mm:ss');
+                        return excute(mysql.format('UPDATE whoscored_goals SET ? WHERE event_id = ?',[goal,eventId]))
+                    });
                 } else {
-                    excute(mysql.format('INSERT INTO whoscored_match_events SET ?',{
+                    return excute(mysql.format('INSERT INTO whoscored_match_events SET ?',{
                         id:eventId,
                         player_id:player_id,
                         match_id:match_id,
@@ -59,12 +55,13 @@ module.exports = function(content, match_id){
                         minute:minute,
                         offset:offset,
                         created_at:moment.utc().format('YYYY-MM-DD hh:mm:ss')
-                    }));
-                    goal.event_id = eventId;
-                    goal.created_at = moment.utc().format('YYYY-MM-DD hh:mm:ss')
-                    excute(mysql.format('INSERT INTO whoscored_goals SET ?',goal))
+                    })).then(function(){
+                        goal.event_id = eventId;
+                        goal.created_at = moment.utc().format('YYYY-MM-DD hh:mm:ss')
+                        return excute(mysql.format('INSERT INTO whoscored_goals SET ?',goal))
+                    });
                 }
             });
         })
-    }
+    },promise.resolve())
 };

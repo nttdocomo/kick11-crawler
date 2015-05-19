@@ -6,10 +6,10 @@ StringDecoder = require('string_decoder').StringDecoder,
 mysql = require('mysql'),
 moment = require('moment'),
 moment_tz = require('moment-timezone'),
-match = require('./match');
+matches = require('./matches');
 module.exports = function(match,date){
     var match_id = match[1];
-    return match.get_match_by_id(match_id).then(function(rows){
+    return matches.get_match_by_id(match_id).then(function(rows){
         var stage_id = match[0],
         team1_id = match[4],
         team2_id = match[8],
