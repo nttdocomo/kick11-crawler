@@ -32,6 +32,22 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
     	var teamId = query.teamIds;
     	var matchCentrePlayerStatistics = JSON.parse(decoder.write(responseBuffer)),
     	playerTableStats = matchCentrePlayerStatistics.playerTableStats;
+    	Promise.resolve().then(function(){
+    		return playerTableStats.reduce(function(sequence,playerTableStat){
+    			var alter_sql = [];
+	    		//首先将值为null或者undefined的删除，因为无法判断值为数字还是字符串，如果表字段没有这个键，则无法创建列。
+	    		_.each(playerTableStat, function(value,key){
+	    			if (value === null || value === undefined || value === '' || value === 0 || typeof(value) === 'object') {
+						// test[i] === undefined is probably not very useful here
+						delete playerTableStat[key];
+					} else {
+						if(columns.indexOf(key) < 0){
+							unknow_columns.push(key)
+						}
+					}
+	    		})
+    		},Promise.resolve())
+    	})
     	asyncLoop(playerTableStats.length,function(loop){
     		var playerTableStat = playerTableStats[loop.iteration()];
 			var alter_sql = [];
@@ -185,6 +201,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 }).on('fetchclienterror',function(queueItem, errorData){
     console.log('fetchclienterror')
 });
+/*
 var init_func = [function(cb){
 	excute('SHOW COLUMNS FROM whoscored_match_player_statistics',function(result){
 		columns = _.map(result,function(column){
@@ -232,15 +249,15 @@ asyncLoop(init_func.length,function(loop){
 			console.log('所有比赛已经抓取完毕');
 		}
 	})
-})
-/*crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=summary&subcategory=all&statsAccumulationType=0&isCurrent=true&teamIds=16&matchId=829655');
-crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=passing&statsAccumulationType=0&teamIds=16&matchId=829655');
+})*/
+crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=summary&subcategory=all&statsAccumulationType=0&isCurrent=true&teamIds=16&matchId=829655');
+/*crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=passing&statsAccumulationType=0&teamIds=16&matchId=829655');
 crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=defensive&statsAccumulationType=0&isCurrent=true&teamIds=16&matchId=829655');
 crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=offensive&statsAccumulationType=0&isCurrent=true&teamIds=16&matchId=829655');
 crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=summary&subcategory=all&statsAccumulationType=0&isCurrent=true&teamIds=26&matchId=829655');
 crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=passing&statsAccumulationType=0&teamIds=26&matchId=829655');
 crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=defensive&statsAccumulationType=0&isCurrent=true&teamIds=26&matchId=829655');
-crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=offensive&statsAccumulationType=0&isCurrent=true&teamIds=26&matchId=829655');
-crawler.start();*/
+crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=offensive&statsAccumulationType=0&isCurrent=true&teamIds=26&matchId=829655');*/
+crawler.start();
 //一些协助查找错误的SQL：
 //SELECT whoscored_match_player_statistics.matchId,whoscored_match_player_statistics.teamId,whoscored_match_player_statistics.playerId,whoscored_match_player_statistics.name,whoscored_player.name,whoscored_player.id FROM `whoscored_match_player_statistics` JOIN `whoscored_player` ON whoscored_match_player_statistics.playerId != whoscored_player.id AND whoscored_player.name = whoscored_match_player_statistics.name ORDER BY whoscored_match_player_statistics.playerId ASC//找出和player中名字一样，id不一样的记录
