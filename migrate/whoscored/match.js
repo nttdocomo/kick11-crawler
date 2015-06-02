@@ -1,9 +1,10 @@
-var excute = require('../../excute'),asyncLoop = require('../../asyncLoop'),mysql = require('mysql'),_=require('underscore'),
-get_team = function(match,cb){
-	excute(mysql.format('SELECT whoscored_team_id,team_id FROM whoscored_team_team WHERE team_id IN ?',[[[match.team1_id,match.team2_id]]]),cb)
+var excute = require('../../promiseExcute'),
+mysql = require('mysql'),_=require('underscore'),
+get_team = function(match){
+	return excute(mysql.format('SELECT whoscored_team_id,team_id FROM whoscored_team_team WHERE team_id IN ?',[[[match.team1_id,match.team2_id]]]))
 },
-get_match = function(match,cb){
-	get_team(match,function(teams){
+get_match = function(match){
+	return get_team(match).then(function(teams){
 		if(teams.length == 2){
 			var team1 = _.find(teams,function(team){
 				return team.team_id == match.team1_id
@@ -13,59 +14,30 @@ get_match = function(match,cb){
 			}),
 			team1_id = team1.whoscored_team_id,
 			team2_id = team2.whoscored_team_id;
-			excute(mysql.format('SELECT id FROM `whoscored_matches` WHERE team1_id = ? AND team2_id = ? AND play_at = ?',[team1_id,team2_id,match.play_at]),cb)
-		} else {
-			cb([])
+			return excute(mysql.format('SELECT id FROM `whoscored_matches` WHERE team1_id = ? AND team2_id = ? AND play_at = ?',[team1_id,team2_id,match.play_at]))
 		}
 	})
 },
 migrate = function(cb){
 	console.log('start to insert whoscored_match_match');
-	excute('SELECT * FROM `matchs` WHERE id NOT IN (SELECT match_id FROM `whoscored_match_match`)',function(matches){
+	return excute('SELECT * FROM `matchs` WHERE id NOT IN (SELECT match_id FROM `whoscored_match_match`)').then(function(matches){
 		if(matches.length){
-			asyncLoop(matches.length, function(loop){
-				var match = matches[loop.iteration()];
-				get_match(match,function(whoscored_match){
-					if(whoscored_match.length){
-						var whoscored_match = whoscored_match[0];
-						excute(mysql.format('INSERT INTO `whoscored_match_match` SET ?',{
-							whoscored_match_id:whoscored_match.id,
-							match_id:match.id
-						}),function(){
-							loop.next();
-						})
-					} else {
-						loop.next();
-					}
-				});
-			}, function(){
-				console.log('complete insert whoscored_match_match');
-				cb()
-			})
+			return matches.reduce(function(sequence, match){
+				return sequence.then(function(){
+					return get_match(match).then(function(whoscored_match){
+						if(whoscored_match.length){
+							var whoscored_match = whoscored_match[0];
+							return excute(mysql.format('INSERT INTO `whoscored_match_match` SET ?',{
+								whoscored_match_id:whoscored_match.id,
+								match_id:match.id
+							}))
+						}
+					});
+				})
+			},Promise.resolve())
 		}
-	})
-	/*excute('SELECT * FROM `whoscored_matches` WHERE id NOT IN (SELECT whoscored_match_id FROM `whoscored_match_match`)',function(matches){
-		if(matches.length){
-			asyncLoop(matches.length, function(loop){
-				var whoscored_match = matches[loop.iteration()];
-				get_match(whoscored_match,function(match){
-					if(match.length){
-						var match = match[0];
-						excute(mysql.format('INSERT INTO `whoscored_match_match` SET ?',{
-							whoscored_match_id:whoscored_match.id,
-							match_id:match.id
-						}),function(){
-							loop.next();
-						})
-					} else {
-						loop.next();
-					}
-				});
-			}, function(){
-				console.log('complete insert whoscored_match_match');
-				cb()
-			})
-		}
-	})*/
-}
+	}).then(function(){
+		console.log('complete insert whoscored_match_match');
+	});
+};
 module.exports.migrate = migrate;
