@@ -92,15 +92,38 @@ migrate = function(cb){
 						offset : whoscored_match_event.offset,
 						minute : whoscored_match_event.minute
 					};
-					asyncLoop(preExcuteFunc.length, function(loop){
-						var func = preExcuteFunc[loop.iteration()];
-						func(whoscored_match_event,function(item){
-							_.extend(match_event,item)
-							loop.next()
-						})
-					},function(){
+					return excute(mysql.format('SELECT team_id FROM whoscored_team_team WHERE whoscored_team_id = ?',[whoscored_match_event.team_id])).then(function(team){
+						if(team.length){
+							match_event.team_id = team[0].team_id
+						}
+						return excute(mysql.format('SELECT match_id FROM `whoscored_match_match` WHERE whoscored_match_id = ?',[whoscored_match_event.match_id]))
+					}).then(function(match){
+						if(team.length){
+							match_event.match_id = match[0].match_id
+						}
+						return excute(mysql.format('SELECT player_id FROM `whoscored_player_player` WHERE whoscored_player_id = ?',[whoscored_match_event.player_id]))
+					}).then(function(player){
+						if(player.length){
+							match_event.player_id = player[0].player_id
+						}
 						if(_.has(match_event, "player_id") && _.has(match_event, "match_id") && _.has(match_event, "team_id")){
-							excute(mysql.format('INSERT INTO `match_events` SET ?',match_event),function(result){
+							return excute(mysql.format('INSERT INTO `match_events` SET ?',match_event)).then(function(result){
+								return excute(mysql.format('INSERT INTO `whoscored_event_event` SET ?',{
+									whoscored_event_id:whoscored_match_event.id,
+									event_id:result.insertId
+								})).then(function(){
+									return excute(mysql.format('SELECT * FROM `whoscored_goals` WHERE event_id = ?',[whoscored_match_event_id]))
+								}).then(function(rows){
+									if(rows.length){
+										var row = rows[0];
+										return excute(mysql.format('INSERT INTO `goal_events` SET ?',{
+											event_id:result.insertId,
+											penalty : row.penalty,
+											owngoal : row.owngoal,
+										}))
+										
+									}
+								})
 								asyncLoop(afterInsertMatchEventsCalls.length, function(loop){
 									var func = afterInsertMatchEventsCalls[loop.iteration()];
 									func(result.insertId,whoscored_match_event.id,function(){
@@ -110,50 +133,13 @@ migrate = function(cb){
 									loop.next()
 								})
 							})
-						} else {
-							loop.next()
 						}
 					})
 				},Promise.resolve())
-				asyncLoop(whoscored_match_events.length, function(loop){
-					var whoscored_match_event = whoscored_match_events[loop.iteration()],
-					match_event = {
-						offset : whoscored_match_event.offset,
-						minute : whoscored_match_event.minute
-					};
-					asyncLoop(preExcuteFunc.length, function(loop){
-						var func = preExcuteFunc[loop.iteration()];
-						func(whoscored_match_event,function(item){
-							_.extend(match_event,item)
-							loop.next()
-						})
-					},function(){
-						if(_.has(match_event, "player_id") && _.has(match_event, "match_id") && _.has(match_event, "team_id")){
-							excute(mysql.format('INSERT INTO `match_events` SET ?',match_event),function(result){
-								asyncLoop(afterInsertMatchEventsCalls.length, function(loop){
-									var func = afterInsertMatchEventsCalls[loop.iteration()];
-									func(result.insertId,whoscored_match_event.id,function(){
-										loop.next()
-									})
-								},function(){
-									loop.next()
-								})
-							})
-						} else {
-							loop.next()
-						}
-					})
-				}, function(){
-					console.log('complete insert match_event');
-					cb()
-				})
 			}
+		}).then(function(){
+			console.log('complete insert match_event');
 		})
 	})
-
-	
-	
-	console.log('start to insert match_event');
-	
 }
 module.exports.migrate = migrate;

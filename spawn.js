@@ -9,5 +9,13 @@ module.exports = function (command, args, options){
 		    reject(code,signal)
 		    child_process.kill(signal);
 		});
+
+	    child_process.stdout.setEncoding('utf8');
+	    child_process.stdout.on('data', function (data) {
+	        console.log('stdout: ' + data);
+	    });
+	    child_process.stderr.on('data', function (data) {
+	    	console.log('stderr: ' + data);
+	    });
 	})
 }
