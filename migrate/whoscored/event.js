@@ -1,5 +1,6 @@
 var excute = require('../../excute'),
 mysql = require('mysql'),
+_ = require('underscore'),
 get_team = function(whoscored_match_event,cb){
 	return excute(mysql.format('SELECT team_id FROM whoscored_team_team WHERE whoscored_team_id = ?',[[whoscored_match_event.team_id]])).then(function(team){
 		if(team.length){
@@ -85,6 +86,7 @@ migrate = function(cb){
 			  PRIMARY KEY (`id`)\
 		) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
 	}).then(function(){
+		console.log('complete create tables');
 		return excute('SELECT * FROM `whoscored_match_events` WHERE id NOT IN (SELECT whoscored_event_id FROM `whoscored_event_event`) AND match_id IN (SELECT whoscored_match_id FROM `whoscored_match_match`)').then(function(whoscored_match_events){
 			if(whoscored_match_events.length){
 				return whoscored_match_events.reduce(function(sequence, whoscored_match_event){
