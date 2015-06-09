@@ -68,10 +68,9 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 	/^\/\S+?\/startseite\/pokalwettbewerb\/\S+?$/i.test(parsedURL.path) || 
 	/^\/\S+?\/startseite\/verein\/\d+?$/i.test(parsedURL.path));
 });
-excute("SELECT uri FROM transfermarket_competition WHERE competition_ref_id != 0").then(function(competitions) {
+excute("SELECT uri FROM transfermarket_competition").then(function(competitions) {
 	if(competitions.length){
 	    for (var i = competitions.length - 1; i >= 0; i--) {
-	    	console.log(competitions[i].uri)
 	    	crawler.queueURL(host + competitions[i].uri);
 	    };
 	}

@@ -60,6 +60,22 @@ Competition.prototype = {
 			excute(sql);
 		});
 	},
+	get_teams:function(){
+		var teams = [],$=this.$;
+		$('#yw1 >table > tbody > tr').each(function(index,element){
+			var url = $(element).find('td').eq(1).find('a').attr('href'),
+			id = url.replace(/^\/\S+?\/startseite\/verein\/(\d+?)(\/\S+)?$/,'$1'),
+			team_name = $(element).find('td').eq(1).find('a').attr('title'),
+			if(id){
+				teams.push({
+					team_name:name,
+					id:id,
+					profile_uri:url
+				})
+			}
+		});
+		return teams;
+	},
 	get_teams_id:function(){
 		var ids = [],$=this.$;
 		$('#yw1 >table > tbody > tr').each(function(index,element){

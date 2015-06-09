@@ -11,6 +11,6 @@ migrate = function(){
 	}).then(function(){
 		console.log('migrate done')
 	});
-}
-module.exports.migrate = migrate;
+};
+//module.exports.migrate = migrate;
 migrate()
