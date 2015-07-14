@@ -60,6 +60,7 @@ Competition.prototype = {
 			excute(sql);
 		});
 	},
+	get_teams:function(){},
 	get_teams_id:function(){
 		var ids = [],$=this.$;
 		$('#yw1 >table > tbody > tr').each(function(index,element){
