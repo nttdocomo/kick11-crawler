@@ -17,6 +17,7 @@ get_stages = require('./get_stages'),
 get_regions = require('./get_regions'),
 get_seasons = require('./get_seasons'),
 get_tournaments = require('./get_tournaments'),
+getMatchCentrePlayerStatistics = require('./getMatchCentrePlayerStatistics'),
 migrate = require('../../migrate/whoscored/migrate').migrate,
 _ = require('underscore'),
 asyncLoop = require('../../asyncLoop'),
@@ -59,14 +60,14 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
             return matchesfeed[2].reduce(function(sequence, match){
                 var match_id = match[1];
                 crawler.queueURL(host + '/MatchesFeed/'+match_id+'/MatchCentre2');
-                /*crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=summary&subcategory=all&statsAccumulationType=0&isCurrent=true&teamIds='+match[4]+'&matchId='+match_id);
+                crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=summary&subcategory=all&statsAccumulationType=0&isCurrent=true&teamIds='+match[4]+'&matchId='+match_id);
                 crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=passing&statsAccumulationType=0&teamIds='+match[4]+'&matchId='+match_id);
                 crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=defensive&statsAccumulationType=0&isCurrent=true&teamIds='+match[4]+'&matchId='+match_id);
                 crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=offensive&statsAccumulationType=0&isCurrent=true&teamIds='+match[4]+'&matchId='+match_id);
                 crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=summary&subcategory=all&statsAccumulationType=0&isCurrent=true&teamIds='+match[8]+'&matchId='+match_id);
                 crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=passing&statsAccumulationType=0&teamIds='+match[8]+'&matchId='+match_id);
                 crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=defensive&statsAccumulationType=0&isCurrent=true&teamIds='+match[8]+'&matchId='+match_id);
-                crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=offensive&statsAccumulationType=0&isCurrent=true&teamIds='+match[8]+'&matchId='+match_id);*/
+                crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=offensive&statsAccumulationType=0&isCurrent=true&teamIds='+match[8]+'&matchId='+match_id);
                 return sequence.then(function(){
                     return get_match(match,queueItem.path.replace(/^\/matchesfeed\/\?d\=(\d{4})(\d{2})(\d{2})$/,"$1-$2-$3")).then(function(){
                         return get_team(match)
@@ -98,10 +99,16 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
             }
         }
     }
+    if(/^\/StatisticsFeed\/1\/GetMatchCentrePlayerStatistics.*?/.test(queueItem.path)){
+        next = this.wait();
+        getMatchCentrePlayerStatistics(queueItem, responseBuffer, response).then(function(){
+            next();
+        })
+    }
 }).on('complete',function(){
     console.log(crawler.queue.length)
     console.log('complete')
-    migrate()
+    process.exit()
 }).on('fetcherror',function(queueItem, response){
     console.log('fetcherror');
     console.log(queueItem.path)
