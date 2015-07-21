@@ -2,7 +2,7 @@
  * @author nttdocomo
  */
 var trim = require('../utils').trim,
-excute = require("../../../excute"),
+excute = require("../../../promiseExcute"),
 mysql = require('mysql'),
 Player = require('../player/model')
 Competition = function($){
@@ -14,10 +14,13 @@ Competition = function($){
 	competition_url = $('#submenue > li').eq(1).find('a').attr('href'),
 	competition_name = $('.spielername-profil').text().replace(/^\s+(.+?)\s+$/,'$1'),
 	competition_id = competition_url.replace(/^\/\S+?\/([A-Z\d]{2,4})(\/\S+?)?(\/saison_id\/\d{4})?$/,'$1'),
-	competition_level = /([\s\S]+)\s{1,}\-\s{1,}\w+/.test(league_ranking_or_type_of_cup) ? league_ranking_or_type_of_cup.replace(/([\s\S]+)\s{1,}\-\s{1,}\w+/,'$1') : league_ranking_or_type_of_cup;
-	nation_name = flag_img.length ? flag_img.attr('title') : '';
-	nation_id = flag_img.length ? flag_img.attr('src').replace(/^\S+?\/(\d+?)(\/\S+)?\.png$/,'$1') : 0;
+	competition_level = /([\s\S]+)\s{1,}\-\s{1,}\w+/.test(league_ranking_or_type_of_cup) ? league_ranking_or_type_of_cup.replace(/([\s\S]+)\s{1,}\-\s{1,}\w+/,'$1') : league_ranking_or_type_of_cup,
+	nation_name = flag_img.length ? flag_img.attr('title') : '',
+	nation_id = flag_img.length ? flag_img.attr('src').replace(/^\S+?\/(\d+?)(\/\S+)?\.png$/,'$1') : 0,
+	season_select = $('select[name="saison_id"]'),
+	selected = season_select.fine(':selected'),
 	uri = competition_url.replace(/(\S+)\/\S+\/\d{4}$/,'$1');
+	console.log(selected.val());
 	if (type_of_cup.length) {
 		this.competition_type = 2;//杯赛
 	}
@@ -60,12 +63,21 @@ Competition.prototype = {
 			excute(sql);
 		});
 	},
+	save_team:function(){
+		var me = this, teams = this.get_teams();
+		return teams.reduce(function(sequence, team){
+			return sequence.then(function(){
+				console.log('team '+team.team_name+' saved!')
+				return excute(mysql.format('INSERT INTO `transfermarket_team` SET ?',team))
+			})
+		},Promise.resolve())
+	},
 	get_teams:function(){
 		var teams = [],$=this.$;
 		$('#yw1 >table > tbody > tr').each(function(index,element){
 			var url = $(element).find('td').eq(1).find('a').attr('href'),
 			id = url.replace(/^\/\S+?\/startseite\/verein\/(\d+?)(\/\S+)?$/,'$1'),
-			team_name = $(element).find('td').eq(1).find('a').attr('title'),
+			team_name = $(element).find('td').eq(1).find('a').attr('title');
 			if(id){
 				teams.push({
 					team_name:name,
@@ -77,24 +89,14 @@ Competition.prototype = {
 		return teams;
 	},
 	get_teams_id:function(){
-		var ids = [],$=this.$;
-		$('#yw1 >table > tbody > tr').each(function(index,element){
-			var id = $(element).find('td').eq(1).find('a').attr('href').replace(/^\/\S+?\/startseite\/verein\/(\d+?)(\/\S+)?$/,'$1');
-			if(id){
-				ids.push(id)
-			}
+		return _.map(this.get_teams(),function(team){
+			return team.id;
 		});
-		return ids;
 	},
 	get_teams_url:function(){
-		var urls = [],$=this.$;
-		$('#yw1 >table > tbody > tr').each(function(index,element){
-			var url = $(element).find('td').eq(1).find('a').attr('href');
-			if(url){
-				urls.push(url)
-			}
+		return _.map(this.get_teams(),function(team){
+			return team.profile_uri;
 		});
-		return urls;
 	}
 }
 module.exports = Competition;

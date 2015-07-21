@@ -7,14 +7,14 @@
     "test": "test"
   },
   "dependencies": {
-    "mysql": "~2.6.1",
-    "rsvp": "~3.0.18",
-    "cheerio": "~0.19.0",
-    "simplecrawler": "~0.3.10",
-    "iconv-lite": "~0.4.7",
-    "moment": "~2.10.2",
-    "underscore": "~1.8.3",
-    "moment-timezone": "~0.3.1"
+    "mysql": "*",
+    "rsvp": "*",
+    "cheerio": "*",
+    "simplecrawler": "*",
+    "iconv-lite": "*",
+    "moment": "*",
+    "underscore": "*",
+    "moment-timezone": "*"
   },
   "devDependencies": {},
   "scripts": {
