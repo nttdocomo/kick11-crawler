@@ -27,12 +27,23 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
     	decoder = new StringDecoder('utf8');
     	next = this.wait();
     	var team = new Team(cheerio.load(decoder.write(responseBuffer)));
-    	excute(mysql.format('INSERT INTO `transfermarket_team` SET ?',{
-    		team_name:team.get_name(),
-    		id:team.get_id(),
-    		nation_id:team.get_nation_id(),
-    		profile_uri:team.get_url()
-    	})).then(function(){
+    	excute(mysql.format('SELECT 1 FROM `transfermarket_team` WHERE id = ?',[team.get_id()])).then(function(row){
+    		if(row.length){
+		    	return excute(mysql.format('UPDATE `transfermarket_team` SET ? WHERE id = ?',[{
+		    		team_name:team.get_name(),
+		    		id:team.get_id(),
+		    		nation_id:team.get_nation_id(),
+		    		profile_uri:team.get_url()
+		    	},team.get_id()]))
+    		} else {
+		    	return excute(mysql.format('INSERT INTO `transfermarket_team` SET ?',{
+		    		team_name:team.get_name(),
+		    		id:team.get_id(),
+		    		nation_id:team.get_nation_id(),
+		    		profile_uri:team.get_url()
+		    	}))
+    		}
+    	}).then(function(){
     		next();
     	})
     };
@@ -40,23 +51,35 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
     	decoder = new StringDecoder('utf8');
     	next = this.wait();
     	var player = new Player(cheerio.load(decoder.write(responseBuffer)));
-    	excute(mysql.format('SELECT * FROM `transfermarket_player` WHERE id = ?',[player.get_id()])).then(function(row){
+    	excute(mysql.format('SELECT 1 FROM `transfermarket_player` WHERE id = ?',[player.get_id()])).then(function(row){
     		if(row.length){
-    			
+    			return excute(mysql.format('UPDATE `transfermarket_player` SET ? WHERE id = ?',[{
+		    		full_name:player.get_name(),
+		    		name_in_native_country:player.get_name_in_native_country(),
+		    		date_of_birth:player.get_nation_id(),
+		    		height:player.get_height(),
+		    		market_value:player.get_market_value(),
+		    		foot:player.get_foot(),
+		    		position:player.get_position(),
+		    		profile_uri:player.get_url(),
+		    		id:player.get_id(),
+		    		nation_id:player.get_nation_id(),
+		    	},player.get_id()]))
+    		} else {
+    			return excute(mysql.format('INSERT INTO `transfermarket_player` SET ?',{
+		    		full_name:player.get_name(),
+		    		name_in_native_country:player.get_name_in_native_country(),
+		    		date_of_birth:player.get_nation_id(),
+		    		height:player.get_height(),
+		    		market_value:player.get_market_value(),
+		    		foot:player.get_foot(),
+		    		position:player.get_position(),
+		    		profile_uri:player.get_url(),
+		    		id:player.get_id(),
+		    		nation_id:player.get_nation_id(),
+		    	}))
     		}
-    	})
-    	excute(mysql.format('INSERT INTO `transfermarket_player` SET ?',{
-    		full_name:player.get_name(),
-    		name_in_native_country:player.get_name_in_native_country(),
-    		date_of_birth:player.get_nation_id(),
-    		height:player.get_height(),
-    		market_value:player.get_market_value(),
-    		foot:player.get_foot(),
-    		position:player.get_position(),
-    		profile_uri:player.get_url(),
-    		id:player.get_id(),
-    		nation_id:player.get_nation_id(),
-    	})).then(function(){
+    	}).then(function(){
     		next();
     	})
     };
