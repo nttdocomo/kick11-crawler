@@ -3,13 +3,13 @@ excute = require('../../promiseExcute'),
 mysql = require('mysql'),
 StringDecoder = require('string_decoder').StringDecoder,
 _ = require('underscore'),
-getMatchCentrePlayerStatistics = function(queueItem,responseBuffer,response){
+getMatchCentrePlayerStatistics = function(queueItem,content,response){
     var decoder = new StringDecoder('utf8'),
 	unknow_columns = [],
 	query = url.parse(queueItem.url,true).query,
 	matchId = query.matchId,
 	teamId = query.teamIds,
-	matchCentrePlayerStatistics = JSON.parse(decoder.write(responseBuffer)),
+	matchCentrePlayerStatistics = JSON.parse(content),
 	playerTableStats = matchCentrePlayerStatistics.playerTableStats;
 	return excute('SHOW COLUMNS FROM whoscored_match_player_statistics').then(function(result){
 		console.log('get columns of whoscored_match_player_statistics')

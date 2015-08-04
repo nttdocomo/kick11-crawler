@@ -42,11 +42,12 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
     var next, decoder = new StringDecoder('utf8'),content,matchesfeed,matchCentre2;
     //console.log(decoder.write(responseBuffer));
     if(/^\/matchesfeed\/\?d\=\d{8}$/.test(queueItem.path)){
-        matchesfeed = eval(decoder.write(responseBuffer));
-        next = this.wait();
-        console.log(decoder.write(responseBuffer))
+        console.log('matchesfeed')
+        content = decoder.write(responseBuffer);
         //将teams里没有的team放到teams;
-        if(matchesfeed){
+        if(content && content !== null && content != 'null'){
+            matchesfeed = eval(decoder.write(responseBuffer));
+            next = this.wait();
             get_stages(matchesfeed[1]).then(function(){
                 console.log('get stages complete!')
                 return get_regions(matchesfeed[1])
@@ -82,16 +83,13 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
                 console.log('all match complete')
                 next();
             });
-        } else {
-            next();
         }
     };
     if(/^\/MatchesFeed\/(\d{1,})\/MatchCentre2$/.test(queueItem.path)){
         content = decoder.write(responseBuffer);
         var match_id = queueItem.path.replace(/^\/MatchesFeed\/(\d{1,})\/MatchCentre2$/,"$1");
         console.log(typeof(content));
-        if(content !== null && content != 'null'){
-            matchCentre2 = JSON.parse(content);
+        if(content && content !== null && content != 'null'){
             if(matchCentre2 !== null){
                 console.log('MatchesFeed started');
                 next = this.wait();
@@ -108,17 +106,20 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
         }
     }
     if(/^\/StatisticsFeed\/1\/GetMatchCentrePlayerStatistics.*?/.test(queueItem.path)){
-        next = this.wait();
-        getMatchCentrePlayerStatistics(queueItem, responseBuffer, response).then(function(){
-            next();
-        })
+        content = decoder.write(responseBuffer);
+        if(content && content !== null && content != 'null'){
+            next = this.wait();
+            getMatchCentrePlayerStatistics(queueItem, content, response).then(function(){
+                next();
+            })
+        }
     }
 }).on('complete',function(){
     console.log(crawler.queue.length)
     console.log('complete')
     process.exit()
 }).on('fetcherror',function(queueItem, response){
-    console.log(response);
+    console.log(queueItem.stateData);
     console.log(queueItem.path)
     crawler.queueURL(host + queueItem.path);
 }).on('fetchtimeout',function(queueItem, response){
