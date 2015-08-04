@@ -1,9 +1,9 @@
-var club = require('./club/club'),
+var team = require('./team'),
 /*player = require('./player'),
 team = require('./team'),
 transfer = require('./transfer'),*/
 migrate = function(){
-	club.migrate_clubs().then(function(){
+	team.migrate().then(function(){
 		console.log('migrate player');
 	});
 }

@@ -1,7 +1,14 @@
 /**
  * @author nttdocomo
  */
-var http = require("http"), fs = require('fs'),moment = require('moment'),path = require('path'),connection = require("../../db"), mysql = require('mysql'), mkdirs = require("./mkdirs");
+var http = require("http"),
+fs = require('fs'),
+moment = require('moment'),
+path = require('path'),
+connection = require("../../db"),
+mysql = require('mysql'),
+mkdirs = require("./mkdirs"),
+_ = require('underscore');
 var get_or_read_file = function(request_url,callback){
 	var options = {
 		hostname:'www.transfermarkt.co.uk',
@@ -132,6 +139,22 @@ get_nation_info = function($){
 },
 trim = function(text){
 	return text.replace(/^\s+(.*?)\s+$/,'$1');
+},
+difference = function(template, override) {
+    var ret = {};
+    for (var name in template) {
+        if (name in override) {
+            if (_.isObject(override[name]) && !_.isArray(override[name])) {
+                var diff = difference(template[name], override[name]);
+                if (!_.isEmpty(diff)) {
+                    ret[name] = diff;
+                }
+            } else if (!_.isEqual(template[name], override[name])) {
+                ret[name] = override[name];
+            }
+        }
+    }
+    return ret;
 };
 module.exports.get_or_read_file = get_or_read_file;
 module.exports.get_players_profile = get_players_profile;
@@ -139,3 +162,4 @@ module.exports.get_competition_profile = get_competition_profile;
 module.exports.get_club_info = get_club_info;
 module.exports.get_nation_info = get_nation_info;
 module.exports.trim = trim;
+module.exports.difference = difference;

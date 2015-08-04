@@ -17,71 +17,79 @@ get_stages = require('./get_stages'),
 get_regions = require('./get_regions'),
 get_seasons = require('./get_seasons'),
 get_tournaments = require('./get_tournaments'),
+get_uncomplete_matches = require('./matches').get_uncomplete_matches,
+Match = require('./matches').model,
 getMatchCentrePlayerStatistics = require('./getMatchCentrePlayerStatistics'),
 migrate = require('../../migrate/whoscored/migrate').migrate,
 _ = require('underscore'),
-asyncLoop = require('../../asyncLoop'),
 input_date = process.argv[2],
 host = 'http://www.whoscored.com',
-crawler = new Crawler('www.whoscored.com');
+crawler = new Crawler("www.whoscored.com", "/");
 crawler.maxConcurrency = 1;
-crawler.interval = 1000;
-crawler.timeout = 30000;
 crawler.discoverResources = false;
 crawler.userAgent = 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.101 Safari/537.36';
 crawler.customHeaders = {
     Host:'www.whoscored.com',
     Referer:'http://www.whoscored.com/LiveScores',
     'X-Requested-With':'XMLHttpRequest',
-    Cookie:'__gads=ID=e173268caa0f2b07:T=1432013869:S=ALNI_MaOSzNoD7wlFKgTdXpQP7oqPIlfag; OX_plg=swf|shk|pm; _gat=1; OX_sd=3; _ga=GA1.2.744658120.1432013868'
+    Cookie:'__gads=ID=e55debe14f69eef7:T=1436164463:S=ALNI_MZAB7Ks2P8iIOL4gPYkTxl-n37DtQ; OX_plg=swf|shk|pm; _ga=GA1.2.1737364748.1436164463'
 };
 /*crawler.useProxy = true;
 crawler.proxyHostname = "127.0.0.1";
 crawler.proxyPort="8087";*/
 crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
+    console.log("Completed fetching resource:", queueItem.path);
     var next, decoder = new StringDecoder('utf8'),content,matchesfeed,matchCentre2;
     //console.log(decoder.write(responseBuffer));
     if(/^\/matchesfeed\/\?d\=\d{8}$/.test(queueItem.path)){
-        console.log('matchesfeed')
         matchesfeed = eval(decoder.write(responseBuffer));
         next = this.wait();
+        console.log(decoder.write(responseBuffer))
         //将teams里没有的team放到teams;
-        get_stages(matchesfeed[1]).then(function(){
-            console.log('get stages complete!')
-            return get_regions(matchesfeed[1])
-        }).then(function(){
-            console.log('get regions complete!')
-            return get_seasons(matchesfeed[1]);
-        }).then(function(){
-            console.log('get seasons complete!')
-            return get_tournaments(matchesfeed[1]);
-        }).then(function(){
-            console.log('get tournaments complete!')
-            return matchesfeed[2].reduce(function(sequence, match){
-                var match_id = match[1];
-                crawler.queueURL(host + '/MatchesFeed/'+match_id+'/MatchCentre2');
-                crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=summary&subcategory=all&statsAccumulationType=0&isCurrent=true&teamIds='+match[4]+'&matchId='+match_id);
-                crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=passing&statsAccumulationType=0&teamIds='+match[4]+'&matchId='+match_id);
-                crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=defensive&statsAccumulationType=0&isCurrent=true&teamIds='+match[4]+'&matchId='+match_id);
-                crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=offensive&statsAccumulationType=0&isCurrent=true&teamIds='+match[4]+'&matchId='+match_id);
-                crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=summary&subcategory=all&statsAccumulationType=0&isCurrent=true&teamIds='+match[8]+'&matchId='+match_id);
-                crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=passing&statsAccumulationType=0&teamIds='+match[8]+'&matchId='+match_id);
-                crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=defensive&statsAccumulationType=0&isCurrent=true&teamIds='+match[8]+'&matchId='+match_id);
-                crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=offensive&statsAccumulationType=0&isCurrent=true&teamIds='+match[8]+'&matchId='+match_id);
-                return sequence.then(function(){
-                    return get_match(match,queueItem.path.replace(/^\/matchesfeed\/\?d\=(\d{4})(\d{2})(\d{2})$/,"$1-$2-$3")).then(function(){
+        if(matchesfeed){
+            get_stages(matchesfeed[1]).then(function(){
+                console.log('get stages complete!')
+                return get_regions(matchesfeed[1])
+            }).then(function(){
+                console.log('get regions complete!')
+                return get_seasons(matchesfeed[1]);
+            }).then(function(){
+                console.log('get seasons complete!')
+                return get_tournaments(matchesfeed[1]);
+            }).then(function(){
+                console.log('get tournaments complete!')
+                console.log(matchesfeed[2].length)
+                return matchesfeed[2].reduce(function(sequence, match){
+                    var match_id = match[1];
+                    crawler.queueURL(host + '/MatchesFeed/'+match_id+'/MatchCentre2');
+                    crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=summary&subcategory=all&statsAccumulationType=0&isCurrent=true&teamIds='+match[4]+'&matchId='+match_id);
+                    crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=passing&statsAccumulationType=0&teamIds='+match[4]+'&matchId='+match_id);
+                    crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=defensive&statsAccumulationType=0&isCurrent=true&teamIds='+match[4]+'&matchId='+match_id);
+                    crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=offensive&statsAccumulationType=0&isCurrent=true&teamIds='+match[4]+'&matchId='+match_id);
+                    crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=summary&subcategory=all&statsAccumulationType=0&isCurrent=true&teamIds='+match[8]+'&matchId='+match_id);
+                    crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=passing&statsAccumulationType=0&teamIds='+match[8]+'&matchId='+match_id);
+                    crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=defensive&statsAccumulationType=0&isCurrent=true&teamIds='+match[8]+'&matchId='+match_id);
+                    crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=offensive&statsAccumulationType=0&isCurrent=true&teamIds='+match[8]+'&matchId='+match_id);
+                    return sequence.then(function(){
+                        var match = new Match(match,queueItem.path.replace(/^\/matchesfeed\/\?d\=(\d{4})(\d{2})(\d{2})$/,"$1-$2-$3"));
+                        return match.save();
+                        //return get_match(match,queueItem.path.replace(/^\/matchesfeed\/\?d\=(\d{4})(\d{2})(\d{2})$/,"$1-$2-$3"))
+                    }).then(function(){
                         return get_team(match)
                     })
-                })
-            },Promise.resolve())
-        }).then(function(){
-            console.log('all match complete')
-            next()
-        });
+                },Promise.resolve())
+            }).then(function(){
+                console.log('all match complete')
+                next();
+            });
+        } else {
+            next();
+        }
     };
     if(/^\/MatchesFeed\/(\d{1,})\/MatchCentre2$/.test(queueItem.path)){
         content = decoder.write(responseBuffer);
         var match_id = queueItem.path.replace(/^\/MatchesFeed\/(\d{1,})\/MatchCentre2$/,"$1");
+        console.log(typeof(content));
         if(content !== null && content != 'null'){
             matchCentre2 = JSON.parse(content);
             if(matchCentre2 !== null){
@@ -110,7 +118,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
     console.log('complete')
     process.exit()
 }).on('fetcherror',function(queueItem, response){
-    console.log('fetcherror');
+    console.log(response);
     console.log(queueItem.path)
     crawler.queueURL(host + queueItem.path);
 }).on('fetchtimeout',function(queueItem, response){
@@ -121,7 +129,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
     crawler.queueURL(host + queueItem.path);
 });
 //初始化函数，目的是将当前数据库的的数据取出，用来查询数据是否存在，而不再用SELECT做查询而占用SQL连接。
-excute("CREATE TABLE IF NOT EXISTS `whoscored_registration` (\
+/*excute("CREATE TABLE IF NOT EXISTS `whoscored_registration` (\
         `id` int(10) unsigned NOT NULL AUTO_INCREMENT,\
         `match_id` int(10) unsigned NOT NULL,\
         `player_id` int(10) unsigned NOT NULL,\
@@ -130,13 +138,23 @@ excute("CREATE TABLE IF NOT EXISTS `whoscored_registration` (\
         `is_first_eleven` boolean NOT NULL DEFAULT '0',\
         `is_man_of_the_match` boolean NOT NULL DEFAULT '0',\
         PRIMARY KEY (`id`)\
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;").then(function(){
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;")*/
+Promise.resolve().then(function(){
     console.log('初始化结束......');
     if(input_date){
-        if(input_date.length == 8){
+        if(/^\d{8}$/.test(input_date)){
             crawler.queueURL(host + '/matchesfeed/?d=' + input_date);
         }
-        if(input_date.length == 4){
+        //当输入的是日期间隔时
+        if(/^\d{8}\~\d{8}$/.test(input_date)){
+            var dateArray = input_date.split('~');
+            var start = moment.utc(dateArray[0],'YYYYMMDD').valueOf(), end = moment.utc(dateArray[1],'YYYYMMDD').valueOf();
+            for (var i = end; i >= start; i-=24*60*60*1000) {
+                crawler.queueURL(host + '/matchesfeed/?d=' + moment.utc(i).format('YYYYMMDD'));
+            };
+        }
+        //当输入的只有4位数时，获取输入年份到现在的所有数据
+        if(/^\d{4}$/.test(input_date)){
             var start = moment.utc(input_date + "-01-01").valueOf(), end = moment.utc().valueOf();
             for (var i = end; i >= start; i-=24*60*60*1000) {
                 crawler.queueURL(host + '/matchesfeed/?d=' + moment.utc(i).format('YYYYMMDD'));
@@ -144,7 +162,23 @@ excute("CREATE TABLE IF NOT EXISTS `whoscored_registration` (\
         }
         crawler.start();
     } else {
-        excute('SELECT play_at FROM `whoscored_matches` ORDER BY `play_at` DESC LIMIT 1').then(function(matches){
+        console.log('there is no date provided, get the recent matches result')
+        get_uncomplete_matches().then(function(matches){
+            var date = [];
+            _.each(matches,function(match,i){
+                var now = moment.utc(),
+                play_at = moment.utc(match.play_at),
+                dateString = play_at.tz('Europe/London').format('YYYYMMDD');
+                if(now.diff(play_at, 'h') > 2 && _.indexOf(date,dateString) == -1 && i < 3){//如果当前时间与开赛时间差距2小时
+                    date.push(dateString)
+                    crawler.queueURL(host + '/matchesfeed/?d=' + dateString);
+                }
+                //console.log([match.id,play_at.format(),moment.utc().diff(play_at, 'h') > 2].join('---'));
+            });
+            crawler.start();
+        });
+        /*crawler.queueURL(host + '/matchesfeed/?d=' + moment().tz('Europe/London').format('YYYYMMDD'));*/
+        /*excute('SELECT play_at FROM `whoscored_matches` ORDER BY `play_at` DESC LIMIT 1').then(function(matches){
             if(matches.length){
                 var match = matches[0],
                 play_at = match.play_at;
@@ -160,7 +194,7 @@ excute("CREATE TABLE IF NOT EXISTS `whoscored_registration` (\
                 };
             }
             crawler.start();
-        })
+        })*/
         //crawler.queueURL(host + '/matchesfeed/?d=' + moment.utc().format('YYYYMMDD'));
     }
 })

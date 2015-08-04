@@ -13,4 +13,4 @@ migrate = function(){
 	});
 };
 //module.exports.migrate = migrate;
-migrate()
+//migrate()

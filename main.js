@@ -1,5 +1,6 @@
 var spawn = require('./spawn'),
-livescores = spawn('node', ['crawler/whoscored/livescores.js','20150303'])
+livescores = spawn('node', ['crawler/whoscored/livescores.js','20150303']);
 livescores.then(function(){
-	return spawn('node', ['migrate/whoscored/migrate.js'])
+	console.log('migrate/whoscored/migrate.js')
+	return spawn('node', ['migrate/whoscored/migrate.js']);
 })

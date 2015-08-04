@@ -82,4 +82,4 @@ migrate = function(cb){
 	});*/
 };
 module.exports.migrate = migrate;
-migrate();
+//migrate();
