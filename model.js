@@ -1,4 +1,5 @@
 var Class = require('./class'),
+mysql = require('mysql'),
 excute = require('./promiseExcute');
 module.exports = Class.extend({
 	init:function(){
@@ -13,6 +14,7 @@ module.exports = Class.extend({
     				return me.update(diff)
     			}
     		} else {
+				console.log(data.id + ' save!')
     			return me.insert(data)
     		}
 		})
@@ -23,13 +25,13 @@ module.exports = Class.extend({
 		delete row.update_at;
 	},
 	get_by_id:function(){
-		return excute(mysql.format('SELECT * FROM `'+tableName+'` WHERE id = ?',[this.id]));
+		return excute(mysql.format('SELECT * FROM `'+this.tableName+'` WHERE id = ?',[this.attributes.id]));
 	},
 	update:function(data,id){
 		if(!id){
-			id = this.id;
+			id = this.attributes.id;
 		}
-		excute(mysql.format('UPDATE `'+tableName+'` SET ? WHERE id = ?',[data,id]))
+		return excute(mysql.format('UPDATE `'+this.tableName+'` SET ? WHERE id = ?',[data,id]))
 	},
 	insert:function(data){
 		data.created_at = moment.utc().format('YYYY-MM-DD HH:mm:ss');

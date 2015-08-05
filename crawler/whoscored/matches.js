@@ -4,6 +4,8 @@
 var excute = require('../../promiseExcute'),
 mysql = require('mysql'),
 _ = require('underscore'),
+moment = require('moment'),
+moment_tz = require('moment-timezone'),
 difference = require('../transfermarkt.co.uk/utils').difference,
 Model = require('../../model'),
 model = Model.extend({
@@ -17,21 +19,22 @@ model = Model.extend({
 	    play_at = moment.tz([date,match[3]].join(' '),"Europe/London").utc().format('YYYY-MM-DD HH:mm'),
 	    score = match[12],
 	    values = {
+	    	'id':match_id,
 	        'team1_id':team1_id,
 	        'team2_id':team2_id,
 	        'play_at':play_at,
 	        'stage_id':stage_id
 	    };
-		console.log(match_id + ' get!')
 	    if(score != 'vs'){
 	        values.score1 = score.split(/\s\:\s/)[0];
 	        values.score2 = score.split(/\s\:\s/)[1];
 	    }
+		console.log(match_id + ' get!')
 	    _.extend(this.attributes,values);
 	},
 	save:function(){
 		var me = this;
-		this._super(this.attributes);
+		return this._super(this.attributes);
 	},
 	needToUpdate:function(data,row){
 		this._super(data,row);

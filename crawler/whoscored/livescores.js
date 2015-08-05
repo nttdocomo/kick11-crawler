@@ -26,6 +26,7 @@ input_date = process.argv[2],
 host = 'http://www.whoscored.com',
 crawler = new Crawler("www.whoscored.com", "/");
 crawler.maxConcurrency = 1;
+crawler.interval = 5000;
 crawler.discoverResources = false;
 crawler.userAgent = 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.101 Safari/537.36';
 crawler.customHeaders = {
@@ -39,6 +40,7 @@ crawler.proxyHostname = "127.0.0.1";
 crawler.proxyPort="8087";*/
 crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
     console.log("Completed fetching resource:", queueItem.path);
+    //console.log(queueItem.status.redirected)
     var next, decoder = new StringDecoder('utf8'),content,matchesfeed,matchCentre2;
     //console.log(decoder.write(responseBuffer));
     if(/^\/matchesfeed\/\?d\=\d{8}$/.test(queueItem.path)){
@@ -62,22 +64,40 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
                 console.log(matchesfeed[2].length)
                 return matchesfeed[2].reduce(function(sequence, match){
                     var match_id = match[1];
-                    crawler.queueURL(host + '/MatchesFeed/'+match_id+'/MatchCentre2');
-                    crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=summary&subcategory=all&statsAccumulationType=0&isCurrent=true&teamIds='+match[4]+'&matchId='+match_id);
-                    crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=passing&statsAccumulationType=0&teamIds='+match[4]+'&matchId='+match_id);
-                    crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=defensive&statsAccumulationType=0&isCurrent=true&teamIds='+match[4]+'&matchId='+match_id);
-                    crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=offensive&statsAccumulationType=0&isCurrent=true&teamIds='+match[4]+'&matchId='+match_id);
-                    crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=summary&subcategory=all&statsAccumulationType=0&isCurrent=true&teamIds='+match[8]+'&matchId='+match_id);
-                    crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=passing&statsAccumulationType=0&teamIds='+match[8]+'&matchId='+match_id);
-                    crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=defensive&statsAccumulationType=0&isCurrent=true&teamIds='+match[8]+'&matchId='+match_id);
-                    crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=offensive&statsAccumulationType=0&isCurrent=true&teamIds='+match[8]+'&matchId='+match_id);
+                    //console.log(match_id)
                     return sequence.then(function(){
-                        var match = new Match(match,queueItem.path.replace(/^\/matchesfeed\/\?d\=(\d{4})(\d{2})(\d{2})$/,"$1-$2-$3"));
-                        return match.save();
+                        console.log('get match');
+                        var modelMatch = new Match(match,queueItem.path.replace(/^\/matchesfeed\/\?d\=(\d{4})(\d{2})(\d{2})$/,"$1-$2-$3"));
+                        return modelMatch.save();
                         //return get_match(match,queueItem.path.replace(/^\/matchesfeed\/\?d\=(\d{4})(\d{2})(\d{2})$/,"$1-$2-$3"))
                     }).then(function(){
+                        console.log('get match complete!')
                         return get_team(match)
-                    })
+                    }).then(function(){
+                        return excute('SELECT 1 FROM `whoscored_registration` WHERE match_id = '+match_id).then(function(row){
+                            if(!row.length){
+                                crawler.queueURL(host + '/MatchesFeed/'+match_id+'/MatchCentre2');
+                            }
+                        })
+                    }).then(function(){
+                        return excute(mysql.format('SELECT * FROM `whoscored_match_player_statistics` WHERE matchId = ? AND teamId = ?',[match_id,match[4]])).then(function(row){
+                            if(!row.length){
+                                crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=summary&subcategory=all&statsAccumulationType=0&isCurrent=true&teamIds='+match[4]+'&matchId='+match_id);
+                                crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=passing&statsAccumulationType=0&teamIds='+match[4]+'&matchId='+match_id);
+                                crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=defensive&statsAccumulationType=0&isCurrent=true&teamIds='+match[4]+'&matchId='+match_id);
+                                crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=offensive&statsAccumulationType=0&isCurrent=true&teamIds='+match[4]+'&matchId='+match_id);
+                            }
+                        })
+                    }).then(function(){
+                        return excute(mysql.format('SELECT * FROM `whoscored_match_player_statistics` WHERE matchId = ? AND teamId = ?',[match_id,match[8]])).then(function(row){
+                            if(!row.length){
+                                crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=summary&subcategory=all&statsAccumulationType=0&isCurrent=true&teamIds='+match[8]+'&matchId='+match_id);
+                                crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=passing&statsAccumulationType=0&teamIds='+match[8]+'&matchId='+match_id);
+                                crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=defensive&statsAccumulationType=0&isCurrent=true&teamIds='+match[8]+'&matchId='+match_id);
+                                crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=offensive&statsAccumulationType=0&isCurrent=true&teamIds='+match[8]+'&matchId='+match_id);
+                            }
+                        })
+                    });
                 },Promise.resolve())
             }).then(function(){
                 console.log('all match complete')
@@ -115,19 +135,27 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
         }
     }
 }).on('complete',function(){
-    console.log(crawler.queue.length)
     console.log('complete')
     process.exit()
 }).on('fetcherror',function(queueItem, response){
-    console.log(queueItem.stateData);
+    console.log(queueItem.stateData.code);
     console.log(queueItem.path)
-    crawler.queueURL(host + queueItem.path);
+    //crawler.queueURL(host + queueItem.path);
 }).on('fetchtimeout',function(queueItem, response){
-    crawler.queueURL(host + queueItem.path);
+    //crawler.queueURL(host + queueItem.path);
     console.log('fetchtimeout:' + queueItem.path)
 }).on('fetchclienterror',function(queueItem, errorData){
     console.log('fetchclienterror')
-    crawler.queueURL(host + queueItem.path);
+    //crawler.queueURL(host + queueItem.path);
+}).on('fetchredirect',function(queueItem, parsedURL, errorData){
+    console.log('fetchredirect')
+    //return false;
+    //crawler.queueURL(host + queueItem.path);
+}).addFetchCondition(function(parsedURL) {
+    if(parsedURL.uriPath != '/Error.html'){
+        return true;
+    }
+    return false;
 });
 //初始化函数，目的是将当前数据库的的数据取出，用来查询数据是否存在，而不再用SELECT做查询而占用SQL连接。
 /*excute("CREATE TABLE IF NOT EXISTS `whoscored_registration` (\
