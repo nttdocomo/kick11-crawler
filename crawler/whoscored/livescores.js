@@ -41,13 +41,21 @@ crawler.proxyPort="8087";*/
 crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
     console.log("Completed fetching resource:", queueItem.path);
     //console.log(queueItem.status.redirected)
-    var next, decoder = new StringDecoder('utf8'),content,matchesfeed,matchCentre2;
+    var next, decoder = new StringDecoder('utf8'),content = decoder.write(responseBuffer),matchesfeed,matchCentre2;
     //console.log(decoder.write(responseBuffer));
-    if(/^\/matchesfeed\/\?d\=\d{8}$/.test(queueItem.path)){
-        console.log('matchesfeed')
-        content = decoder.write(responseBuffer);
-        //将teams里没有的team放到teams;
-        if(content && content !== null && content != 'null'){
+    if(content && content !== null && content != 'null'){
+        excute(mysql.format('SELECT 1 FROM `url_status` WHERE url = ?',[queueItem.path])).then(function(row){
+            if(!row.length){
+                return excute(mysql.format('INSERT INTO `url_status` SET ?',{
+                    url:queueItem.path,
+                    status_code:queueItem.stateData.code,
+                    is_empty:0
+                }))
+            }
+        });
+        if(/^\/matchesfeed\/\?d\=\d{8}$/.test(queueItem.path)){
+            console.log('matchesfeed')
+            //将teams里没有的team放到teams;
             matchesfeed = eval(decoder.write(responseBuffer));
             next = this.wait();
             get_stages(matchesfeed[1]).then(function(){
@@ -60,11 +68,10 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
                 console.log('get seasons complete!')
                 return get_tournaments(matchesfeed[1]);
             }).then(function(){
-                console.log('get tournaments complete!')
-                console.log(matchesfeed[2].length)
+                console.log('get tournaments complete!');
                 return matchesfeed[2].reduce(function(sequence, match){
                     var match_id = match[1],
-                    stage_id,team1_id,team2_id,play_at,score,
+                    stage_id,team1_id,team2_id,play_at,score;
                     //console.log(match_id)
                     return sequence.then(function(){
                         console.log('get match');
@@ -99,7 +106,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
                         return team1.save().then(function(){
                             return team2.save();
                         });
-                    }).then(function(){
+                    })/*.then(function(){
                         return excute('SELECT 1 FROM `whoscored_registration` WHERE match_id = '+match_id).then(function(row){
                             if(!row.length){
                                 crawler.queueURL(host + '/MatchesFeed/'+match_id+'/MatchCentre2');
@@ -123,19 +130,16 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
                                 crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=offensive&statsAccumulationType=0&isCurrent=true&teamIds='+match[8]+'&matchId='+match_id);
                             }
                         })
-                    });
+                    })*/;
                 },Promise.resolve())
             }).then(function(){
                 console.log('all match complete')
                 next();
             });
-        }
-    };
-    if(/^\/MatchesFeed\/(\d{1,})\/MatchCentre2$/.test(queueItem.path)){
-        content = decoder.write(responseBuffer);
-        var match_id = queueItem.path.replace(/^\/MatchesFeed\/(\d{1,})\/MatchCentre2$/,"$1");
-        console.log(typeof(content));
-        if(content && content !== null && content != 'null'){
+        };
+        if(/^\/MatchesFeed\/(\d{1,})\/MatchCentre2$/.test(queueItem.path)){
+            var match_id = queueItem.path.replace(/^\/MatchesFeed\/(\d{1,})\/MatchCentre2$/,"$1");
+            console.log(typeof(content));
             if(matchCentre2 !== null){
                 console.log('MatchesFeed started');
                 next = this.wait();
@@ -150,15 +154,26 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
                 })
             }
         }
-    }
-    if(/^\/StatisticsFeed\/1\/GetMatchCentrePlayerStatistics.*?/.test(queueItem.path)){
-        content = decoder.write(responseBuffer);
-        if(content && content !== null && content != 'null'){
+        if(/^\/StatisticsFeed\/1\/GetMatchCentrePlayerStatistics.*?/.test(queueItem.path)){
             next = this.wait();
             getMatchCentrePlayerStatistics(queueItem, content, response).then(function(){
                 next();
             })
         }
+    } else {
+        next = this.wait();
+        //如果抓取到的内容为空，则存到数据库中，以便下次有该URL时可以忽略
+        excute(mysql.format('SELECT 1 FROM `url_status` WHERE url = ?',[queueItem.path])).then(function(row){
+            if(!row.length){
+                return excute(mysql.format('INSERT INTO `url_status` SET ?',{
+                    url:queueItem.path,
+                    status_code:queueItem.stateData.code,
+                    is_empty:1
+                }))
+            }
+        }).then(function(){
+            next();
+        });
     }
 }).on('complete',function(){
     console.log('complete')
@@ -166,12 +181,23 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 }).on('fetcherror',function(queueItem, response){
     console.log(queueItem.stateData.code);
     console.log(queueItem.path)
+    //如果抓取过程中出现错误，则存到数据库中，以便下次有该URL时可以忽略
+    excute(mysql.format('SELECT 1 FROM `url_status` WHERE url = ?',[queueItem.path])).then(function(row){
+        if(!row.length){
+            excute(mysql.format('INSERT INTO `url_status` SET ?',{
+                url:queueItem.path,
+                status_code:queueItem.stateData.code,
+                is_empty:1
+            }))
+        }
+    })
     //crawler.queueURL(host + queueItem.path);
 }).on('fetchtimeout',function(queueItem, response){
     //crawler.queueURL(host + queueItem.path);
     console.log('fetchtimeout:' + queueItem.path)
 }).on('fetchclienterror',function(queueItem, errorData){
     console.log('fetchclienterror')
+    console.log(errorData)
     //crawler.queueURL(host + queueItem.path);
 }).on('fetchredirect',function(queueItem, parsedURL, errorData){
     console.log('fetchredirect')
@@ -218,18 +244,22 @@ Promise.resolve().then(function(){
         crawler.start();
     } else {
         console.log('there is no date provided, get the recent matches result')
-        get_uncomplete_matches().then(function(matches){
+        Match.get_uncomplete_matches().then(function(matches){
             var date = [];
-            _.each(matches,function(match,i){
+            return matches.reduce(function(sequence, match){
                 var now = moment.utc(),
                 play_at = moment.utc(match.play_at),
                 dateString = play_at.tz('Europe/London').format('YYYYMMDD');
-                if(now.diff(play_at, 'h') > 2 && _.indexOf(date,dateString) == -1 && i < 3){//如果当前时间与开赛时间差距2小时
-                    date.push(dateString)
-                    crawler.queueURL(host + '/matchesfeed/?d=' + dateString);
-                }
-                //console.log([match.id,play_at.format(),moment.utc().diff(play_at, 'h') > 2].join('---'));
-            });
+                return sequence.then(function(){
+                    return excute(mysql.format('SELECT 1 FROM `url_status` WHERE url = ?',['/matchesfeed/?d=' + dateString]))
+                }).then(function(row){
+                    if(!row.length && _.indexOf(date,dateString) == -1){
+                        date.push(dateString)
+                        crawler.queueURL(host + '/matchesfeed/?d=' + dateString);
+                    }
+                })
+            },Promise.resolve())
+        }).then(function(){
             crawler.start();
         });
         /*crawler.queueURL(host + '/matchesfeed/?d=' + moment().tz('Europe/London').format('YYYYMMDD'));*/

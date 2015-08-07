@@ -87,7 +87,12 @@ excute(mysql.format('SELECT DISTINCT(match_id) FROM `whoscored_registration`')).
 }).then(function(row){
     if(row.length){
         _.each(row,function(item){
-            crawler.queueURL(host + '/MatchesFeed/'+item.id+'/MatchCentre2');
+            var path = '/MatchesFeed/'+item.id+'/MatchCentre2';
+            excute(mysql.format('SELECT 1 FROM `url_status` WHERE url = ?',[path])).then(function(row){
+                if(!row.length){
+                    crawler.queueURL(host + '/MatchesFeed/'+item.id+'/MatchCentre2');
+                }
+            })
         })
         crawler.start();
     }

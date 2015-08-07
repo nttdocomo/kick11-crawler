@@ -8,7 +8,7 @@ moment = require('moment'),
 moment_tz = require('moment-timezone'),
 difference = require('../transfermarkt.co.uk/utils').difference,
 Model = require('../../model'),
-model = Model.extend({
+Match = Model.extend({
 	tableName:'whoscored_matches',
 	init:function(data){
 		this._super();
@@ -31,10 +31,10 @@ model = Model.extend({
 		return false;
 	}
 });
+Match.get_uncomplete_matches = function(){
+    return excute('SELECT id,play_at FROM whoscored_matches WHERE score1 IS NULL AND score2 IS NULL ORDER BY play_at ASC');
+};
 module.exports.get_match_by_id = function(id){
     return excute(mysql.format('SELECT 1 FROM whoscored_matches WHERE id = ?',[id]));
 };
-module.exports.get_uncomplete_matches = function(){
-    return excute('SELECT id,play_at FROM whoscored_matches WHERE score1 IS NULL AND score2 IS NULL');
-};
-module.exports.model = model;
+module.exports.model = Match;
