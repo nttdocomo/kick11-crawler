@@ -63,16 +63,42 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
                 console.log('get tournaments complete!')
                 console.log(matchesfeed[2].length)
                 return matchesfeed[2].reduce(function(sequence, match){
-                    var match_id = match[1];
+                    var match_id = match[1],
+                    stage_id,team1_id,team2_id,play_at,score,
                     //console.log(match_id)
                     return sequence.then(function(){
                         console.log('get match');
-                        var modelMatch = new Match(match,queueItem.path.replace(/^\/matchesfeed\/\?d\=(\d{4})(\d{2})(\d{2})$/,"$1-$2-$3"));
+                        stage_id = match[0],
+                        team1_id = match[4],
+                        team2_id = match[8],
+                        play_at = moment.tz([queueItem.path.replace(/^\/matchesfeed\/\?d\=(\d{4})(\d{2})(\d{2})$/,"$1-$2-$3"),match[3]].join(' '),"Europe/London").utc().format('YYYY-MM-DD HH:mm'),
+                        score = match[12],
+                        values = {
+                            'id':match_id,
+                            'team1_id':team1_id,
+                            'team2_id':team2_id,
+                            'play_at':play_at,
+                            'stage_id':stage_id
+                        };
+                        if(score != 'vs'){
+                            values.score1 = score.split(/\s\:\s/)[0];
+                            values.score2 = score.split(/\s\:\s/)[1];
+                        }
+                        var modelMatch = new Match(values);
                         return modelMatch.save();
                         //return get_match(match,queueItem.path.replace(/^\/matchesfeed\/\?d\=(\d{4})(\d{2})(\d{2})$/,"$1-$2-$3"))
                     }).then(function(){
                         console.log('get match complete!')
-                        return get_team(match)
+                        var team1 = new Team({
+                            id : team1_id,
+                            name : match[5]
+                        }),team2 = new Team({
+                            id : team2_id,
+                            name : match[9]
+                        });
+                        return team1.save().then(function(){
+                            return team2.save();
+                        });
                     }).then(function(){
                         return excute('SELECT 1 FROM `whoscored_registration` WHERE match_id = '+match_id).then(function(row){
                             if(!row.length){

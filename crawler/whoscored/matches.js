@@ -10,27 +10,10 @@ difference = require('../transfermarkt.co.uk/utils').difference,
 Model = require('../../model'),
 model = Model.extend({
 	tableName:'whoscored_matches',
-	init:function(match,date){
+	init:function(data){
 		this._super();
-		var match_id = match[1],
-	    stage_id = match[0],
-	    team1_id = match[4],
-	    team2_id = match[8],
-	    play_at = moment.tz([date,match[3]].join(' '),"Europe/London").utc().format('YYYY-MM-DD HH:mm'),
-	    score = match[12],
-	    values = {
-	    	'id':match_id,
-	        'team1_id':team1_id,
-	        'team2_id':team2_id,
-	        'play_at':play_at,
-	        'stage_id':stage_id
-	    };
-	    if(score != 'vs'){
-	        values.score1 = score.split(/\s\:\s/)[0];
-	        values.score2 = score.split(/\s\:\s/)[1];
-	    }
 		console.log(match_id + ' get!')
-	    _.extend(this.attributes,values);
+	    _.extend(this.attributes,data);
 	},
 	save:function(){
 		var me = this;
@@ -42,7 +25,6 @@ model = Model.extend({
 		if(!_.isEqual(data,row)){
 			console.log(data.id + 'need to update');
 			diff = difference(row,data);
-			diff.updated_at = moment.utc().format('YYYY-MM-DD HH:mm:ss')
 			return diff;
     		//return excute(mysql.format('UPDATE `transfermarket_team` SET ? WHERE id = ?',[diff,id]))
 		}

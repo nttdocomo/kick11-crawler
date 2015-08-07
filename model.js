@@ -1,5 +1,6 @@
 var Class = require('./class'),
 mysql = require('mysql'),
+moment = require('moment'),
 excute = require('./promiseExcute');
 module.exports = Class.extend({
 	init:function(){
@@ -31,6 +32,7 @@ module.exports = Class.extend({
 		if(!id){
 			id = this.attributes.id;
 		}
+		data.updated_at = moment.utc().format('YYYY-MM-DD HH:mm:ss');
 		return excute(mysql.format('UPDATE `'+this.tableName+'` SET ? WHERE id = ?',[data,id]))
 	},
 	insert:function(data){

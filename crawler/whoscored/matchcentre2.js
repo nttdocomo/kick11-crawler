@@ -75,9 +75,22 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
     console.log('fetchclienterror')
     crawler.queueURL(host + queueItem.path);
 });
-crawler.queueURL(host + '/MatchesFeed/914891/MatchCentre2');
-crawler.start();
+/*crawler.queueURL(host + '/MatchesFeed/914891/MatchCentre2');
+crawler.start();*/
 
-
+excute(mysql.format('SELECT DISTINCT(match_id) FROM `whoscored_registration`')).then(function(row){
+    var matches_id = _.map(row,function(item){
+        return item.match_id
+    });
+    //console.log(mysql.format('SELECT id FROM `whoscored_matches` WHERE score1 IS NOT NULL AND score2 IS NOT NULL AND match_id NOT IN ?',[[matches_id]]))
+    return excute(mysql.format('SELECT id FROM `whoscored_matches` WHERE score1 IS NOT NULL AND score2 IS NOT NULL AND match_id NOT IN ?',[[matches_id]]))
+}).then(function(row){
+    if(row.length){
+        _.each(row,function(item){
+            crawler.queueURL(host + '/MatchesFeed/'+item.id+'/MatchCentre2');
+        })
+        crawler.start();
+    }
+})
 //http://www.whoscored.com/matchesfeed/?d=20141021
 //http://www.whoscored.com/tournamentsfeed/9155/Fixtures/?d=2014W42&isAggregate=false
