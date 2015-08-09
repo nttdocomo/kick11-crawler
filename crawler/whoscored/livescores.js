@@ -244,8 +244,8 @@ Promise.resolve().then(function(){
         crawler.start();
     } else {
         console.log('there is no date provided, get the recent matches result')
-        Match.get_uncomplete_matches().then(function(matches){
-            var date = [];
+        var date = [];
+        excute('SELECT DISTINCT play_at FROM whoscored_matches WHERE score1 IS NULL AND score2 IS NULL ORDER BY play_at ASC').then(function(matches){
             return matches.reduce(function(sequence, match){
                 var now = moment.utc(),
                 play_at = moment.utc(match.play_at),
@@ -255,11 +255,14 @@ Promise.resolve().then(function(){
                 }).then(function(row){
                     if(!row.length && _.indexOf(date,dateString) == -1){
                         date.push(dateString)
-                        crawler.queueURL(host + '/matchesfeed/?d=' + dateString);
+                        //crawler.queueURL(host + '/matchesfeed/?d=' + dateString);
                     }
                 })
             },Promise.resolve())
-        }).then(function(){
+        },function(err){
+            console.log(err)
+        }).then(function(){//从最初的时间开始检查有哪天是缺失的，然后去抓
+            console.log(date[0])
             crawler.start();
         });
         /*crawler.queueURL(host + '/matchesfeed/?d=' + moment().tz('Europe/London').format('YYYYMMDD'));*/
