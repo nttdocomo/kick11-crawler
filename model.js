@@ -1,13 +1,16 @@
 var Class = require('./class'),
 mysql = require('mysql'),
+_ = require('underscore'),
 moment = require('moment'),
 excute = require('./promiseExcute');
 module.exports = Class.extend({
-	init:function(){
+	init:function(data){
 		this.attributes = {};
+	    _.extend(this.attributes,data);
 	},
-	save:function(data){
-		var me = this;
+	save:function(){
+		var me = this,
+		data = this.attributes;
 		return this.get_by_id().then(function(row){
     		if(row.length){
     			var diff = me.needToUpdate(data,row[0]);
@@ -15,7 +18,6 @@ module.exports = Class.extend({
     				return me.update(diff)
     			}
     		} else {
-				console.log(data.id + ' save!')
     			return me.insert(data)
     		}
 		})
@@ -36,7 +38,8 @@ module.exports = Class.extend({
 		return excute(mysql.format('UPDATE `'+this.tableName+'` SET ? WHERE id = ?',[data,id]))
 	},
 	insert:function(data){
+		console.log('insert '+data.id)
 		data.created_at = moment.utc().format('YYYY-MM-DD HH:mm:ss');
-    	return excute(mysql.format('INSERT INTO `'+tableName+'` SET ?',data));
+    	return excute(mysql.format('INSERT INTO `'+this.tableName+'` SET ?',data));
 	}
 });

@@ -10,20 +10,10 @@ difference = require('../transfermarkt.co.uk/utils').difference,
 Model = require('../../model'),
 Match = Model.extend({
 	tableName:'whoscored_matches',
-	init:function(data){
-		this._super();
-		console.log(match_id + ' get!')
-	    _.extend(this.attributes,data);
-	},
-	save:function(){
-		var me = this;
-		return this._super(this.attributes);
-	},
 	needToUpdate:function(data,row){
 		this._super(data,row);
 		var diff;
 		if(!_.isEqual(data,row)){
-			console.log(data.id + 'need to update');
 			diff = difference(row,data);
 			return diff;
     		//return excute(mysql.format('UPDATE `transfermarket_team` SET ? WHERE id = ?',[diff,id]))
