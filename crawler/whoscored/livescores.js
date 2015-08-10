@@ -74,7 +74,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
                     var match_id = match[1],
                     stage_id,team1_id,team2_id,play_at,score;
                     //console.log(match_id)
-                    return sequence.then(function(){
+                    var promise = sequence.then(function(){
                         stage_id = match[0],
                         team1_id = match[4],
                         team2_id = match[8],
@@ -105,31 +105,35 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
                         return team1.save().then(function(){
                             return team2.save();
                         });
-                    })/*.then(function(){
-                        return excute('SELECT 1 FROM `whoscored_registration` WHERE match_id = '+match_id).then(function(row){
-                            if(!row.length){
-                                crawler.queueURL(host + '/MatchesFeed/'+match_id+'/MatchCentre2');
-                            }
-                        })
-                    }).then(function(){
-                        return excute(mysql.format('SELECT * FROM `whoscored_match_player_statistics` WHERE matchId = ? AND teamId = ?',[match_id,match[4]])).then(function(row){
-                            if(!row.length){
-                                crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=summary&subcategory=all&statsAccumulationType=0&isCurrent=true&teamIds='+match[4]+'&matchId='+match_id);
-                                crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=passing&statsAccumulationType=0&teamIds='+match[4]+'&matchId='+match_id);
-                                crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=defensive&statsAccumulationType=0&isCurrent=true&teamIds='+match[4]+'&matchId='+match_id);
-                                crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=offensive&statsAccumulationType=0&isCurrent=true&teamIds='+match[4]+'&matchId='+match_id);
-                            }
-                        })
-                    }).then(function(){
-                        return excute(mysql.format('SELECT * FROM `whoscored_match_player_statistics` WHERE matchId = ? AND teamId = ?',[match_id,match[8]])).then(function(row){
-                            if(!row.length){
-                                crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=summary&subcategory=all&statsAccumulationType=0&isCurrent=true&teamIds='+match[8]+'&matchId='+match_id);
-                                crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=passing&statsAccumulationType=0&teamIds='+match[8]+'&matchId='+match_id);
-                                crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=defensive&statsAccumulationType=0&isCurrent=true&teamIds='+match[8]+'&matchId='+match_id);
-                                crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=offensive&statsAccumulationType=0&isCurrent=true&teamIds='+match[8]+'&matchId='+match_id);
-                            }
-                        })
-                    })*/;
+                    });
+                    if(match[15]){
+                        promise.then(function(){
+                            return excute('SELECT 1 FROM `whoscored_registration` WHERE match_id = '+match_id).then(function(row){
+                                if(!row.length){
+                                    crawler.queueURL(host + '/MatchesFeed/'+match_id+'/MatchCentre2');
+                                }
+                            })
+                        }).then(function(){
+                            return excute(mysql.format('SELECT * FROM `whoscored_match_player_statistics` WHERE matchId = ? AND teamId = ?',[match_id,match[4]])).then(function(row){
+                                if(!row.length){
+                                    crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=summary&subcategory=all&statsAccumulationType=0&isCurrent=true&teamIds='+match[4]+'&matchId='+match_id);
+                                    crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=passing&statsAccumulationType=0&teamIds='+match[4]+'&matchId='+match_id);
+                                    crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=defensive&statsAccumulationType=0&isCurrent=true&teamIds='+match[4]+'&matchId='+match_id);
+                                    crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=offensive&statsAccumulationType=0&isCurrent=true&teamIds='+match[4]+'&matchId='+match_id);
+                                }
+                            })
+                        }).then(function(){
+                            return excute(mysql.format('SELECT * FROM `whoscored_match_player_statistics` WHERE matchId = ? AND teamId = ?',[match_id,match[8]])).then(function(row){
+                                if(!row.length){
+                                    crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=summary&subcategory=all&statsAccumulationType=0&isCurrent=true&teamIds='+match[8]+'&matchId='+match_id);
+                                    crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=passing&statsAccumulationType=0&teamIds='+match[8]+'&matchId='+match_id);
+                                    crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=defensive&statsAccumulationType=0&isCurrent=true&teamIds='+match[8]+'&matchId='+match_id);
+                                    crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=offensive&statsAccumulationType=0&isCurrent=true&teamIds='+match[8]+'&matchId='+match_id);
+                                }
+                            })
+                        });
+                    }
+                    return promise;
                 },Promise.resolve())
             }).then(function(){
                 console.log('all match complete')
