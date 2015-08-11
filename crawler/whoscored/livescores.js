@@ -8,8 +8,10 @@ mysql = require('mysql'),
 moment = require('moment'),
 moment_tz = require('moment-timezone'),
 Crawler = require("simplecrawler"),
+get_registration = require('./registration').get_registration,
+get_events = require('./events').get_events,
 whoscored_registration = require('./whoscored_registration'),
-get_player = require('./get_player'),
+get_player = require('./player').get_player,
 get_team = require('./get_team'),
 get_match = require('./get_matches'),
 get_goals = require('./get_goals'),
@@ -17,10 +19,9 @@ get_stages = require('./get_stages'),
 get_regions = require('./get_regions'),
 get_seasons = require('./get_seasons'),
 get_tournaments = require('./get_tournaments'),
-get_uncomplete_matches = require('./matches').get_uncomplete_matches,
 Match = require('./matches').model,
 Team = require('./team').model,
-getMatchCentrePlayerStatistics = require('./getMatchCentrePlayerStatistics'),
+getMatchCentrePlayerStatistics = require('./statistics').getMatchCentrePlayerStatistics,
 migrate = require('../../migrate/whoscored/migrate').migrate,
 _ = require('underscore'),
 input_date = process.argv[2],
@@ -106,7 +107,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
                             return team2.save();
                         });
                     });
-                    if(match[15]){
+                    if(match[14] && match[15]){
                         promise.then(function(){
                             return excute('SELECT 1 FROM `whoscored_registration` WHERE match_id = '+match_id).then(function(row){
                                 if(!row.length){
@@ -143,14 +144,16 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
         if(/^\/MatchesFeed\/(\d{1,})\/MatchCentre2$/.test(queueItem.path)){
             var match_id = queueItem.path.replace(/^\/MatchesFeed\/(\d{1,})\/MatchCentre2$/,"$1");
             console.log(typeof(content));
-            if(matchCentre2 !== null){
+            if(content && content !== null && content != 'null'){
                 console.log('MatchesFeed started');
                 next = this.wait();
-                get_player(matchCentre2).then(function(){
+                get_player(content).then(function(){
                     console.log('get player complete!')
-                    return whoscored_registration(matchCentre2, match_id)
+                    return get_registration(content, match_id)
                 }).then(function(){
-                    return get_goals(matchCentre2, match_id)
+                    return get_goals(content, match_id)
+                }).then(function(){
+                    return get_events(content, match_id)
                 }).then(function(){
                     console.log('all event complete')
                     next()
@@ -203,7 +206,8 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
     console.log(errorData)
     //crawler.queueURL(host + queueItem.path);
 }).on('fetchredirect',function(queueItem, parsedURL, errorData){
-    console.log('fetchredirect')
+    console.log('fetchredirect');
+    console.log(queueItem.path);
     //return false;
     //crawler.queueURL(host + queueItem.path);
 }).addFetchCondition(function(parsedURL) {
@@ -223,9 +227,15 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
         `is_man_of_the_match` boolean NOT NULL DEFAULT '0',\
         PRIMARY KEY (`id`)\
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;")*/
+var date = [],
+condition = 0,
+now = moment.utc(),
+clone = now.clone();
 Promise.resolve().then(function(){
     console.log('初始化结束......');
-    if(input_date){
+    crawler.queueURL(host + '/matchesfeed/?d=' + now.tz('Europe/London').format('YYYYMMDD'));
+    return excute('SELECT DISTINCT play_at FROM whoscored_matches ORDER BY play_at ASC');
+    /*if(input_date){
         if(/^\d{8}$/.test(input_date)){
             crawler.queueURL(host + '/matchesfeed/?d=' + input_date);
         }
@@ -291,8 +301,34 @@ Promise.resolve().then(function(){
                 crawler.start();
             });
         });
-    }
-})
+    }*/
+}).then(function(row){
+    return row.reduce(function(sequence, match){
+        var play_at = moment.utc(match.play_at),
+        dateString = play_at.tz('Europe/London').format('YYYYMMDD');
+        return sequence.then(function(){
+            if(_.indexOf(date,dateString) == -1){
+                date.push(dateString)
+            }
+        })
+    },Promise.resolve())
+}).then(function(){
+    return promiseWhile(function(){
+        return condition < 5;
+    },function(){
+        var play_at = clone.subtract(1, 'days').format('YYYYMMDD'),
+        url;
+        if(_.indexOf(date,play_at) == -1){
+            url = '/matchesfeed/?d=' + play_at;
+            console.log(url)
+            crawler.queueURL(host + url);
+            ++condition;
+        }
+    })
+}).then(function(){
+    //alert('done');
+    crawler.start();
+});
 
 function promiseWhile(condition, body) {
   return new Promise(function(resolve,reject){

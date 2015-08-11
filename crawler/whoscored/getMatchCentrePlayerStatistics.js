@@ -19,18 +19,25 @@ getMatchCentrePlayerStatistics = function(queueItem,content,response){
 		return playerTableStats.reduce(function(sequence,playerTableStat){
 			console.log('loop playerTableStats')
 			var alter_sql = [];
-			return sequence.then(function(){
-	    		//首先将值为null或者undefined的删除，因为无法判断值为数字还是字符串，如果表字段没有这个键，则无法创建列。
-	    		_.each(playerTableStat, function(value,key){
-	    			if (value === null || value === undefined || value === '' || value === 0 || typeof(value) === 'object') {
-						// test[i] === undefined is probably not very useful here
-						delete playerTableStat[key];
-					} else {
-						if(columns.indexOf(key) < 0){
-							unknow_columns.push(key)
-						}
+    		//首先将值为null或者undefined的删除，因为无法判断值为数字还是字符串，如果表字段没有这个键，则无法创建列。
+    		_.each(playerTableStat, function(value,key){
+    			if (value === null || value === undefined || value === '' || value === 0 || typeof(value) === 'object') {
+					// test[i] === undefined is probably not very useful here
+					delete playerTableStat[key];
+				} else {
+					if(columns.indexOf(key) < 0){
+						unknow_columns.push(key)
 					}
-	    		})
+				}
+    		})
+	    	var playerId = playerTableStat.playerId;
+	    	if(!playerTableStat.teamId){
+	    		playerTableStat.teamId = teamId
+	    	}
+	    	if(!playerTableStat.matchId){
+	    		playerTableStat.matchId = matchId
+	    	}
+			return sequence.then(function(){
 	    		return excute(mysql.format('SELECT id FROM whoscored_player WHERE id = ?',[playerTableStat.playerId])).then(function(row){
 					console.log('loop playerTableStats')
 	    			if(!row.length){
@@ -40,37 +47,30 @@ getMatchCentrePlayerStatistics = function(queueItem,content,response){
 			                name:playerTableStat.name,
 			            }))
 	    			}
-	    		}).then(function(){
-	    			return unknow_columns.reduce(function(sequence,column){
-	    				return sequence.then(function(){
-	    					if(typeof(playerTableStat[column]) == 'string'){
-								return excute('ALTER TABLE whoscored_match_player_statistics ADD '+column+' varchar(30) DEFAULT NULL')
-							}
-							if(typeof(playerTableStat[column]) == 'number'){
-								return excute('ALTER TABLE whoscored_match_player_statistics ADD '+column+' smallint UNSIGNED DEFAULT 0')
-							}
-							if(typeof(playerTableStat[column]) == 'boolean'){
-								return excute('ALTER TABLE whoscored_match_player_statistics ADD '+column+' boolean DEFAULT 0')
-							}
-	    				})
-	    			},Promise.resolve())
-	    		}).then(function(){
-			    	var playerId = playerTableStat.playerId;
-			    	if(!playerTableStat.teamId){
-			    		playerTableStat.teamId = teamId
-			    	}
-			    	if(!playerTableStat.matchId){
-			    		playerTableStat.matchId = matchId
-			    	}
-			    	excute(mysql.format('SELECT playerId,teamId,matchId FROM whoscored_match_player_statistics WHERE playerId = ? AND teamId = ? AND matchId = ?',[item.playerId,item.teamId,item.matchId])).then(function(statistic){
-			    		if(statistic){
-				    		return excute(mysql.format('UPDATE whoscored_match_player_statistics SET ? WHERE teamId = ? AND playerId = ? AND matchId = ?',[playerTableStat,teamId,playerId,matchId]))
-				    	} else {
-				    		return excute(mysql.format('INSERT INTO whoscored_match_player_statistics SET ?',playerTableStat))
-				    	}
-			    	})
 	    		})
-			})
+			}).then(function(){
+    			return unknow_columns.reduce(function(sequence,column){
+    				return sequence.then(function(){
+    					if(typeof(playerTableStat[column]) == 'string'){
+							return excute('ALTER TABLE whoscored_match_player_statistics ADD '+column+' varchar(30) DEFAULT NULL')
+						}
+						if(typeof(playerTableStat[column]) == 'number'){
+							return excute('ALTER TABLE whoscored_match_player_statistics ADD '+column+' smallint UNSIGNED DEFAULT 0')
+						}
+						if(typeof(playerTableStat[column]) == 'boolean'){
+							return excute('ALTER TABLE whoscored_match_player_statistics ADD '+column+' boolean DEFAULT 0')
+						}
+    				})
+    			},Promise.resolve())
+    		}).then(function(){
+		    	return excute(mysql.format('SELECT playerId,teamId,matchId FROM whoscored_match_player_statistics WHERE playerId = ? AND teamId = ? AND matchId = ?',[item.playerId,item.teamId,item.matchId])).then(function(statistic){
+		    		if(statistic){
+			    		return excute(mysql.format('UPDATE whoscored_match_player_statistics SET ? WHERE teamId = ? AND playerId = ? AND matchId = ?',[playerTableStat,teamId,playerId,matchId]))
+			    	} else {
+			    		return excute(mysql.format('INSERT INTO whoscored_match_player_statistics SET ?',playerTableStat))
+			    	}
+		    	})
+    		})
 		},Promise.resolve())
 	})
 };

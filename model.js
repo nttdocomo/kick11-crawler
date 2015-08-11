@@ -11,8 +11,8 @@ module.exports = Class.extend({
 	save:function(){
 		var me = this,
 		data = this.attributes;
-		return this.get_by_id().then(function(row){
-    		if(row.length){
+		return this.is_exist().then(function(is_exist){
+    		if(is_exist){
     			var diff = me.needToUpdate(data,row[0]);
     			if(diff){
     				return me.update(diff)
@@ -20,6 +20,11 @@ module.exports = Class.extend({
     		} else {
     			return me.insert(data)
     		}
+		})
+	},
+	is_exist:function(){
+		return this.get_by_id().then(function(row){
+			return row.length;
 		})
 	},
 	needToUpdate:function(data,row){

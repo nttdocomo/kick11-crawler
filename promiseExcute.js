@@ -9,6 +9,7 @@ module.exports = function (sql){
 			    connection.release();
 			    if (err) {
 			    	reject(err)
+			    	throw err;
 			    } else {
 			    	resolve(result)
 			    }
