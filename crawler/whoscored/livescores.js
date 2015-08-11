@@ -166,7 +166,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
                 next();
             })
         }
-    } else {
+    }/* else {
         next = this.wait();
         //如果抓取到的内容为空，则存到数据库中，以便下次有该URL时可以忽略
         excute(mysql.format('SELECT 1 FROM `url_status` WHERE url = ?',[queueItem.path])).then(function(row){
@@ -180,7 +180,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
         }).then(function(){
             next();
         });
-    }
+    }*/
 }).on('complete',function(){
     console.log('complete')
     process.exit()
@@ -188,7 +188,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
     console.log(queueItem.stateData.code);
     console.log(queueItem.path)
     //如果抓取过程中出现错误，则存到数据库中，以便下次有该URL时可以忽略
-    excute(mysql.format('SELECT 1 FROM `url_status` WHERE url = ?',[queueItem.path])).then(function(row){
+    /*excute(mysql.format('SELECT 1 FROM `url_status` WHERE url = ?',[queueItem.path])).then(function(row){
         if(!row.length){
             excute(mysql.format('INSERT INTO `url_status` SET ?',{
                 url:queueItem.path,
@@ -196,7 +196,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
                 is_empty:1
             }))
         }
-    })
+    })*/
     //crawler.queueURL(host + queueItem.path);
 }).on('fetchtimeout',function(queueItem, response){
     //crawler.queueURL(host + queueItem.path);
