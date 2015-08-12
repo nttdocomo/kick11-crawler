@@ -96,6 +96,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
                         return modelMatch.save();
                         //return get_match(match,queueItem.path.replace(/^\/matchesfeed\/\?d\=(\d{4})(\d{2})(\d{2})$/,"$1-$2-$3"))
                     }).then(function(){
+                        console.log('match complete!')
                         var team1 = new Team({
                             id : team1_id,
                             name : match[5]
@@ -124,7 +125,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
                                 }
                             })
                         }).then(function(){
-                            return excute(mysql.format('SELECT * FROM `whoscored_match_player_statistics` WHERE matchId = ? AND teamId = ?',[match_id,match[8]])).then(function(row){
+                            return excute(mysql.format('SELECT 1 FROM `whoscored_match_player_statistics` WHERE matchId = ? AND teamId = ?',[match_id,match[8]])).then(function(row){
                                 if(!row.length){
                                     crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=summary&subcategory=all&statsAccumulationType=0&isCurrent=true&teamIds='+match[8]+'&matchId='+match_id);
                                     crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=passing&statsAccumulationType=0&teamIds='+match[8]+'&matchId='+match_id);
@@ -182,6 +183,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
         });
     }*/
 }).on('complete',function(){
+    console.log(crawler.queue.length)
     console.log('complete')
     process.exit()
 }).on('fetcherror',function(queueItem, response){
@@ -204,6 +206,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 }).on('fetchclienterror',function(queueItem, errorData){
     console.log('fetchclienterror')
     console.log(errorData)
+    console.log(queueItem.path);
     //crawler.queueURL(host + queueItem.path);
 }).on('fetchredirect',function(queueItem, parsedURL, errorData){
     console.log('fetchredirect');
@@ -314,7 +317,7 @@ Promise.resolve().then(function(){
     },Promise.resolve())
 }).then(function(){
     return promiseWhile(function(){
-        return condition < 5;
+        return condition < 1;
     },function(){
         var play_at = clone.subtract(1, 'days').format('YYYYMMDD'),
         url;

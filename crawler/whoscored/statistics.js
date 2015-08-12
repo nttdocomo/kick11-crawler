@@ -33,8 +33,7 @@ Statistics.all = function(){
     return excute('SELECT * FROM whoscored_match_player_statistics');
 };
 var getMatchCentrePlayerStatistics = function(queueItem,content,response){
-    var decoder = new StringDecoder('utf8'),
-    unknow_columns = [],
+    var unknow_columns = [],
     query = url.parse(queueItem.url,true).query,
     matchId = query.matchId,
     teamId = query.teamIds,
