@@ -1,23 +1,24 @@
 /**
  * @author nttdocomo
  */
-var excute = require('../../promiseExcute'),
-mysql = require('mysql'),
+var mysql = require('mysql'),
+url = require('url'),
 _ = require('underscore'),
 moment = require('moment'),
 moment_tz = require('moment-timezone'),
+excute = require('../../promiseExcute'),
 difference = require('../transfermarkt.co.uk/utils').difference,
 Player = require('./player').model,
 Model = require('../../model'),
 Statistics = Model.extend({
     tableName:'whoscored_match_player_statistics',
     is_exist:function(){
-        return excute(mysql.format('SELECT 1 FROM whoscored_match_player_statistics WHERE playerId = ? AND teamId = ? AND matchId = ?',[this.playerId,this.teamId,this.matchId])).then(function(row){
-            return row.length;
-        })
+        var data = this.attributes;
+        return excute(mysql.format('SELECT 1 FROM whoscored_match_player_statistics WHERE playerId = ? AND teamId = ? AND matchId = ?',[data.playerId,data.teamId,data.matchId]));
     },
     needToUpdate:function(data,row){
         this._super(data,row);
+        console.log('needToUpdate')
         var diff;
         if(!_.isEqual(data,row)){
             diff = difference(row,data);
@@ -25,6 +26,16 @@ Statistics = Model.extend({
             //return excute(mysql.format('UPDATE `transfermarket_team` SET ? WHERE id = ?',[diff,id]))
         }
         return false;
+    },
+    update:function(data,id){
+        console.log(data);
+        console.log('update '+[data.playerId,data.teamId,data.matchId].join('----'));
+        data.updated_at = moment.utc().format('YYYY-MM-DD HH:mm:ss');
+        return excute(mysql.format('UPDATE `'+this.tableName+'` SET ? WHERE playerId = ? AND teamId = ? AND matchId = ?',[data,data.playerId,data.teamId,data.matchId]))
+    },
+    insert:function(data){
+        console.log('insert '+[data.playerId,data.teamId,data.matchId].join('----'))
+        return this._super(data);
     }
 });
 Statistics.excute = excute;
@@ -45,7 +56,6 @@ var getMatchCentrePlayerStatistics = function(queueItem,content,response){
             return column.Field;
         })
         return playerTableStats.reduce(function(sequence,playerTableStat){
-            console.log('loop playerTableStats')
             var alter_sql = [];
             //首先将值为null或者undefined的删除，因为无法判断值为数字还是字符串，如果表字段没有这个键，则无法创建列。
             _.each(playerTableStat, function(value,key){
@@ -97,6 +107,7 @@ var getMatchCentrePlayerStatistics = function(queueItem,content,response){
                     })
                 },Promise.resolve())
             }).then(function(){
+                console.log('save')
                 return statistics.save();
                 /*return excute(mysql.format('SELECT playerId,teamId,matchId FROM whoscored_match_player_statistics WHERE playerId = ? AND teamId = ? AND matchId = ?',[item.playerId,item.teamId,item.matchId])).then(function(statistic){
                     if(statistic){

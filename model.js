@@ -14,7 +14,7 @@ module.exports = Class.extend({
 		return this.is_exist().then(function(row){
     		if(row.length){
     			var diff = me.needToUpdate(data,row[0]);
-    			if(diff){
+    			if(!_.isEmpty(diff)){
     				return me.update(diff)
     			}
     		} else {
@@ -39,12 +39,11 @@ module.exports = Class.extend({
 		if(!id){
 			id = this.attributes.id;
 		}
-		console.log('insert '+id)
 		data.updated_at = moment.utc().format('YYYY-MM-DD HH:mm:ss');
 		return excute(mysql.format('UPDATE `'+this.tableName+'` SET ? WHERE id = ?',[data,id]))
 	},
 	insert:function(data){
-		console.log('insert '+data.id)
+		//console.log('insert '+data.id)
 		data.created_at = moment.utc().format('YYYY-MM-DD HH:mm:ss');
     	return excute(mysql.format('INSERT INTO `'+this.tableName+'` SET ?',data));
 	}
