@@ -1,19 +1,17 @@
-var Class = require('./class'),
+var Class = require('../class'),
 mysql = require('mysql'),
 _ = require('underscore'),
 moment = require('moment'),
-excute = require('./promiseExcute');
+excute = require('../promiseExcute');
 module.exports = Class.extend({
 	init:function(data){
 		this.attributes = {};
 	    _.extend(this.attributes,data);
 	},
 	save:function(){
-		console.log('save')
 		var me = this,
 		data = this.attributes;
 		return this.is_exist().then(function(row){
-			console.log(row.length)
     		if(row.length){
     			var diff = me.needToUpdate(data,row[0]);
     			if(!_.isEmpty(diff)){
