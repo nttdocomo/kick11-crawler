@@ -21,29 +21,31 @@ migrate = function(){
 					return excute(mysql.format('SELECT team_id FROM whoscored_team_team WHERE whoscored_team_id = ? LIMIT 1',[whoscored_match.team1_id]))
 				}).then(function(result){
 					if(result.length){
-						team1_id = result[0].team_id
+						team1_id = result[0].team_id;
+						return excute(mysql.format('SELECT team_id FROM whoscored_team_team WHERE whoscored_team_id = ? LIMIT 1',[whoscored_match.team2_id]));
 					}
-				}).then(function(){
-					return excute(mysql.format('SELECT team_id FROM whoscored_team_team WHERE whoscored_team_id = ? LIMIT 1',[whoscored_match.team2_id]));
+					return Promise.resolve()
 				}).then(function(result){
-					if(result.length){
+					if(result && result.length){
 						team2_id = result[0].team_id
-					}
-					//console.log([team1_id,team2_id,play_at].join('--'))
-					if(team1_id && team2_id){
 						//console.log([team1_id,team2_id,play_at].join('--'))
-						match = new Match({
-							team1_id:team1_id,
-							team2_id:team2_id,
-							play_at:play_at,
-							score1:whoscored_match.score1,
-							score2:whoscored_match.score2
-						})
-						return match.save();
+						if(team1_id && team2_id){
+							//console.log([team1_id,team2_id,play_at].join('--'))
+							match = new Match({
+								team1_id:team1_id,
+								team2_id:team2_id,
+								play_at:play_at,
+								score1:whoscored_match.score1,
+								score2:whoscored_match.score2
+							})
+							return match.save();
+						}
 					}
+					return Promise.resolve()
 				});
 			},Promise.resolve())
 		}
+		return Promise.resolve()
 	})
 };
 module.exports.migrate = migrate;

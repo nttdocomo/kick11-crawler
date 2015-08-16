@@ -9,7 +9,6 @@ moment = require('moment'),
 moment_tz = require('moment-timezone'),
 Crawler = require("simplecrawler"),
 get_registration = require('./registration').get_registration,
-get_events = require('./events').get_events,
 whoscored_registration = require('./whoscored_registration'),
 get_team = require('./get_team'),
 get_match = require('./get_matches'),
@@ -19,7 +18,10 @@ get_regions = require('./get_regions'),
 get_seasons = require('./get_seasons'),
 get_tournaments = require('./get_tournaments'),
 get_player = require('../../model/whoscored/player').get_player,
-Match = require('../../model/whoscored/matches').model,
+WhoscoredMatch = require('../../model/whoscored/matches').model,
+Match = require('../../model/kick11/match').model,
+get_events = require('./events').get_events,
+MatchEvent = require('../../model/kick11/event').model,
 Team = require('../../model/whoscored/team').model,
 getMatchCentrePlayerStatistics = require('../../model/whoscored/statistics').getMatchCentrePlayerStatistics,
 migrate = require('../../migrate/whoscored/migrate').migrate,
@@ -46,15 +48,6 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
     var next, decoder = new StringDecoder('utf8'),content = decoder.write(responseBuffer),matchesfeed,matchCentre2;
     //console.log(decoder.write(responseBuffer));
     if(content && content !== null && content != 'null'){
-        excute(mysql.format('SELECT 1 FROM `url_status` WHERE url = ?',[queueItem.path])).then(function(row){
-            if(!row.length){
-                return excute(mysql.format('INSERT INTO `url_status` SET ?',{
-                    url:queueItem.path,
-                    status_code:queueItem.stateData.code,
-                    is_empty:0
-                }))
-            }
-        });
         if(/^\/matchesfeed\/\?d\=\d{8}$/.test(queueItem.path)){
             console.log('matchesfeed')
             //将teams里没有的team放到teams;
@@ -73,28 +66,29 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
                 console.log('get tournaments complete!');
                 return matchesfeed[2].reduce(function(sequence, match){
                     var match_id = match[1],
-                    stage_id,team1_id,team2_id,play_at,score;
                     //console.log(match_id)
+                    stage_id = match[0],
+                    team1_id = match[4],
+                    team2_id = match[8],
+                    play_at = moment.tz([queueItem.path.replace(/^\/matchesfeed\/\?d\=(\d{4})(\d{2})(\d{2})$/,"$1-$2-$3"),match[3]].join(' '),"Europe/London").utc().format('YYYY-MM-DD HH:mm'),
+                    score = match[12],
+                    values = {
+                        'id':match_id,
+                        'team1_id':team1_id,
+                        'team2_id':team2_id,
+                        'play_at':play_at,
+                        'stage_id':stage_id
+                    };
+                    if(score != 'vs'){
+                        values.score1 = score.split(/\s\:\s/)[0];
+                        values.score2 = score.split(/\s\:\s/)[1];
+                    }
                     var promise = sequence.then(function(){
-                        stage_id = match[0],
-                        team1_id = match[4],
-                        team2_id = match[8],
-                        play_at = moment.tz([queueItem.path.replace(/^\/matchesfeed\/\?d\=(\d{4})(\d{2})(\d{2})$/,"$1-$2-$3"),match[3]].join(' '),"Europe/London").utc().format('YYYY-MM-DD HH:mm'),
-                        score = match[12],
-                        values = {
-                            'id':match_id,
-                            'team1_id':team1_id,
-                            'team2_id':team2_id,
-                            'play_at':play_at,
-                            'stage_id':stage_id
-                        };
-                        if(score != 'vs'){
-                            values.score1 = score.split(/\s\:\s/)[0];
-                            values.score2 = score.split(/\s\:\s/)[1];
-                        }
-                        var modelMatch = new Match(values);
-                        return modelMatch.save();
+                        var whoscoredMatch = new WhoscoredMatch(values);
+                        return whoscoredMatch.save();
                         //return get_match(match,queueItem.path.replace(/^\/matchesfeed\/\?d\=(\d{4})(\d{2})(\d{2})$/,"$1-$2-$3"))
+                    }).then(function(){
+                        return Match.save_from_whoscored();
                     }).then(function(){
                         console.log('match complete!')
                         var team1 = new Team({
@@ -104,9 +98,9 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
                             id : team2_id,
                             name : match[9]
                         });
-                        return team1.save().then(function(){
-                            return team2.save();
-                        });
+                        return team1.save()
+                    }).then(function(){
+                        return team2.save();
                     });
                     if(match[14] && match[15]){
                         promise.then(function(){
@@ -155,6 +149,8 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
                     return get_goals(content, match_id)
                 }).then(function(){
                     return get_events(content, match_id)
+                }).then(function(){
+                    return MatchEvent.save_from_whoscored(content, match_id)
                 }).then(function(){
                     console.log('all event complete')
                     next()
@@ -238,73 +234,6 @@ Promise.resolve().then(function(){
     console.log('初始化结束......');
     crawler.queueURL(host + '/matchesfeed/?d=' + now.tz('Europe/London').format('YYYYMMDD'));
     return excute('SELECT DISTINCT play_at FROM whoscored_matches ORDER BY play_at ASC');
-    /*if(input_date){
-        if(/^\d{8}$/.test(input_date)){
-            crawler.queueURL(host + '/matchesfeed/?d=' + input_date);
-        }
-        //当输入的是日期间隔时
-        if(/^\d{8}\~\d{8}$/.test(input_date)){
-            var dateArray = input_date.split('~');
-            var start = moment.utc(dateArray[0],'YYYYMMDD').valueOf(), end = moment.utc(dateArray[1],'YYYYMMDD').valueOf();
-            for (var i = end; i >= start; i-=24*60*60*1000) {
-                crawler.queueURL(host + '/matchesfeed/?d=' + moment.utc(i).format('YYYYMMDD'));
-            };
-        }
-        //当输入的只有4位数时，获取输入年份到现在的所有数据
-        if(/^\d{4}$/.test(input_date)){
-            var start = moment.utc(input_date + "-01-01").valueOf(), end = moment.utc().valueOf();
-            for (var i = end; i >= start; i-=24*60*60*1000) {
-                crawler.queueURL(host + '/matchesfeed/?d=' + moment.utc(i).format('YYYYMMDD'));
-            };
-        }
-        crawler.start();
-    } else {
-        console.log('there is no date provided, get the recent matches result')
-        var date = [],
-        now = moment.utc(),
-        end;
-        excute('SELECT DISTINCT play_at FROM whoscored_matches WHERE score1 IS NULL AND score2 IS NULL ORDER BY play_at ASC').then(function(matches){
-            return matches.reduce(function(sequence, match){
-                var play_at = moment.utc(match.play_at),
-                dateString = play_at.tz('Europe/London').format('YYYYMMDD');
-                return sequence.then(function(){
-                    return excute(mysql.format('SELECT 1 FROM `url_status` WHERE url = ?',['/matchesfeed/?d=' + dateString]))
-                }).then(function(row){
-                    if(!row.length && _.indexOf(date,dateString) == -1){
-                        date.push(dateString)
-                        crawler.queueURL(host + '/matchesfeed/?d=' + dateString);
-                    }
-                })
-            },Promise.resolve())
-        },function(err){
-            console.log(err)
-        }).then(function(){
-            return excute('SELECT DISTINCT play_at FROM whoscored_matches ORDER BY play_at ASC LIMIT 1');
-        }).then(function(row){//从最初的时间开始检查有哪天是缺失的，然后去抓
-            var clone = now.clone(),
-            condition = 1,
-            end = moment.utc(row[0].play_at).tz('Europe/London').format('YYYYMMDD');
-            console.log(clone.tz('Europe/London').format('YYYYMMDD'));
-            crawler.queueURL(host + '/matchesfeed/?d=' + clone.tz('Europe/London').format('YYYYMMDD'));
-            promiseWhile(function(){
-                return condition;
-            },function(){
-                var play_at = clone.subtract(1, 'days').format('YYYYMMDD'),
-                url = '/matchesfeed/?d=' + play_at;
-                return excute(mysql.format('SELECT 1 FROM `url_status` WHERE url = ?',[url])).then(function(row){
-                    if(!row.length && _.indexOf(date,play_at) == -1){
-                        crawler.queueURL(host + url);
-                    }
-                    if(play_at == end){
-                        condition = 0;
-                    }
-                });
-            }).then(function(){
-                //alert('done');
-                crawler.start();
-            });
-        });
-    }*/
 }).then(function(row){
     return row.reduce(function(sequence, match){
         var play_at = moment.utc(match.play_at),

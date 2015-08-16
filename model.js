@@ -9,11 +9,9 @@ module.exports = Class.extend({
 	    _.extend(this.attributes,data);
 	},
 	save:function(){
-		console.log('save')
 		var me = this,
 		data = this.attributes;
 		return this.is_exist().then(function(row){
-			console.log(row.length)
     		if(row.length){
     			var diff = me.needToUpdate(data,row[0]);
     			if(!_.isEmpty(diff)){
@@ -35,7 +33,7 @@ module.exports = Class.extend({
 		delete row.update_at;
 	},
 	get_by_id:function(){
-		return excute(mysql.format('SELECT * FROM `'+this.tableName+'` WHERE id = ?',[this.attributes.id]));
+		return excute(mysql.format('SELECT * FROM `'+this.constructor.table+'` WHERE id = ?',[this.attributes.id]));
 	},
 	get:function(key){
 		return this.attributes[key];
@@ -45,11 +43,11 @@ module.exports = Class.extend({
 			id = this.attributes.id;
 		}
 		data.updated_at = moment.utc().format('YYYY-MM-DD HH:mm:ss');
-		return excute(mysql.format('UPDATE `'+this.tableName+'` SET ? WHERE id = ?',[data,id]))
+		return excute(mysql.format('UPDATE `'+this.constructor.table+'` SET ? WHERE id = ?',[data,id]))
 	},
 	insert:function(data){
 		//console.log('insert '+data.id)
 		data.created_at = moment.utc().format('YYYY-MM-DD HH:mm:ss');
-    	return excute(mysql.format('INSERT INTO `'+this.tableName+'` SET ?',data));
+    	return excute(mysql.format('INSERT INTO `'+this.constructor.table+'` SET ?',data));
 	}
 });
