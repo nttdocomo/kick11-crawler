@@ -1,7 +1,8 @@
 var match = require('./match'),
 events = require('./event'),
+statistic = require('./statistic'),
 migrate = function(){
-	match.migrate().then(events.migrate).then(function(){
+	match.migrate().then(events.migrate).then(statistic.migrate).then(function(){
 		process.exit()
 	})/*.then(function(){
 		return events.migrate()
