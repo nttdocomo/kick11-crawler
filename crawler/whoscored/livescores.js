@@ -88,7 +88,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
                         return whoscoredMatch.save();
                         //return get_match(match,queueItem.path.replace(/^\/matchesfeed\/\?d\=(\d{4})(\d{2})(\d{2})$/,"$1-$2-$3"))
                     }).then(function(){
-                        return Match.save_from_whoscored();
+                        return Match.save_from_whoscored(values);
                     }).then(function(){
                         console.log('match complete!')
                         var team1 = new Team({
