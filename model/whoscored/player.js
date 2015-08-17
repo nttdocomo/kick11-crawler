@@ -26,9 +26,6 @@ Player.table = 'whoscored_player';
 Player.all = function(){
     return excute('SELECT * FROM whoscored_player ORDER BY play_at ASC');
 };
-module.exports.get_match_by_id = function(id){
-    return excute(mysql.format('SELECT 1 FROM whoscored_matches WHERE id = ?',[id]));
-};
 module.exports.get_player = function(matchCentre2){
     var matchCentre2 = JSON.parse(matchCentre2),
     away = matchCentre2.away,

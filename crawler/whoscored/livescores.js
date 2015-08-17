@@ -160,7 +160,9 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
         }
         if(/^\/StatisticsFeed\/1\/GetMatchCentrePlayerStatistics.*?/.test(queueItem.path)){
             next = this.wait();
-            getMatchCentrePlayerStatistics(queueItem, content, response).then(function(){
+            getMatchCentrePlayerStatistics(queueItem, content).then(function(){
+                return statistic.save_from_whoscored()
+            }).then(function(){
                 next();
             })
         }

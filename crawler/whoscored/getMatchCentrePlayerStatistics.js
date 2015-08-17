@@ -3,9 +3,9 @@ excute = require('../../promiseExcute'),
 mysql = require('mysql'),
 StringDecoder = require('string_decoder').StringDecoder,
 _ = require('underscore'),
-getMatchCentrePlayerStatistics = function(queueItem,content,response){
-    var decoder = new StringDecoder('utf8'),
-	unknow_columns = [],
+Player = require('../../model/whoscored/player').model,
+getMatchCentrePlayerStatistics = function(queueItem,content){
+    var unknow_columns = [],
 	query = url.parse(queueItem.url,true).query,
 	matchId = query.matchId,
 	teamId = query.teamIds,
@@ -38,16 +38,11 @@ getMatchCentrePlayerStatistics = function(queueItem,content,response){
 	    		playerTableStat.matchId = matchId
 	    	}
 			return sequence.then(function(){
-	    		return excute(mysql.format('SELECT id FROM whoscored_player WHERE id = ?',[playerTableStat.playerId])).then(function(row){
-					console.log('loop playerTableStats')
-	    			if(!row.length){
-	    				console.log('player ' + playerTableStat.playerId + ' is not in the database. insert!')
-	    				return excute(mysql.format('INSERT INTO whoscored_player SET ?',{
-			                id:playerTableStat.playerId,
-			                name:playerTableStat.name,
-			            }))
-	    			}
-	    		})
+				var player = new Player({
+	                id:playerTableStat.playerId,
+	                name:playerTableStat.name,
+	            });
+	            return player.save();
 			}).then(function(){
     			return unknow_columns.reduce(function(sequence,column){
     				return sequence.then(function(){
