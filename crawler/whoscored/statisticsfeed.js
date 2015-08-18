@@ -9,7 +9,7 @@ moment = require('moment'),
 moment_tz = require('moment-timezone'),
 Crawler = require("simplecrawler"),
 getMatchCentrePlayerStatistics = require('./statistics').getMatchCentrePlayerStatistics,
-statistic = require('../../model/kick11/statistic').model,
+statistic = require('../../model/kick11/statistic'),
 _ = require('underscore'),
 host = 'http://www.whoscored.com',
 crawler = new Crawler("www.whoscored.com", "/");
@@ -31,7 +31,8 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
     var next = this.wait(), decoder = new StringDecoder('utf8'),content = decoder.write(responseBuffer);
     if(content && content !== null && content != 'null'){
         getMatchCentrePlayerStatistics(queueItem, content).then(function(){
-            return statistic.save_from_whoscored()
+            console.log('ok')
+            return statistic.save_from_whoscored(queueItem, content)
         }).then(function(){
             next();
         })

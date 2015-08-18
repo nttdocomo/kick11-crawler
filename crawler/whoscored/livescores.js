@@ -13,7 +13,7 @@ whoscored_registration = require('./whoscored_registration'),
 get_team = require('./get_team'),
 get_match = require('./get_matches'),
 get_goals = require('./goals').get_goals,
-get_stages = require('./get_stages'),
+get_stages = require('../../model/whoscored/stage').get_stages,
 get_regions = require('./get_regions'),
 get_seasons = require('./get_seasons'),
 get_tournaments = require('./get_tournaments'),
@@ -24,7 +24,7 @@ get_events = require('./events').get_events,
 MatchEvent = require('../../model/kick11/event').model,
 Team = require('../../model/whoscored/team').model,
 getMatchCentrePlayerStatistics = require('../../model/whoscored/statistics').getMatchCentrePlayerStatistics,
-statistic = require('../../model/kick11/statistic').model,
+statistic = require('../../model/kick11/statistic'),
 migrate = require('../../migrate/whoscored/migrate').migrate,
 _ = require('underscore'),
 input_date = process.argv[2],
@@ -161,7 +161,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
         if(/^\/StatisticsFeed\/1\/GetMatchCentrePlayerStatistics.*?/.test(queueItem.path)){
             next = this.wait();
             getMatchCentrePlayerStatistics(queueItem, content).then(function(){
-                return statistic.save_from_whoscored()
+                return statistic.save_from_whoscored(queueItem, content)
             }).then(function(){
                 next();
             })

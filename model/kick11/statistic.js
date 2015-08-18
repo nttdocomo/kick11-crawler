@@ -2,6 +2,7 @@
  * @author nttdocomo
  */
 var excute = require('../../promiseExcute'),
+url = require('url'),
 mysql = require('mysql'),
 _ = require('underscore'),
 difference = require('../../utils').difference,
@@ -27,13 +28,14 @@ Statistic.all = function(){
 	console.log(this.table)
     return excute('SELECT * FROM '+this.table+' ORDER BY play_at ASC');
 };
-Statistic.save_from_whoscored = function(content, match_id){
-    var query = url.parse(queueItem.url,true).query,
+Statistic.save_from_whoscored = function(queueItem, content){
+    var unknow_columns = [],
+    query = url.parse(queueItem.url,true).query,
 	matchId = query.matchId,
 	teamId = query.teamIds,
 	matchCentrePlayerStatistics = JSON.parse(content),
 	playerTableStats = matchCentrePlayerStatistics.playerTableStats;
-    return excute('SHOW COLUMNS FROM match_player_statistics').then(function(){
+    return excute('SHOW COLUMNS FROM match_player_statistics').then(function(result){
 		console.log('get columns of match_player_statistics')
 		var columns = _.map(result,function(column){
 			return column.Field;
@@ -65,11 +67,6 @@ Statistic.save_from_whoscored = function(content, match_id){
 					if(team1_id && team2_id){
 						return excute(mysql.format('SELECT * FROM `matchs` WHERE team1_id = ? AND team2_id = ? AND play_at = ?',[team1_id,team2_id,play_at]));
 					}
-				}
-				return Promise.resolve();
-			}).then(function(row){
-				if(row && row.length){
-					matchId = row[0].id
 				}
 				return Promise.resolve();
 			})
@@ -109,6 +106,7 @@ Statistic.save_from_whoscored = function(content, match_id){
 	    		}).then(function(){
 					return excute(mysql.format('SELECT player_id FROM `whoscored_player_player` WHERE whoscored_player_id = ?',[playerId]))
 				}).then(function(row){
+					console.log('aaaaaa')
 					if(row.length){
 						playerTableStat.playerId = row[0].player_id;
 						statistic = new Statistic(playerTableStat)
