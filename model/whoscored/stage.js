@@ -27,16 +27,16 @@ Stage = Model.extend({
 Stage.excute = excute;
 Stage.table = 'whoscored_stages';
 Stage.get_by_id = function(id){
-    excute(mysql.format('SELECT 1 FROM '+this.table+' WHERE id = ?',[id]))
+    return excute(mysql.format('SELECT 1 FROM '+this.table+' WHERE id = ?',[id]))
 }
 Stage.get_stages = function(stages){
     return stages.reduce(function(sequence, item){
+        var stage = new Stage({
+            id:item[0],
+            tournament_id:item[4],
+            season_id:item[6]
+        });
         return sequence.then(function(){
-            var stage = new Stage({
-                id:item[0],
-                tournament_id:item[4],
-                season_id:item[6]
-            });
             return stage.save();
         });
     },Promise.resolve())

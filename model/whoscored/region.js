@@ -27,8 +27,8 @@ Region = Model.extend({
 Region.excute = excute;
 Region.table = 'whoscored_regions';
 Region.get_by_id = function(id){
-    excute(mysql.format('SELECT 1 FROM '+this.table+' WHERE id = ?',[id]))
-}
+    return excute(mysql.format('SELECT 1 FROM '+this.table+' WHERE id = ?',[id]))
+};
 Region.get_regions = function(regions){
     return regions.reduce(function(sequence, item){
         var region = new Region({
@@ -41,4 +41,4 @@ Region.get_regions = function(regions){
         });
     },Promise.resolve())
 };
-module.exports = Region
+module.exports = Region;
