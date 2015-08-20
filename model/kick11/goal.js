@@ -9,11 +9,9 @@ moment_tz = require('moment-timezone'),
 difference = require('../transfermarkt.co.uk/utils').difference,
 Model = require('../../model'),
 Goal = Model.extend({
-    tableName:'whoscored_goals',
+    tableName:'goal_events',
     is_exist:function(){
-        return excute(mysql.format('SELECT 1 FROM '+this.tableName+' WHERE event_id = ? LIMIT 1',[this.event_id])).then(function(row){
-            return row.length;
-        })
+        return excute(mysql.format('SELECT 1 FROM '+this.constructor.table+' WHERE event_id = ? LIMIT 1',[this.get('event_id')]))
     },
     needToUpdate:function(data,row){
         this._super(data,row);
@@ -27,14 +25,14 @@ Goal = Model.extend({
     }
 });
 Goal.excute = excute;
-Goal.table = 'whoscored_goals';
+Goal.table = 'goal_events';
 Goal.all = function(){
-    return excute('SELECT * FROM whoscored_goals');
+    return excute('SELECT * FROM '+this.table);
 };
-module.exports.get_match_by_id = function(id){
-    return excute(mysql.format('SELECT 1 FROM whoscored_goals WHERE id = ?',[id]));
+Goal.get_by_id = function(id){
+    return excute(mysql.format('SELECT 1 FROM '+this.table+' WHERE id = ?',[id]));
 };
-module.exports.get_goals = function(matchCentre2, match_id){
+Goal.get_goals = function(matchCentre2, match_id){
     var playerIdNameDictionary = JSON.parse(matchCentre2).playerIdNameDictionary,
     events = matchCentre2.events,
     goals_events = events.filter(function(event){
