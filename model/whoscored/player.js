@@ -6,7 +6,7 @@ mysql = require('mysql'),
 _ = require('underscore'),
 moment = require('moment'),
 moment_tz = require('moment-timezone'),
-difference = require('../transfermarkt.co.uk/utils').difference,
+difference = require('../../crawler/transfermarkt.co.uk/utils').difference,
 Model = require('../../model'),
 Player = Model.extend({
     tableName:'whoscored_player',

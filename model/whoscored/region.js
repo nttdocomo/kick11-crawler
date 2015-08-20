@@ -8,11 +8,6 @@ difference = require('../../utils').difference,
 Model = require('../../model'),
 Region = Model.extend({
     tableName:'whoscored_regions',
-    is_exist:function(){
-        return excute(mysql.format('SELECT 1 FROM '+this.constructor.table+' WHERE id = ?',[this.get('id')])).then(function(row){
-            return row.length;
-        })
-    },
     needToUpdate:function(data,row){
         this._super(data,row);
         var diff;
@@ -34,7 +29,7 @@ Region.get_regions = function(regions){
         var region = new Region({
             id:item[1],
             name:item[3],
-            short_name:tem[2]
+            short_name:item[2]
         })
         return sequence.then(function(){
             return region.save();

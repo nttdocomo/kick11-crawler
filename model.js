@@ -20,12 +20,11 @@ module.exports = Class.extend({
     		} else {
     			return me.insert(data)
     		}
+    		return Promise.resolve()
 		})
 	},
 	is_exist:function(){
-		return this.get_by_id().then(function(row){
-			return row;
-		})
+		return this.get_by_id()
 	},
 	needToUpdate:function(data,row){
 		delete row.id;
@@ -33,7 +32,7 @@ module.exports = Class.extend({
 		delete row.update_at;
 	},
 	get_by_id:function(){
-		return excute(mysql.format('SELECT * FROM `'+this.constructor.table+'` WHERE id = ?',[this.attributes.id]));
+		return excute(mysql.format('SELECT * FROM `'+this.constructor.table+'` WHERE id = ?',[this.get('id')]));
 	},
 	get:function(key){
 		return this.attributes[key];

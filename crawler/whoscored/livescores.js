@@ -10,22 +10,20 @@ moment_tz = require('moment-timezone'),
 Crawler = require("simplecrawler"),
 get_registration = require('./registration').get_registration,
 whoscored_registration = require('./whoscored_registration'),
-get_team = require('./get_team'),
-get_match = require('./get_matches'),
 get_goals = require('./goals').get_goals,
 get_stages = require('../../model/whoscored/stage').get_stages,
 get_regions = require('../../model/whoscored/region').get_regions,
 get_seasons = require('../../model/whoscored/season').get_seasons,
-get_tournaments = require('./get_tournaments'),
+get_tournaments = require('../../model/whoscored/tournament').get_tournaments,
 get_player = require('../../model/whoscored/player').get_player,
-WhoscoredMatch = require('../../model/whoscored/matches').model,
+WhoscoredMatch = require('../../model/whoscored/matches'),
 Match = require('../../model/kick11/match').model,
 get_events = require('./events').get_events,
 MatchEvent = require('../../model/kick11/event').model,
-Team = require('../../model/whoscored/team').model,
+Team = require('../../model/whoscored/team'),
 getMatchCentrePlayerStatistics = require('../../model/whoscored/statistics').getMatchCentrePlayerStatistics,
 statistic = require('../../model/kick11/statistic'),
-migrate = require('../../migrate/whoscored/migrate').migrate,
+//migrate = require('../../migrate/whoscored/migrate').migrate,
 _ = require('underscore'),
 input_date = process.argv[2],
 host = 'http://www.whoscored.com',
@@ -84,24 +82,27 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
                         values.score1 = score.split(/\s\:\s/)[0];
                         values.score2 = score.split(/\s\:\s/)[1];
                     }
+                    var whoscoredMatch = new WhoscoredMatch(values);
+                    var team1 = new Team({
+                        id : team1_id,
+                        name : match[5]
+                    }),team2 = new Team({
+                        id : team2_id,
+                        name : match[9]
+                    });
                     var promise = sequence.then(function(){
-                        var whoscoredMatch = new WhoscoredMatch(values);
+                        console.log('get match')
                         return whoscoredMatch.save();
                         //return get_match(match,queueItem.path.replace(/^\/matchesfeed\/\?d\=(\d{4})(\d{2})(\d{2})$/,"$1-$2-$3"))
                     }).then(function(){
                         return Match.save_from_whoscored(values);
                     }).then(function(){
-                        console.log('match complete!')
-                        var team1 = new Team({
-                            id : team1_id,
-                            name : match[5]
-                        }),team2 = new Team({
-                            id : team2_id,
-                            name : match[9]
-                        });
                         return team1.save()
                     }).then(function(){
                         return team2.save();
+                    }).then(function(){
+                        console.log('get team complete')
+                        return Promise.resolve()
                     });
                     if(match[14] && match[15]){
                         promise.then(function(){
@@ -109,6 +110,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
                                 if(!row.length){
                                     crawler.queueURL(host + '/MatchesFeed/'+match_id+'/MatchCentre2');
                                 }
+                                return Promise.resolve()
                             })
                         }).then(function(){
                             return excute(mysql.format('SELECT * FROM `whoscored_match_player_statistics` WHERE matchId = ? AND teamId = ?',[match_id,match[4]])).then(function(row){
@@ -118,6 +120,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
                                     crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=defensive&statsAccumulationType=0&isCurrent=true&teamIds='+match[4]+'&matchId='+match_id);
                                     crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=offensive&statsAccumulationType=0&isCurrent=true&teamIds='+match[4]+'&matchId='+match_id);
                                 }
+                                return Promise.resolve()
                             })
                         }).then(function(){
                             return excute(mysql.format('SELECT 1 FROM `whoscored_match_player_statistics` WHERE matchId = ? AND teamId = ?',[match_id,match[8]])).then(function(row){
@@ -127,6 +130,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
                                     crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=defensive&statsAccumulationType=0&isCurrent=true&teamIds='+match[8]+'&matchId='+match_id);
                                     crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=offensive&statsAccumulationType=0&isCurrent=true&teamIds='+match[8]+'&matchId='+match_id);
                                 }
+                                return Promise.resolve()
                             })
                         });
                     }
@@ -233,7 +237,25 @@ var date = [],
 condition = 0,
 now = moment.utc(),
 clone = now.clone();
-Promise.resolve().then(function(){
+excute(mysql.format('SELECT DISTINCT play_at FROM whoscored_matches WHERE play_at = ? ORDER BY play_at DESC',[new Date()])).then(function(row){
+    if(row.length){
+        var play_at = _.find(row,function(item){
+            var play_at = moment.utc(item.play_at);
+            return clone.diff(play_at,'m') > 1 && clone.diff(play_at,'m') < 180;
+        })
+        if(play_at){
+            console.log('there is macth there not complete')
+            crawler.queueURL(host + '/matchesfeed/?d=' + now.tz('Europe/London').format('YYYYMMDD'));
+        }
+    } else {
+        console.log('there no today matches in database')
+        crawler.queueURL(host + '/matchesfeed/?d=' + now.tz('Europe/London').format('YYYYMMDD'));
+    }
+    return Promise.resolve();
+}).then(function(){
+    crawler.start();
+})
+/*Promise.resolve().then(function(){
     console.log('初始化结束......');
     crawler.queueURL(host + '/matchesfeed/?d=' + now.tz('Europe/London').format('YYYYMMDD'));
     return excute('SELECT DISTINCT play_at FROM whoscored_matches ORDER BY play_at ASC');
@@ -263,7 +285,7 @@ Promise.resolve().then(function(){
 }).then(function(){
     //alert('done');
     crawler.start();
-});
+});*/
 
 function promiseWhile(condition, body) {
   return new Promise(function(resolve,reject){

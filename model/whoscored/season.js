@@ -8,11 +8,6 @@ difference = require('../../utils').difference,
 Model = require('../../model'),
 Season = Model.extend({
     tableName:'whoscored_seasons',
-    is_exist:function(){
-        return excute(mysql.format('SELECT 1 FROM '+this.constructor.table+' WHERE id = ?',[this.get('id')])).then(function(row){
-            return row.length;
-        })
-    },
     needToUpdate:function(data,row){
         this._super(data,row);
         var diff;
