@@ -26,7 +26,7 @@ Player.table = 'whoscored_player';
 Player.all = function(){
     return excute('SELECT * FROM whoscored_player ORDER BY play_at ASC');
 };
-module.exports.get_player = function(matchCentre2){
+Player.get_player = function(matchCentre2){
     var matchCentre2 = JSON.parse(matchCentre2),
     away = matchCentre2.away,
     home = matchCentre2.home,
@@ -44,4 +44,4 @@ module.exports.get_player = function(matchCentre2){
         })
     },Promise.resolve())
 };
-module.exports.model = Player;
+module.exports = Player;

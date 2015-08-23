@@ -8,10 +8,11 @@ WhoscoredMatch = require('../../model/whoscored/matches'),
 Team = require('../../model/whoscored/team'),
 Match = require('../../model/kick11/match').model;
 module.exports = function(queueItem, responseBuffer, response){
-    if(/^\/matchesfeed\/\?d\=\d{8}$/.test(queueItem.path)){
+    var decoder = new StringDecoder('utf8'),content = decoder.write(responseBuffer);
+    if(/^\/matchesfeed\/\?d\=\d{8}$/.test(queueItem.path) && content && content !== null && content != 'null'){
         console.log('matchesfeed')
         //将teams里没有的team放到teams;
-        matchesfeed = eval(decoder.write(responseBuffer));
+        matchesfeed = eval(content);
         next = this.wait();
         return get_stages(matchesfeed[1]).then(function(){
             console.log('get stages complete!')
