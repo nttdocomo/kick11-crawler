@@ -15,7 +15,13 @@ crawler.maxConcurrency = 1;
 crawler.interval = 5000;
 crawler.timeout = 10000;
 crawler.discoverResources = false;
-crawler.userAgent = 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.153 Safari/537.36';
+crawler.userAgent = 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.101 Safari/537.36';
+crawler.customHeaders = {
+    Host:'www.whoscored.com',
+    Referer:'http://www.whoscored.com/LiveScores',
+    'X-Requested-With':'XMLHttpRequest',
+    Cookie:'__gads=ID=e55debe14f69eef7:T=1436164463:S=ALNI_MZAB7Ks2P8iIOL4gPYkTxl-n37DtQ; OX_plg=swf|shk|pm; _ga=GA1.2.1737364748.1436164463'
+};
 crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
     var decoder = new StringDecoder('utf8'),
     next;
@@ -28,8 +34,6 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
     	//next = this.wait();
     	var calendar = JSON.parse(content.match(/(\{\d{4}\:.*\}\}\})/)[0].replace(/\:/g,'":').replace(/\{/g,'{"').replace(/\,/g,',"'));
     	excute(mysql.format('SELECT id FROM `whoscored_stages` WHERE tournament_id = ? AND season_id = ? LIMIT 1',[stage_condotion[1],stage_condotion[2]])).then(function(stages){
-    		return excute(mysql.format('SELECT * FROM `whoscored_stage_event` WHERE stage_id = ? LIMIT 1',[stages[0].id]));
-    	}).then(function(stages){
     		if(stages.length){
                 console.log(stages)
 		    	_.each(calendar,function(months,year){
@@ -38,8 +42,8 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 		    			if(/^\d{1}$/.test(month)){
 		    				month = '0'+month;
 		    			}
-		    			console.log('/tournamentsfeed/'+stages[0].stage_id+'/Fixtures/?d='+[year,month].join('')+'&isAggregate=false')
-                        crawler.queueURL(host + '/tournamentsfeed/'+stages[0].stage_id+'/Fixtures/?d='+[year,month].join('')+'&isAggregate=false');
+		    			console.log('/tournamentsfeed/'+stages[0].id+'/Fixtures/?d='+[year,month].join('')+'&isAggregate=false')
+                        crawler.queueURL(host + '/tournamentsfeed/'+stages[0].id+'/Fixtures/?d='+[year,month].join('')+'&isAggregate=false');
 		    		})
 		    	});
     		}
