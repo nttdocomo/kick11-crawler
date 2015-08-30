@@ -37,19 +37,29 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
     var next, decoder = new StringDecoder('utf8'),content = decoder.write(responseBuffer),matchesfeed,matchCentre2;
     //console.log(decoder.write(responseBuffer));
     if(content && content !== null && content != 'null'){
-        next = this.wait();
-        getMatchesFeed(queueItem, responseBuffer, response).then(function(){
-            next();
-        })
-        getMatchCentre2(queueItem, responseBuffer, response).then(function(){
-            next();
-        })
-        getStatisticsFeed(queueItem, responseBuffer, response).then(function(){
-            next();
-        })
+        if(/^\/matchesfeed\/\?d\=\d{8}$/.test(queueItem.path)){
+            next = this.wait();
+            getMatchesFeed(queueItem, responseBuffer, response).then(function(){
+                console.log('getMatchesFeed')
+                next();
+            })
+        }
+        if(/^\/MatchesFeed\/(\d{1,})\/MatchCentre2$/.test(queueItem.path)){
+            next = this.wait();
+            getMatchCentre2(queueItem, responseBuffer, response).then(function(){
+                console.log('getMatchCentre2')
+                next();
+            })
+        }
+        if(/^\/StatisticsFeed\/1\/GetMatchCentrePlayerStatistics.*?/.test(queueItem.path)){
+            next = this.wait();
+            getStatisticsFeed(queueItem, responseBuffer, response).then(function(){
+                console.log('getStatisticsFeed')
+                next();
+            })
+        }
     }
 }).on('complete',function(){
-    console.log(crawler.queue.length)
     console.log('complete')
     process.exit()
 }).on('fetcherror',function(queueItem, response){

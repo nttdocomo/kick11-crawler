@@ -17,11 +17,11 @@ var date = [],
 condition = 0,
 now = moment.utc(),
 clone = now.clone();
-excute(mysql.format('SELECT DISTINCT play_at FROM whoscored_matches WHERE play_at = ? ORDER BY play_at DESC',[new Date()])).then(function(row){
+excute(mysql.format('SELECT DISTINCT play_at FROM whoscored_matches WHERE play_at = ? ORDER BY play_at DESC',[moment.utc().format('YYYY-MM-DD HH:mm')])).then(function(row){
     if(row.length){
         var play_at = _.find(row,function(item){
-            var play_at = moment.utc(item.play_at);
-            return clone.diff(play_at,'m') > 1 && clone.diff(play_at,'m') < 180;
+            var play = moment.utc(item.play_at);
+            return clone.diff(play,'m') > 1 && clone.diff(play,'m') < 180;
         })
         if(play_at){
             console.log('there is macth there not complete')

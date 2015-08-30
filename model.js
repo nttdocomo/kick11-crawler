@@ -37,11 +37,20 @@ module.exports = Class.extend({
 	get:function(key){
 		return this.attributes[key];
 	},
+	set:function(key,value){
+		return this.attributes[key] = value;
+	},
+	query:function(sql){
+		return excute(sql).then(function(result){
+
+		});
+	},
 	update:function(data,id){
 		if(!id){
 			id = this.attributes.id;
 		}
 		data.updated_at = moment.utc().format('YYYY-MM-DD HH:mm:ss');
+		//console.log(mysql.format('UPDATE `'+this.constructor.table+'` SET ? WHERE id = ?',[data,id]))
 		return excute(mysql.format('UPDATE `'+this.constructor.table+'` SET ? WHERE id = ?',[data,id]))
 	},
 	insert:function(data){
