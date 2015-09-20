@@ -18,6 +18,7 @@ module.exports = Class.extend({
     				return me.update(diff)
     			}
     		} else {
+    			//console.log(me.get('id') + ' is not in the databse')
     			return me.insert(data)
     		}
     		return Promise.resolve()

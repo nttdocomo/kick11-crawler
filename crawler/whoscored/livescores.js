@@ -5,9 +5,7 @@ var http = require("http"),
 excute = require('../../promiseExcute'),
 StringDecoder = require('string_decoder').StringDecoder,
 mysql = require('mysql'),
-moment = require('moment'),
-moment_tz = require('moment-timezone'),
-Crawler = require("simplecrawler"),
+moment = require('moment-timezone'),
 //migrate = require('../../migrate/whoscored/migrate').migrate,
 _ = require('underscore'),
 input_date = process.argv[2],
@@ -17,7 +15,7 @@ var date = [],
 condition = 0,
 now = moment.utc(),
 clone = now.clone();
-excute(mysql.format('SELECT DISTINCT play_at FROM whoscored_matches WHERE play_at = ? ORDER BY play_at DESC',[moment.utc().format('YYYY-MM-DD HH:mm')])).then(function(row){
+/*excute(mysql.format('SELECT DISTINCT play_at FROM whoscored_matches WHERE play_at = ? ORDER BY play_at DESC',[moment.utc().format('YYYY-MM-DD HH:mm')])).then(function(row){
     if(row.length){
         var play_at = _.find(row,function(item){
             var play = moment.utc(item.play_at);
@@ -34,27 +32,8 @@ excute(mysql.format('SELECT DISTINCT play_at FROM whoscored_matches WHERE play_a
     return Promise.resolve();
 }).then(function(){
     crawler.start();
-})
-
-function promiseWhile(condition, body) {
-  return new Promise(function(resolve,reject){
-
-    function loop() {
-      Promise.resolve(condition()).then(function(result){
-        // When the result of calling `condition` is no longer true, we are done.
-        if (!result){
-          resolve();
-        } else {
-          // When it completes loop again otherwise, if it fails, reject
-          Promise.resolve(body()).then(loop,reject);
-        }
-      });
-    }
-
-    // Start running the loop
-    loop();
-  });
-}
-
+})*/
+crawler.queueURL(host + '/matchesfeed/?d=20130401');
+crawler.start();
 //http://www.whoscored.com/matchesfeed/?d=20141021
 //http://www.whoscored.com/tournamentsfeed/9155/Fixtures/?d=2014W42&isAggregate=false

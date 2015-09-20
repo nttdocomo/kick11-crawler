@@ -26,6 +26,13 @@ Region.get_by_id = function(id){
 };
 Region.get_regions = function(regions){
     return regions.reduce(function(sequence, item){
+        if(!item[2]){
+            console.log({
+                id:item[1],
+                name:item[3],
+                short_name:item[2]
+            })
+        }
         var region = new Region({
             id:item[1],
             name:item[3],

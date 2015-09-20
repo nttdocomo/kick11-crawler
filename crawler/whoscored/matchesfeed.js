@@ -3,16 +3,16 @@
  */
 var excute = require('../../promiseExcute'),
 mysql = require('mysql'),
-moment = require('moment'),
-moment_tz = require('moment-timezone'),
+moment = require('moment-timezone'),
 _ = require('underscore'),
-crawler = require('./matchesfeedconfig');
-var date = [],
+crawler = require('./matchesfeedconfig'),
 condition = 0,
 now = moment.utc().tz('Europe/London'),
 last,recent,
+host = 'http://www.whoscored.com',
 clone = now.clone();
 excute('SELECT DISTINCT play_at FROM whoscored_matches ORDER BY play_at ASC').then(function(row){
+    var date = [];
     last = moment.utc(row[0].play_at).tz('Europe/London');
     recent = moment.utc(row[row.length - 1].play_at).tz('Europe/London');
     row.forEach(function(match,i){
@@ -22,8 +22,8 @@ excute('SELECT DISTINCT play_at FROM whoscored_matches ORDER BY play_at ASC').th
             date.push(dateString)
         }
     })
-    return Promise.resolve();
-}).then(function(){
+    return date;
+}).then(function(date){
     return promiseWhile(function(){
         return recent.diff(last,'d') > 0;
     },function(){

@@ -8,7 +8,7 @@ difference = require('../../utils').difference,
 Model = require('../../model'),
 Round = Model.extend({
     is_exist:function(){
-		return excute(mysql.format('SELECT * FROM `'+this.constructor.table+'` WHERE team_id = ? AND player_id = ? AND match_id = ?',[this.get('team_id'), this.get('player_id'), this.get('match_id')]))
+		return excute(mysql.format('SELECT * FROM ?? WHERE event_id = ? AND pos = ?',[this.constructor.table, this.get('event_id'), this.get('pos')]))
     },
 	needToUpdate:function(data,row){
 		this._super(data,row);

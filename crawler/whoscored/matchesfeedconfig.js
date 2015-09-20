@@ -2,8 +2,7 @@ var http = require("http"),
 excute = require('../../promiseExcute'),
 StringDecoder = require('string_decoder').StringDecoder,
 mysql = require('mysql'),
-moment = require('moment'),
-moment_tz = require('moment-timezone'),
+moment = require('moment-timezone'),
 Crawler = require("simplecrawler"),
 get_registration = require('./registration').get_registration,
 whoscored_registration = require('./whoscored_registration'),
@@ -39,21 +38,21 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
     if(content && content !== null && content != 'null'){
         if(/^\/matchesfeed\/\?d\=\d{8}$/.test(queueItem.path)){
             next = this.wait();
-            getMatchesFeed(queueItem, responseBuffer, response).then(function(){
+            getMatchesFeed(queueItem, eval(content), response).then(function(){
                 console.log('getMatchesFeed')
                 next();
             })
         }
         if(/^\/MatchesFeed\/(\d{1,})\/MatchCentre2$/.test(queueItem.path)){
             next = this.wait();
-            getMatchCentre2(queueItem, responseBuffer, response).then(function(){
+            getMatchCentre2(queueItem, content, response).then(function(){
                 console.log('getMatchCentre2')
                 next();
             })
         }
         if(/^\/StatisticsFeed\/1\/GetMatchCentrePlayerStatistics.*?/.test(queueItem.path)){
             next = this.wait();
-            getStatisticsFeed(queueItem, responseBuffer, response).then(function(){
+            getStatisticsFeed(queueItem, content, response).then(function(){
                 console.log('getStatisticsFeed')
                 next();
             })

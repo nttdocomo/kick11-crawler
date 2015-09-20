@@ -1,7 +1,6 @@
 var StringDecoder = require('string_decoder').StringDecoder,
 decoder = new StringDecoder('utf8'),
-moment = require('moment'),
-moment_tz = require('moment-timezone'),
+moment = require('moment-timezone'),
 get_stages = require('../../model/whoscored/stage').get_stages,
 get_regions = require('../../model/whoscored/region').get_regions,
 get_seasons = require('../../model/whoscored/season').get_seasons,
@@ -9,12 +8,12 @@ get_tournaments = require('../../model/whoscored/tournament').get_tournaments,
 WhoscoredMatch = require('../../model/whoscored/matches'),
 Team = require('../../model/whoscored/team'),
 Match = require('../../model/kick11/match').model;
-module.exports = function(queueItem, responseBuffer, response){
-    var decoder = new StringDecoder('utf8'),content = decoder.write(responseBuffer);
+module.exports = function(queueItem, matchesfeed, response){
     console.log('matchesfeed')
     //将teams里没有的team放到teams;
-    matchesfeed = eval(content);
-    return get_stages(matchesfeed[1]).then(function(){
+    return Promise.resolve().then(function(){
+        return get_stages(matchesfeed[1]);
+    }).then(function(){
         console.log('get stages complete!')
         return get_regions(matchesfeed[1])
     },function(err){
@@ -32,7 +31,6 @@ module.exports = function(queueItem, responseBuffer, response){
     }).then(function(){
         console.log('get tournaments complete!');
         return matchesfeed[2].reduce(function(sequence, match){
-            console.log('get matchesfeed')
             var match_id = match[1],
             //console.log(match_id)
             stage_id = match[0],
@@ -60,7 +58,6 @@ module.exports = function(queueItem, responseBuffer, response){
                 name : match[9]
             });
             var promise = sequence.then(function(){
-                console.log('get match')
                 return whoscoredMatch.save();
                 //return get_match(match,queueItem.path.replace(/^\/matchesfeed\/\?d\=(\d{4})(\d{2})(\d{2})$/,"$1-$2-$3"))
             }).then(function(){
@@ -69,9 +66,6 @@ module.exports = function(queueItem, responseBuffer, response){
                 return team1.save()
             }).then(function(){
                 return team2.save();
-            }).then(function(){
-                console.log('get team complete')
-                return Promise.resolve()
             });
             if(match[14] && match[15]){
                 promise.then(function(){
@@ -106,6 +100,8 @@ module.exports = function(queueItem, responseBuffer, response){
             return promise;
         },Promise.resolve())
     },function(err){
+        console.log(err)
+    }).catch(function(err){
         console.log(err)
     });
     return Promise.resolve();

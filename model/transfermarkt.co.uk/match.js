@@ -9,7 +9,7 @@ Model = require('../../model'),
 Match = Model.extend({
 	tableName:'transfermarkt_match',
     is_exist:function(){
-		return excute(mysql.format('SELECT * FROM `matchs` WHERE team1_id = ? AND team2_id = ? AND play_at = ?',[this.get('team1_id'), this.get('team2_id'), this.get('play_at')]))
+		return excute(mysql.format('SELECT * FROM ?? WHERE team1_id = ? AND team2_id = ? AND play_at = ?',[this.constructor.table,this.get('team1_id'), this.get('team2_id'), this.get('play_at')]))
     },
 	needToUpdate:function(data,row){
 		this._super(data,row);
@@ -56,4 +56,4 @@ Match.save_from_whoscored = function(data){
 		return Promise.resolve()
 	});
 };
-module.exports.model = Match;
+module.exports = Match;
