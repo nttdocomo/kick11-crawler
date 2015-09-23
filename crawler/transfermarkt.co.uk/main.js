@@ -4,7 +4,7 @@ mysql = require('mysql'),
 _ = require('underscore'),
 Crawler = require("simplecrawler"),
 excute = require('../../promiseExcute'),
-Team = require('./page/team'),
+Team = require('../../model/transfermarkt/team'),
 Player = require('./page/player'),
 difference = require('./utils').difference,
 host = 'http://www.transfermarkt.co.uk',
@@ -17,6 +17,9 @@ fetchedUrls = [],
 //crawler.proxyPort = 8888;
 //crawler.discoverResources = false;
 crawler = Crawler.crawl("http://www.transfermarkt.co.uk/");
+/*crawler.useProxy = true;
+crawler.proxyHostname = '127.0.0.1';
+crawler.proxyPort = '11080';*/
 /*crawler.maxConcurrency = 1;
 crawler.interval = 600;
 crawler.timeout = 30000;
@@ -27,6 +30,9 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
     next;
     if(/^\/\S+?\/startseite\/verein\/\d+?$/i.test(queueItem.path)){//competition
     	next = this.wait();
+    	Team.get_team(cheerio.load(decoder.write(responseBuffer))).then(function(){
+    		next();
+    	})
     	var team = new Team(cheerio.load(decoder.write(responseBuffer))),
     	id = team.get_id(),
     	foundation = team.get_foundation(),
