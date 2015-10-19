@@ -54,7 +54,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 			    		url = url.replace(/nationalmannschaft/,'profil');
 			    	}
 		    		var id = url.replace(/^\/\S+\/profil\/spieler\/(\d{1,9})$/,'$1');
-		    		excute(mysql.format("SELECT 1 FROM transfermarket_player WHERE id = ? limit 1;", [id]),function(rows){
+		    		excute(mysql.format("SELECT 1 FROM transfermarkt_player WHERE id = ? limit 1;", [id]),function(rows){
 		    			if(!rows.length){
 					    	console.log(id + ' is not in the database, it will first get the player');
 					    	crawler.queueURL(host + url);
@@ -166,7 +166,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 }).on('complete',function(){
 	console.log('complete');
 	if(players.length){
-		var sql = mysql.format("SELECT id, profile_uri FROM transfermarket_player WHERE id IN ?", [[players.map(function(element){
+		var sql = mysql.format("SELECT id, profile_uri FROM transfermarkt_player WHERE id IN ?", [[players.map(function(element){
 			return element.id
 		})]]);
 		excute(sql, function(rows) {
@@ -201,7 +201,7 @@ if(update_team_id){
 		}
 	});
 } else {
-	excute("SELECT DISTINCT(transfermarket_player.profile_uri) FROM (SELECT transfer_ref_id FROM `transfermarket_transfer` WHERE player_id = 0)`no_player_transfers` JOIN `transfer` ON transfer.id = no_player_transfers.transfer_ref_id JOIN `player` ON transfer.player_id = player.id JOIN `transfermarket_player` ON transfermarket_player.player_ref_id = player.id",function(result){
+	excute("SELECT DISTINCT(transfermarkt_player.profile_uri) FROM (SELECT transfer_ref_id FROM `transfermarket_transfer` WHERE player_id = 0)`no_player_transfers` JOIN `transfer` ON transfer.id = no_player_transfers.transfer_ref_id JOIN `player` ON transfer.player_id = player.id JOIN `transfermarkt_player` ON transfermarkt_player.player_ref_id = player.id",function(result){
 		for (var i = result.length - 1; i >= 0; i--) {
 		    var path = result[i].profile_uri;
 		    path = path.replace('profil','korrektur');
@@ -209,7 +209,7 @@ if(update_team_id){
 	    };
 	    crawler.start();
 	});
-	/*excute("SELECT profile_uri FROM transfermarket_player",function(result){
+	/*excute("SELECT profile_uri FROM transfermarkt_player",function(result){
 		for (var i = result.length - 1; i >= 0; i--) {
 		    var path = result[i].profile_uri;
 		    path = path.replace('profil','korrektur');

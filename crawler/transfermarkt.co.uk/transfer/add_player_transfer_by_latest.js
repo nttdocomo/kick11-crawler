@@ -53,7 +53,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 			    		url = url.replace(/nationalmannschaft/,'profil');
 			    	}
 		    		var id = url.replace(/^\/\S+\/profil\/spieler\/(\d{1,9})$/,'$1');
-		    		excute(mysql.format("SELECT 1 FROM transfermarket_player WHERE id = ? limit 1;", [id]),function(rows){
+		    		excute(mysql.format("SELECT 1 FROM transfermarkt_player WHERE id = ? limit 1;", [id]),function(rows){
 		    			if(!rows.length){
 					    	console.log(id + ' is not in the database, it will first get the player');
 					    	crawler.queueURL(host + url);
@@ -165,7 +165,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 }).on('complete',function(){
 	console.log('complete');
 	if(players.length){
-		var sql = mysql.format("SELECT id, profile_uri FROM transfermarket_player WHERE id IN ?", [[players.map(function(element){
+		var sql = mysql.format("SELECT id, profile_uri FROM transfermarkt_player WHERE id IN ?", [[players.map(function(element){
 			return element.id
 		})]]);
 		excute(sql, function(rows) {

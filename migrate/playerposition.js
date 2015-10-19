@@ -6,7 +6,7 @@ pool = require('../crawler/transfermarkt.co.uk/pool'),
 excute  = require('../crawler/transfermarkt.co.uk/excute');
 module.exports = function(){
 	function getPlayerProfile(){
-		excute("SELECT player_ref_id,position FROM `transfermarket_player` WHERE player_ref_id != 0",function(result){
+		excute("SELECT player_ref_id,position FROM `transfermarkt_player` WHERE player_ref_id != 0",function(result){
 			result.forEach(getPositionId)
 		});
 	}

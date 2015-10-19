@@ -22,7 +22,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 	console.log('complete');
 });
 pool.getConnection(function(err, connection) {
-	connection.query("SELECT profile_uri FROM transfermarket_player WHERE height IS NULL ORDER BY id DESC", function(err,rows) {
+	connection.query("SELECT profile_uri FROM transfermarkt_player WHERE height IS NULL ORDER BY id DESC", function(err,rows) {
 	    if (err) throw err;
 	    for (var i = rows.length - 1; i >= 0; i--) {
 		    var path = rows[i].profile_uri;

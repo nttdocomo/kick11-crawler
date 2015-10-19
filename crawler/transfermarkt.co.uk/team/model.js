@@ -35,7 +35,7 @@ Team.prototype = {
 				nation_id = nation_flag.attr('src').replace(/^\S+?\/(\d+?)(\/\S+)?\.png$/,'$1');
 			}
 			if(id){
-				var sql = mysql.format("INSERT INTO transfermarket_player (id,full_name,date_of_birth,position,nation_id,profile_uri) SELECT ? FROM dual WHERE NOT EXISTS(SELECT id,full_name,date_of_birth,position,nation_id,profile_uri FROM transfermarket_player WHERE id = ?)", [[id,name,date_of_birth,position,nation_id,url],id]);
+				var sql = mysql.format("INSERT INTO transfermarkt_player (id,full_name,date_of_birth,position,nation_id,profile_uri) SELECT ? FROM dual WHERE NOT EXISTS(SELECT id,full_name,date_of_birth,position,nation_id,profile_uri FROM transfermarkt_player WHERE id = ?)", [[id,name,date_of_birth,position,nation_id,url],id]);
 				excute(sql);
 			}
 		});

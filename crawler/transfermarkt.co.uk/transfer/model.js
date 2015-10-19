@@ -21,7 +21,7 @@ Transfer = function($){
 }
 Transfer.prototype = {
 	update:function(pool){
-		var sql = mysql.format("UPDATE transfermarket_player SET ? WHERE id = ?", [{
+		var sql = mysql.format("UPDATE transfermarkt_player SET ? WHERE id = ?", [{
 			name_in_native_country:this.name_in_native_country,
 			height:this.height,
 			market_value:this.market_value,
@@ -30,7 +30,7 @@ Transfer.prototype = {
 		excute(sql);
 	},
 	save:function(pool){
-		var sql = mysql.format("INSERT INTO transfermarket_player (full_name,name_in_native_country,date_of_birth,nation_id,height,market_value,foot,position,profile_uri,id) SELECT ? FROM dual WHERE NOT EXISTS(SELECT id FROM transfermarket_player WHERE id = ?)", [[this.full_name,this.name_in_native_country,this.date_of_birth,this.nation_id,this.height,this.market_value,this.foot,this.position,this.profile_uri,this.player_id],this.player_id]);
+		var sql = mysql.format("INSERT INTO transfermarkt_player (full_name,name_in_native_country,date_of_birth,nation_id,height,market_value,foot,position,profile_uri,id) SELECT ? FROM dual WHERE NOT EXISTS(SELECT id FROM transfermarkt_player WHERE id = ?)", [[this.full_name,this.name_in_native_country,this.date_of_birth,this.nation_id,this.height,this.market_value,this.foot,this.position,this.profile_uri,this.player_id],this.player_id]);
 		excute(sql);
 	},
 	update_date_of_birth:function(){

@@ -75,7 +75,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 /*crawler.queueURL(host + '/cristiano-ronaldo/transfers/spieler/8198');
 crawler.start();*/
 pool.getConnection(function(err, connection) {
-	connection.query("SELECT profile_uri FROM transfermarket_player WHERE id NOT IN (SELECT DISTINCT player_id FROM `transfermarket_transfer`)", function(err,rows) {
+	connection.query("SELECT profile_uri FROM transfermarkt_player WHERE id NOT IN (SELECT DISTINCT player_id FROM `transfermarket_transfer`)", function(err,rows) {
 	    if (err) throw err;
 	    for (var i = rows.length - 1; i >= 0; i--) {
 		    var path = rows[i].profile_uri;

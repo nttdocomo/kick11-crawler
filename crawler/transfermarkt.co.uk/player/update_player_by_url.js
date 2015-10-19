@@ -28,7 +28,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 }).on('fetchclienterror',function(queueItem, response){
 	crawler.queueURL(host + queueItem.path);
 });
-excute("SELECT profile_uri FROM transfermarket_player WHERE height IS NULL OR height = 0 OR date_of_birth = '0000-00-00' ORDER BY id DESC",function(result){
+excute("SELECT profile_uri FROM transfermarkt_player WHERE height IS NULL OR height = 0 OR date_of_birth = '0000-00-00' ORDER BY id DESC",function(result){
 	for (var i = result.length - 1; i >= 0; i--) {
 	    var path = result[i].profile_uri;
     	crawler.queueURL(host + path);
@@ -36,7 +36,7 @@ excute("SELECT profile_uri FROM transfermarket_player WHERE height IS NULL OR he
     crawler.start();
 })
 /*pool.getConnection(function(err, connection) {
-	connection.query("SELECT profile_uri FROM transfermarket_player WHERE height IS NULL ORDER BY id DESC", function(err,rows) {
+	connection.query("SELECT profile_uri FROM transfermarkt_player WHERE height IS NULL ORDER BY id DESC", function(err,rows) {
 	    if (err) throw err;
 	    for (var i = rows.length - 1; i >= 0; i--) {
 		    var path = rows[i].profile_uri;

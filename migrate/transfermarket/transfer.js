@@ -91,7 +91,7 @@ migrate = function(cb){
 	})
 }
 get_player = function(transfer,cb){
-	excute(mysql.format('SELECT player_ref_id FROM transfermarket_player WHERE id = ? AND player_ref_id != 0',[transfer.player_id]),cb)
+	excute(mysql.format('SELECT player_ref_id FROM transfermarkt_player WHERE id = ? AND player_ref_id != 0',[transfer.player_id]),cb)
 }
 get_team = function(transfer,cb){
 	excute(mysql.format('SELECT id,team_ref_id FROM transfermarket_team WHERE team_ref_id != 0 AND id IN (?)',[[transfer.taking_team_id,transfer.releasing_team_id]]),cb)

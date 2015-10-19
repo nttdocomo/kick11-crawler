@@ -25,7 +25,7 @@ module.exports = Class.extend({
 		})
 	},
 	is_exist:function(){
-		return this.get_by_id()
+		return this.get('id') && this.get_by_id()
 	},
 	needToUpdate:function(data,row){
 		delete row.id;

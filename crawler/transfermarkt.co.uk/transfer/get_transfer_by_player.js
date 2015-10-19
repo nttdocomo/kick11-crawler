@@ -124,14 +124,14 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 /*crawler.queueURL(host + '/cristiano-ronaldo/transfers/spieler/8198');
 crawler.start();*/
 if(update_player_id){
-	excute("SELECT profile_uri FROM transfermarket_player WHERE id = " + update_player_id,function(result){
+	excute("SELECT profile_uri FROM transfermarkt_player WHERE id = " + update_player_id,function(result){
 		if(result.length){
 			crawler.queueURL(host + result[0].profile_uri.replace('profil','korrektur'));
 			crawler.start();
 		}
 	});
 } else {
-	excute("SELECT DISTINCT(transfermarket_player.profile_uri) FROM (SELECT transfer_ref_id FROM `transfermarket_transfer` WHERE player_id = 0)`no_player_transfers` JOIN `transfer` ON transfer.id = no_player_transfers.transfer_ref_id JOIN `player` ON transfer.player_id = player.id JOIN `transfermarket_player` ON transfermarket_player.player_ref_id = player.id",function(result){
+	excute("SELECT DISTINCT(transfermarkt_player.profile_uri) FROM (SELECT transfer_ref_id FROM `transfermarket_transfer` WHERE player_id = 0)`no_player_transfers` JOIN `transfer` ON transfer.id = no_player_transfers.transfer_ref_id JOIN `player` ON transfer.player_id = player.id JOIN `transfermarkt_player` ON transfermarkt_player.player_ref_id = player.id",function(result){
 		for (var i = result.length - 1; i >= 0; i--) {
 		    var path = result[i].profile_uri;
 		    path = path.replace('profil','korrektur');
@@ -139,7 +139,7 @@ if(update_player_id){
 	    };
 	    crawler.start();
 	});
-	/*excute("SELECT profile_uri FROM transfermarket_player",function(result){
+	/*excute("SELECT profile_uri FROM transfermarkt_player",function(result){
 		for (var i = result.length - 1; i >= 0; i--) {
 		    var path = result[i].profile_uri;
 		    path = path.replace('profil','korrektur');
