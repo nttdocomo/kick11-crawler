@@ -9,7 +9,6 @@ mysql = require('mysql'),
 difference = require('../../crawler/transfermarkt.co.uk/utils').difference,
 trim = require('../../crawler/transfermarkt.co.uk/utils').trim,
 Team = Model.extend({
-	table:'transfermarket_team',
 	needToUpdate:function(data,row){
 		this._super(data,row);
 		var diff;
@@ -21,9 +20,9 @@ Team = Model.extend({
 		return false;
 	}
 })
-Team.table = 'transfermarket_team';
+Team.table = 'transfermarkt_team';
 Team.get_team = function($){
-	var is_club_team = !$('#verknupftevereine > img').attr('class'),
+	var is_club = !$('#verknupftevereine > img').attr('class') ? 1:0,
     team_name = trim($('.spielername-profil').text().replace(/^\s+(.+?)\s+$/,'$1')),
     club_url = $('#submenue > li').eq(1).find('a').attr('href').replace(/(^\/\S+?\/startseite\/verein\/\d+?)(\/saison_id\/\d{4})?$/,'$1'),
 	team_id = club_url.replace(/^\/\S+?\/startseite\/verein\/(\d+?)(\/\S+)?$/,'$1'),
@@ -43,17 +42,36 @@ Team.get_team = function($){
     if(foundation){
 		foundation = moment(foundation, "MMM D, YYYY").format('YYYY-MM-DD');
 	}
-    team = new Team({
+    var team = new Team({
     	team_name:team_name,
-    	club:is_club_team ? 1:0,
+    	club:is_club,
     	national:national,
     	id:team_id,
-    	owner_id:is_club_team ? club_id:0,
-    	nation_id:nation_id,
+    	owner_id:is_club ? club_id:0,
+    	country_id:nation_id,
     	profile_uri:club_url,
-    	foundation:foundation
+    	foundation:foundation,
+    	address:address
     });
-    return team.save();
+    return team.save().then(function(){
+    	return excute(mysql.format('SELECT 1 FROM `transfermarkt_team_team` WHERE transfermarkt_team_id = ? LIMIT 1',[team_id]))
+    }).then(function(row){
+    	if(!row.length){
+    		return excute(mysql.format('INSERT INTO `team` SET ?',{
+    			name:team_name,
+    			club:is_club,
+    			national:national,
+    			country_id:nation_id
+    		})).then(function(result){
+    			return excute(mysql.format('INSERT INTO `transfermarkt_team_team` SET ?',{
+    				transfermarkt_team_id:team_id,
+    				team_id:result.insertId
+    			}))
+    		})
+    	} else {
+    		return Promise.resolve();
+    	}
+    });
 };
 Team.get_team_by_id = function(id){
     return excute(mysql.format('SELECT * FROM ?? WHERE id = ?',[this.table,id]));

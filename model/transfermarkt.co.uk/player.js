@@ -34,9 +34,9 @@ Player.get_player = function($){
 	profile_uri = url,
 	nation_id = $("th:contains('Nationality:')").next().find('img'),
 	nation_name;
+	date_of_birth = moment.utc(date_of_birth,'MMM D, YYYY').format('YYYY-MM-DD');
 	if(nation_id.length){
 		nation_id = nation_id.attr('src').replace(/^\S+?\/(\d+?)(\/\S+)?\.png$/,'$1');
-		nation_name = nation_id.attr('title');
 	} else {
 		nation_id = 0;
 	}
@@ -53,25 +53,32 @@ Player.get_player = function($){
 		nation_id:nation_id
 	})
     return player.save().then(function(){
-    	return excute('SELECT 1 FROM `transfermarkt_player_player` WHERE transfermarkt_player_id = ? LIMIT 1'[id])
+    	return excute(mysql.format('SELECT 1 FROM `transfermarkt_player_player` WHERE transfermarkt_player_id = ? LIMIT 1',[id]))
     }).then(function(row){
     	if(!row.length){
-    		return excute('INSERT INTO `player` SET ?',{
+    		return excute(mysql.format('INSERT INTO `player` SET ?',{
     			name:full_name,
     			date_of_birth:date_of_birth,
     			height:height,
     			foot:foot,
-    		}).then(function(result){
-    			return excute('INSER INTO `transfermarkt_player_player` SET ?',{
+    		})).then(function(result){
+    			return excute(mysql.format('INSERT INTO `transfermarkt_player_player` SET ?',{
     				transfermarkt_player_id:id,
     				player_id:result.insertId
-    			})
-    		}).then(function(){
-    			
+    			}))
     		})
     	} else {
-
+    		return excute(mysql.format('UPDATE `player` SET ? WHERE id = ?',[{
+    			name:full_name,
+    			date_of_birth:date_of_birth,
+    			height:height,
+    			foot:foot,
+    		},row[0].id]))
     	}
+    }).catch(function(err){
+	    console.log('player')
+    	console.log(err);
+    	return Promise.resolve();
     })
 };
 Player.get_team_by_id = function(id){

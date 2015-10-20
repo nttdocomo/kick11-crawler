@@ -50,13 +50,13 @@ module.exports = Class.extend({
 		if(!id){
 			id = this.attributes.id;
 		}
-		data.updated_at = moment.utc().format('YYYY-MM-DD HH:mm:ss');
+		//data.updated_at = moment.utc().format('YYYY-MM-DD HH:mm:ss');
 		//console.log(mysql.format('UPDATE `'+this.constructor.table+'` SET ? WHERE id = ?',[data,id]))
 		return excute(mysql.format('UPDATE `'+this.constructor.table+'` SET ? WHERE id = ?',[data,id]))
 	},
 	insert:function(data){
 		//console.log('insert '+data.id)
-		data.created_at = moment.utc().format('YYYY-MM-DD HH:mm:ss');
+		//data.created_at = moment.utc().format('YYYY-MM-DD HH:mm:ss');
     	return excute(mysql.format('INSERT INTO `'+this.constructor.table+'` SET ?',data));
 	}
 });

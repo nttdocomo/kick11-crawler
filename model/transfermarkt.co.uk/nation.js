@@ -19,35 +19,39 @@ Nation = Model.extend({
 		return false;
 	}
 })
-Nation.table = 'transfermarket_nation';
+Nation.table = 'transfermarkt_nation';
 Nation.get_nation = function($){
-	var nation_id = $("th:contains('Nationality:')").next().find('img'),
+	var nation_img = $("th:contains('Nationality:')").next().find('img'),
 	nation_name;
-	if(nation_id.length){
-		nation_id = nation_id.attr('src').replace(/^\S+?\/(\d+?)(\/\S+)?\.png$/,'$1');
-		nation_name = nation_id.attr('title');
+	if(nation_img.length){
+		nation_id = nation_img.attr('src').replace(/^\S+?\/(\d+?)(\/\S+)?\.png$/,'$1');
+		nation_name = nation_img.attr('title');
 		var nation = new Nation({
 			id:nation_id,
 			name:nation_name
 		})
 	    return nation.save().then(function(){
-	    	return excute('SELECT 1 FROM `transfermarkt_nation_nation` WHERE transfermarkt_nation_id = ? LIMIT 1'[id])
+	    	return excute(mysql.format('SELECT 1 FROM `transfermarkt_nation_nation` WHERE transfermarkt_nation_id = ? LIMIT 1',[nation_id]))
 	    }).then(function(row){
 	    	if(!row.length){
-	    		return excute('INSERT INTO `nation` SET ?',{
+	    		return excute(mysql.format('INSERT INTO `nation` SET ?',{
 	    			name:nation_name
-	    		}).then(function(result){
-	    			return excute('INSER INTO `transfermarkt_nation_nation` SET ?',{
-	    				transfermarkt_nation_id:id,
+	    		})).then(function(result){
+	    			return excute(mysql.format('INSERT INTO `transfermarkt_nation_nation` SET ?',{
+	    				transfermarkt_nation_id:nation_id,
 	    				nation_id:result.insertId
-	    			})
+	    			}))
 	    		})
 	    	} else {
 	    		return Promise.resolve();
 	    	}
+	    }).catch(function(err){
+	    	console.log('nation')
+	    	console.log(err)
+	    	return Promise.resolve();
 	    })
 	} else {
 		return Promise.resolve();
 	}
 };
-module.exports = Player;
+module.exports = Nation;

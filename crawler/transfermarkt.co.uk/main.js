@@ -43,7 +43,12 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
     		return Player.get_player(cheerio.load(decoder.write(responseBuffer)))
     	}).then(function(){
     		return Transfer.get_trasfer_from_transfers(cheerio.load(decoder.write(responseBuffer)))
-    	})
+    	}).then(function(){
+    		next();
+    	}).catch(function(err){
+	    	console.log('main')
+	    	console.log(err);
+	    })
     };
     //合同
     if(/^\/\S+\/korrektur\/spieler\/\d{1,6}$/.test(queueItem.path)){
@@ -51,6 +56,12 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 		Transfer.get_trasfer_from_korrektur(cheerio.load(decoder.write(responseBuffer))).then(function(){
 			next();
 		})
+    };
+    if(/^\/\S+\/gesamtspielplan\/wettbewerb\/\S+?$/.test(queueItem.path)){
+    	next = this.wait();
+    	insert_match_by_competition(decoder.write(responseBuffer)).then(function(){
+    		next()
+    	})
     };
 
     /*if(/^\/\S+\/transfers\/spieler\/\d{1,6}$/.test(queueItem.path)){
@@ -74,7 +85,8 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 }).addFetchCondition(function(parsedURL) {
 	if((/^\/\S+?\/startseite\/verein\/\d+?$/i.test(parsedURL.path) || 
 	/^\/\S+\/profil\/spieler\/\d{1,9}$/.test(parsedURL.path) || 
-	/^\/\S+\/korrektur\/spieler\/\d{1,6}$/.test(parsedURL.path)/* || 
+	/^\/\S+\/korrektur\/spieler\/\d{1,6}$/.test(parsedURL.path) || 
+	/^\/\S+\/gesamtspielplan\/wettbewerb\/\S+?$/.test(parsedURL.path)/* || 
 	/^\/\S+\/transfers\/spieler\/\d{1,6}$/.test(parsedURL.path)*/) && parsedURL.path !== '/end-of-career/startseite/verein/123'){
 		if(fetchedUrls.indexOf(parsedURL.path) == -1){//if url not in fetchedUrl
 			fetchedUrls.push(parsedURL.path)//push it into to avoid fetch twice
