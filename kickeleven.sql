@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: 2015-10-20 18:17:48
+-- Generation Time: 2015-10-21 18:29:19
 -- 服务器版本： 5.6.21
 -- PHP Version: 5.6.2
 
@@ -647,6 +647,20 @@ CREATE TABLE IF NOT EXISTS `transfermarkt_event` (
 -- --------------------------------------------------------
 
 --
+-- 表的结构 `transfermarkt_event_event`
+--
+
+CREATE TABLE IF NOT EXISTS `transfermarkt_event_event` (
+  `id` int(10) unsigned NOT NULL,
+  `transfermarkt_event_id` int(10) unsigned NOT NULL,
+  `event_id` int(10) unsigned NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
 -- 表的结构 `transfermarkt_match`
 --
 
@@ -1017,6 +1031,8 @@ CREATE TABLE IF NOT EXISTS `whoscored_registration` (
 
 CREATE TABLE IF NOT EXISTS `whoscored_seasons` (
   `id` int(10) unsigned NOT NULL,
+  `name` varchar(10) NOT NULL,
+  `year` int(4) unsigned NOT NULL,
   `created_at` datetime DEFAULT NULL,
   `updated_at` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -1325,6 +1341,12 @@ ALTER TABLE `transfermarkt_competition_competition`
 -- Indexes for table `transfermarkt_event`
 --
 ALTER TABLE `transfermarkt_event`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `transfermarkt_event_event`
+--
+ALTER TABLE `transfermarkt_event_event`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -1673,6 +1695,11 @@ ALTER TABLE `transfermarkt_competition_competition`
 --
 ALTER TABLE `transfermarkt_event`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+--
+-- AUTO_INCREMENT for table `transfermarkt_event_event`
+--
+ALTER TABLE `transfermarkt_event_event`
+  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `transfermarkt_match`
 --

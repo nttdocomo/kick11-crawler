@@ -20,27 +20,37 @@ module.exports = function(content){
     	nation_id = $("select[name='land_select_breadcrumb']").find("option:selected").val()
     	season = $("select[name='saison_id']").val(),
     	transfermarkt_competition,
+    	competition_id,
     	//transfermarkt_competition_url = $('#submenue > li').eq(1).find('a').attr('href'),
     	transfermarkt_competition_id = $("select[name='wettbewerb_select_breadcrumb']").find("option:selected").val();
     	console.log(year + season.replace(/\d{2}(\/\d{2})/,'$1'));
     	console.log(transfermarkt_competition_id);
-    	return excute(mysql.format('SELECT 1 FROM `transfermarkt_competition` WHERE competition_id = ?',[transfermarkt_competition_id])).then(function(row){
+    	return excute(mysql.format('SELECT competition_id FROM `transfermarkt_competition_competition` WHERE transfermarkt_competition_id = ?',[transfermarkt_competition_id])).then(function(row){
     		if(row.length){
-    			return row[0].id
+    			transfermarkt_competition_id = row[0].transfermarkt_competition_id;
+    			competition_id = row[0].competition_id;
+    			return Promise.resolve();
     		} else {
     			return excute(mysql.format('INSERT INTO `transfermarkt_competition` SET ?',{
-    				competition_name:transfermarkt_competition_name,
-    				competition_id:transfermarkt_competition_id,
+    				competition_name = transfermarkt_competition_name;
+    				competition_id = transfermarkt_competition_id;
     				nation_id:nation_id
-    			})).then(function(){
-    				return excute(mysql.format('SELECT nation_id FROM `transfermarkt_nation_nation` WHERE transfermarkt_nation_id = ?',[nation_id])).then(function(row){
-    					return excute(mysql.format('INSERT INTO `competition` SET ?',{
-		    				name:transfermarkt_competition_name,
-		    				code:transfermarkt_competition_id,
-		    				nation_id:nation_id
-		    			}))
-    				})
-    			})
+    			})).then(function(result){
+    				transfermarkt_competition_id = row[0].insertId;
+    				return excute(mysql.format('SELECT nation_id FROM `transfermarkt_nation_nation` WHERE transfermarkt_nation_id = ?',[nation_id]))
+    			}).then(function(row){
+					return excute(mysql.format('INSERT INTO `competition` SET ?',{
+	    				name:transfermarkt_competition_name,
+	    				code:transfermarkt_competition_id,
+	    				nation_id:row[0].nation_id
+	    			}))
+				}).then(function(competition){
+					competition_id = competition.insertId;
+					return excute(mysql.format('INSERT INTO `transfermarkt_competition_competition` SET ?',{
+						transfermarkt_competition_id:transfermarkt_competition_id,
+						competition_id:competition_id
+					}))
+				})
     		}
     	}).then(function(){
     		excute(mysql.format('SELECT * FROM transfermarkt_competition WHERE competition_id = ? LIMIT 1',[transfermarkt_competition_id]))
