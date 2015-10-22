@@ -16,27 +16,26 @@ module.exports = function(content){
 		var $ = cheerio.load(content),
     	tables = $('#main .six.columns:not(.mobile-four)'),
     	year = $("select[name='saison_id']").find("option:selected").val(),
-    	transfermarkt_competition_name = $("select[name='wettbewerb_select_breadcrumb']").find("option:selected").text(),
+    	name = $("select[name='wettbewerb_select_breadcrumb']").find("option:selected").text(),
     	nation_id = $("select[name='land_select_breadcrumb']").find("option:selected").val()
-    	season = $("select[name='saison_id']").val(),
+    	year = $("select[name='saison_id']").find("option:selected").val(),
+    	title = $("select[name='saison_id']").find("option:selected").text(),
     	transfermarkt_competition,
+    	transfermarkt_competition_id,
     	competition_id,
-    	//transfermarkt_competition_url = $('#submenue > li').eq(1).find('a').attr('href'),
-    	transfermarkt_competition_id = $("select[name='wettbewerb_select_breadcrumb']").find("option:selected").val();
-    	console.log(year + season.replace(/\d{2}(\/\d{2})/,'$1'));
-    	console.log(transfermarkt_competition_id);
-    	return excute(mysql.format('SELECT id FROM `transfermarkt_competition` WHERE transfermarkt_competition_id = ?',[transfermarkt_competition_id])).then(function(row){
+    	code = $("select[name='wettbewerb_select_breadcrumb']").find("option:selected").val();
+    	return excute(mysql.format('SELECT id FROM `transfermarkt_competition` WHERE transfermarkt_competition_id = ?',[transfermarkt_competition_code])).then(function(row){
     		if(!row.length){
     			return excute(mysql.format('INSERT INTO `transfermarkt_competition` SET ?',{
-    				competition_name = transfermarkt_competition_name;
-    				competition_id = transfermarkt_competition_id;
+    				name : name,
+    				code : code,
     				nation_id:nation_id
     			})).then(function(result){
     				transfermarkt_competition_id = result.insertId;
     				return excute(mysql.format('SELECT nation_id FROM `transfermarkt_nation_nation` WHERE transfermarkt_nation_id = ?',[nation_id])).then(function(row){
 						return excute(mysql.format('INSERT INTO `competition` SET ?',{
-		    				name:transfermarkt_competition_name,
-		    				code:transfermarkt_competition_id,
+		    				name:name,
+		    				code:code,
 		    				nation_id:row[0].nation_id
 		    			}))
 					}).then(function(competition){
@@ -47,35 +46,38 @@ module.exports = function(content){
 						}))
 					})
     			})
-    		}
-    		return excute(mysql.format('SELECT competition_id FROM `transfermarkt_competition_competition` WHERE transfermarkt_competition_id = ?',[transfermarkt_competition_id]))
-    	}).then(function(row){
-    		if(row.length){
-    			transfermarkt_competition_id = row[0].transfermarkt_competition_id;
-    			competition_id = row[0].competition_id;
-    			return Promise.resolve();
     		} else {
-    			return excute(mysql.format('INSERT INTO `transfermarkt_competition` SET ?',{
-    				competition_name = transfermarkt_competition_name;
-    				competition_id = transfermarkt_competition_id;
-    				nation_id:nation_id
-    			})).then(function(result){
-    				transfermarkt_competition_id = row[0].insertId;
-    				return excute(mysql.format('SELECT nation_id FROM `transfermarkt_nation_nation` WHERE transfermarkt_nation_id = ?',[nation_id]))
-    			}).then(function(row){
-					return excute(mysql.format('INSERT INTO `competition` SET ?',{
-	    				name:transfermarkt_competition_name,
-	    				code:transfermarkt_competition_id,
-	    				nation_id:row[0].nation_id
-	    			}))
-				}).then(function(competition){
-					competition_id = competition.insertId;
-					return excute(mysql.format('INSERT INTO `transfermarkt_competition_competition` SET ?',{
-						transfermarkt_competition_id:transfermarkt_competition_id,
-						competition_id:competition_id
-					}))
-				})
+    			return excute(mysql.format('SELECT * FROM `transfermarkt_competition_competition` WHERE transfermarkt_competition_id = ?',[transfermarkt_competition_id])).then(function(row){
+    				transfermarkt_competition_id = row[0].transfermarkt_competition_id;
+    				competition_id = row[0].competition_id;
+    			})
     		}
+    	}).then(function(row){
+    		return excute(mysql.format('SELECT * FROM `transfermarkt_season` WHERE title = ?',[title])).then(function(){
+    			if(!row.length){
+	    			return excute(mysql.format('INSERT INTO `transfermarkt_season` SET ?',{
+	    				year : year,
+	    				title : title
+	    			})).then(function(result){
+	    				transfermarkt_season_id = result.insertId;
+	    				return excute(mysql.format('INSERT INTO `season` SET ?',{
+		    				year:year,
+		    				title:title
+		    			})).then(function(season){
+							season_id = season.insertId;
+							return excute(mysql.format('INSERT INTO `transfermarkt_season_season` SET ?',{
+								transfermarkt_season_id:transfermarkt_season_id,
+								season_id:season_id
+							}))
+						})
+	    			})
+	    		} else {
+	    			return excute(mysql.format('SELECT * FROM `transfermarkt_season_season` WHERE transfermarkt_season_id = ?',[transfermarkt_season_id])).then(function(row){
+	    				transfermarkt_season_id = row[0].transfermarkt_season_id;
+	    				season_id = row[0].season_id;
+	    			})
+	    		}
+    		})
     	}).then(function(){
     		excute(mysql.format('SELECT * FROM transfermarkt_competition WHERE competition_id = ? LIMIT 1',[transfermarkt_competition_id]))
     	}).then(function(rows){

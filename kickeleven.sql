@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: 2015-10-21 18:29:19
+-- Generation Time: 2015-10-22 18:23:58
 -- 服务器版本： 5.6.21
 -- PHP Version: 5.6.2
 
@@ -404,13 +404,13 @@ CREATE TABLE IF NOT EXISTS `rounds` (
 -- --------------------------------------------------------
 
 --
--- 表的结构 `seasons`
+-- 表的结构 `season`
 --
 
-CREATE TABLE IF NOT EXISTS `seasons` (
+CREATE TABLE IF NOT EXISTS `season` (
   `id` int(10) unsigned NOT NULL,
   `year` int(11) NOT NULL,
-  `name` char(7) NOT NULL,
+  `title` char(5) NOT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -608,12 +608,11 @@ CREATE TABLE IF NOT EXISTS `transfermarket_transfer` (
 
 CREATE TABLE IF NOT EXISTS `transfermarkt_competition` (
   `id` int(10) unsigned NOT NULL,
-  `competition_name` char(60) NOT NULL,
-  `competition_id` char(20) NOT NULL,
-  `competition_category` char(40) NOT NULL,
-  `uri` varchar(200) DEFAULT NULL,
+  `name` char(60) NOT NULL,
+  `code` char(10) NOT NULL,
   `nation_id` int(4) unsigned NOT NULL,
-  `competition_type` tinyint(1) unsigned NOT NULL
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -763,6 +762,22 @@ CREATE TABLE IF NOT EXISTS `transfermarkt_round` (
 
 CREATE TABLE IF NOT EXISTS `transfermarkt_season` (
   `id` int(11) NOT NULL,
+  `year` char(4) NOT NULL,
+  `title` char(5) NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- 表的结构 `transfermarkt_season_season`
+--
+
+CREATE TABLE IF NOT EXISTS `transfermarkt_season_season` (
+  `id` int(10) unsigned NOT NULL,
+  `transfermarkt_season_id` int(10) unsigned NOT NULL,
+  `season_id` int(10) unsigned NOT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -1245,9 +1260,9 @@ ALTER TABLE `rounds`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `seasons`
+-- Indexes for table `season`
 --
-ALTER TABLE `seasons`
+ALTER TABLE `season`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -1392,6 +1407,12 @@ ALTER TABLE `transfermarkt_round`
 -- Indexes for table `transfermarkt_season`
 --
 ALTER TABLE `transfermarkt_season`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `transfermarkt_season_season`
+--
+ALTER TABLE `transfermarkt_season_season`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -1636,9 +1657,9 @@ ALTER TABLE `registrationprofile`
 ALTER TABLE `rounds`
   MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 --
--- AUTO_INCREMENT for table `seasons`
+-- AUTO_INCREMENT for table `season`
 --
-ALTER TABLE `seasons`
+ALTER TABLE `season`
   MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `tables`
@@ -1719,6 +1740,11 @@ ALTER TABLE `transfermarkt_player_player`
 -- AUTO_INCREMENT for table `transfermarkt_round`
 --
 ALTER TABLE `transfermarkt_round`
+  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
+--
+-- AUTO_INCREMENT for table `transfermarkt_season_season`
+--
+ALTER TABLE `transfermarkt_season_season`
   MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `transfermarkt_team_team`
