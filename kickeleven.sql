@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: 2015-10-22 18:23:58
+-- Generation Time: 2015-10-23 18:34:16
 -- 服务器版本： 5.6.21
 -- PHP Version: 5.6.2
 
@@ -137,15 +137,13 @@ CREATE TABLE IF NOT EXISTS `error_uri` (
 -- --------------------------------------------------------
 
 --
--- 表的结构 `events`
+-- 表的结构 `event`
 --
 
-CREATE TABLE IF NOT EXISTS `events` (
+CREATE TABLE IF NOT EXISTS `event` (
   `id` int(10) unsigned NOT NULL,
   `competition_id` int(10) unsigned NOT NULL,
   `season_id` int(10) unsigned NOT NULL,
-  `start_at` date DEFAULT NULL,
-  `end_at` date DEFAULT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -387,14 +385,14 @@ CREATE TABLE IF NOT EXISTS `registrationprofile` (
 -- --------------------------------------------------------
 
 --
--- 表的结构 `rounds`
+-- 表的结构 `round`
 --
 
-CREATE TABLE IF NOT EXISTS `rounds` (
+CREATE TABLE IF NOT EXISTS `round` (
   `id` int(10) unsigned NOT NULL,
   `event_id` int(10) unsigned NOT NULL,
   `name` varchar(50) DEFAULT NULL,
-  `pos` int(10) unsigned NOT NULL,
+  `round` int(2) unsigned NOT NULL,
   `start_at` date NOT NULL,
   `end_at` date DEFAULT NULL,
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
@@ -678,6 +676,20 @@ CREATE TABLE IF NOT EXISTS `transfermarkt_match` (
 -- --------------------------------------------------------
 
 --
+-- 表的结构 `transfermarkt_match_match`
+--
+
+CREATE TABLE IF NOT EXISTS `transfermarkt_match_match` (
+  `id` int(10) unsigned NOT NULL,
+  `transfermarkt_match_id` int(10) unsigned NOT NULL,
+  `match_id` int(10) unsigned NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
 -- 表的结构 `transfermarkt_nation`
 --
 
@@ -747,9 +759,23 @@ CREATE TABLE IF NOT EXISTS `transfermarkt_round` (
   `id` int(10) unsigned NOT NULL,
   `event_id` int(10) unsigned NOT NULL,
   `name` varchar(50) DEFAULT NULL,
-  `pos` int(10) unsigned NOT NULL,
+  `round` int(2) unsigned NOT NULL,
   `start_at` date DEFAULT NULL,
   `end_at` date DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- 表的结构 `transfermarkt_round_round`
+--
+
+CREATE TABLE IF NOT EXISTS `transfermarkt_round_round` (
+  `id` int(10) unsigned NOT NULL,
+  `transfermarkt_round_id` int(10) unsigned NOT NULL,
+  `round_id` int(10) unsigned NOT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -1163,9 +1189,9 @@ ALTER TABLE `continent`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `events`
+-- Indexes for table `event`
 --
-ALTER TABLE `events`
+ALTER TABLE `event`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -1254,9 +1280,9 @@ ALTER TABLE `registrationprofile`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `rounds`
+-- Indexes for table `round`
 --
-ALTER TABLE `rounds`
+ALTER TABLE `round`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -1371,6 +1397,12 @@ ALTER TABLE `transfermarkt_match`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `transfermarkt_match_match`
+--
+ALTER TABLE `transfermarkt_match_match`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `transfermarkt_nation`
 --
 ALTER TABLE `transfermarkt_nation`
@@ -1401,6 +1433,12 @@ ALTER TABLE `transfermarkt_player_player`
 -- Indexes for table `transfermarkt_round`
 --
 ALTER TABLE `transfermarkt_round`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `transfermarkt_round_round`
+--
+ALTER TABLE `transfermarkt_round_round`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -1577,9 +1615,9 @@ ALTER TABLE `competition_type`
 ALTER TABLE `continent`
   MODIFY `id` tinyint(1) unsigned NOT NULL AUTO_INCREMENT;
 --
--- AUTO_INCREMENT for table `events`
+-- AUTO_INCREMENT for table `event`
 --
-ALTER TABLE `events`
+ALTER TABLE `event`
   MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `events_teams`
@@ -1652,9 +1690,9 @@ ALTER TABLE `position`
 ALTER TABLE `registrationprofile`
   MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 --
--- AUTO_INCREMENT for table `rounds`
+-- AUTO_INCREMENT for table `round`
 --
-ALTER TABLE `rounds`
+ALTER TABLE `round`
   MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `season`
@@ -1727,6 +1765,11 @@ ALTER TABLE `transfermarkt_event_event`
 ALTER TABLE `transfermarkt_match`
   MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 --
+-- AUTO_INCREMENT for table `transfermarkt_match_match`
+--
+ALTER TABLE `transfermarkt_match_match`
+  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
+--
 -- AUTO_INCREMENT for table `transfermarkt_nation_nation`
 --
 ALTER TABLE `transfermarkt_nation_nation`
@@ -1740,6 +1783,11 @@ ALTER TABLE `transfermarkt_player_player`
 -- AUTO_INCREMENT for table `transfermarkt_round`
 --
 ALTER TABLE `transfermarkt_round`
+  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
+--
+-- AUTO_INCREMENT for table `transfermarkt_round_round`
+--
+ALTER TABLE `transfermarkt_round_round`
   MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `transfermarkt_season_season`
