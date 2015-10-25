@@ -156,13 +156,13 @@ module.exports = function(content){
 						trows.push(el);
 					});
 					return trows.reduce(function(sequence,row){
-						var td = $(row).children();
-						date = td.eq(0).find('a').text() || date;
-						time = trim(td.eq(1).text()) || time;
-						var transfermarkt_team1_id = td.eq(2).find('a').attr('href').replace(/\S+?(\d{1,})\/\S+?$/,'$1'),
+						var td = $(row).children(),
+						date = td.eq(0).find('a').text() || date,
+						time = trim(td.eq(1).text()) || time,
+						transfermarkt_team1_id = td.eq(2).find('a').attr('href').replace(/\S+?(\d{1,})\/\S+?$/,'$1'),
 						transfermarkt_team2_id = td.eq(6).find('a').attr('href').replace(/\S+?(\d{1,})\/\S+?$/,'$1'),
 						team1_name = td.eq(3).find('img').attr('title'),
-						match_id = td.eq(4).find('a').attr('href').replace(/\S+?(\d{1,})$/,'$1'),
+						transfermarkt_match_id = td.eq(4).find('a').attr('href').replace(/\S+?(\d{1,})$/,'$1'),
 						team2_name = td.eq(5).find('img').attr('title'),
 						team2_id,
 						team1_id,
@@ -178,72 +178,52 @@ module.exports = function(content){
 							score2 = result[1];
 							console.log([round_id,play_at,team1_name,score1,score2,team2_name].join('<<<>>>'));
 						};
-						var match = new Match({
-							round_id:round_id,
-							team1_id:transfermarkt_team1_id,
-							team2_id:transfermarkt_team2_id,
-							score1 : score1,
-							score2 : score1,
-							play_at:play_at
-						});
 						return sequence.then(function(){
-							return excute(mysql.format('SELECT * FROM `transfermarkt_match_match` WHERE transfermarkt_match_id = ? LIMIT 1',[match_id])).then(function(match){
+							return excute(mysql.format('SELECT 1 FROM `transfermarkt_match` WHERE id = ? LIMIT 1',[transfermarkt_match_id])).then(function(match){
 								if(!match.length){
-									return 
+									return excute(mysql.format('INSER INTO `transfermarkt_match` SET ?',{
+										id:transfermarkt_match_id,
+										round_id:round_id,
+										team1_id:transfermarkt_team1_id,
+										team2_id:transfermarkt_team2_id,
+										score1 : score1,
+										score2 : score1,
+										play_at:play_at
+									})).then(function(){
+										return excute(mysql.format('SEELCT * FROM `transfermarkt_team_team` WHERE transfermarkt_team_id = ? LIMIT 1',[transfermarkt_team1_id]))
+									}).then(function(team1){
+										team1_id=team1[0].id
+										return excute(mysql.format('SEELCT * FROM `transfermarkt_team_team` WHERE transfermarkt_team_id = ? LIMIT 1',[transfermarkt_team2_id]))
+									}).then(function(team2){
+										team2_id=team2[0].id
+										return excute(mysql.format('INSERT INTO `match` SET ?',{
+											round_id:round_id,
+											team1_id:team1_id,
+											team2_id:team2_id,
+											score1 : score1,
+											score2 : score1,
+											play_at:play_at
+										}))
+									}).then(function(match){
+										return excute(mysql.format('INSERT INTO `transfermarkt_match_match` SET ?',{
+											transfermarkt_match_id:transfermarkt_match_id,
+											match_id:match.insertId
+										}))
+									})
+								} else {
+									return Promise.resolve()
 								}
 							})//match.save()
-						}).then(function(){
-							return Team.get_team_by_id(transfermarkt_team1_id)
-						}).then(function(team){
-							if(team.length){
-								team1_id = team[0].ref_id
-								return Team.get_team_by_id(transfermarkt_team2_id)
-							}
-							throw {
-								'msg':'there is no team1:'+team1_id+'---'+team1_name
-							};
-						}).then(function(team){
-							if(team.length){
-								team2_id = team[0].ref_id;
-								return excute(mysql.format('SELECT * FROM ?? WHERE year = ? LIMIT 1',['seasons',year]))
-							}
-							throw {
-								'msg':'there is no team2:'+team2_id+'----'+team2_name
-							};
-						}).then(function(season){
-							if(season.length){
-								season = season[0];
-								return excute(mysql.format('SELECT * FROM ?? WHERE competition_id = ? AND season_id = ? LIMIT 1',['events',competition_id,season.id]))
-							}
-						}).then(function(result){
-							if(result.length){
-								console.log('event:---'+result[0].id)
-								return Round.get_round_id(result[0].id,pos)
-							}
-							throw {
-								'msg':'there is no event!'
-							};
-						}).then(function(round_id){
-							console.log('round_id=======' + round_id)
-							return excute(mysql.format('SELECT * FROM ?? WHERE team1_id = ? AND team2_id = ? AND play_at = ?',['matchs',team1_id,team2_id,play_at])).then(function(result){
-								if(result.length){
-									match = new Match(result[0]);
-									match.set('round_id',round_id);
-									return match.save();
-								}
-								throw {
-									'msg':'there is no event!'
-								};
-							})
 						}).catch(function(err) {
-							//console.log(err)
+							console.log(err)
+							return Promise.resolve()
 						})
 					},Promise.resolve())
 				});
 			},Promise.resolve());
     	}).catch(function(err){
     		console.log(err);
-    		next();
+    		return Promise.resolve()
     	})
 	})
 }

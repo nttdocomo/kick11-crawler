@@ -96,6 +96,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 	}
 	return false;
 });
+console.log('asdasd')
 crawler.queueURL(host + '/');
 crawler.start();
 //crawler.queue.add('http', 'www.transfermarkt.co.uk', '20', '/');

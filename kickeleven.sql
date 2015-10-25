@@ -1,9 +1,9 @@
 -- phpMyAdmin SQL Dump
--- version 4.4.2
+-- version 4.2.11
 -- http://www.phpmyadmin.net
 --
--- Host: localhost
--- Generation Time: 2015-10-23 18:34:16
+-- Host: 127.0.0.1
+-- Generation Time: 2015-10-25 13:22:24
 -- 服务器版本： 5.6.21
 -- PHP Version: 5.6.2
 
@@ -27,7 +27,7 @@ SET time_zone = "+00:00";
 --
 
 CREATE TABLE IF NOT EXISTS `city` (
-  `id` int(10) unsigned NOT NULL,
+`id` int(10) unsigned NOT NULL,
   `city_name` varchar(60) NOT NULL,
   `nation_id` int(10) unsigned NOT NULL,
   `capital` tinyint(1) NOT NULL
@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS `city` (
 --
 
 CREATE TABLE IF NOT EXISTS `citytranslation` (
-  `id` int(10) unsigned NOT NULL,
+`id` int(10) unsigned NOT NULL,
   `city_name` varchar(60) NOT NULL,
   `city_id` int(10) unsigned NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS `citytranslation` (
 --
 
 CREATE TABLE IF NOT EXISTS `club` (
-  `id` int(10) unsigned NOT NULL,
+`id` int(10) unsigned NOT NULL,
   `name` varchar(40) NOT NULL,
   `foundation` date DEFAULT NULL,
   `nation_id` tinyint(3) unsigned DEFAULT NULL,
@@ -69,7 +69,7 @@ CREATE TABLE IF NOT EXISTS `club` (
 --
 
 CREATE TABLE IF NOT EXISTS `clubtranslation` (
-  `id` int(10) unsigned NOT NULL,
+`id` int(10) unsigned NOT NULL,
   `language_code` char(5) NOT NULL,
   `name` varchar(60) NOT NULL,
   `club` int(10) unsigned NOT NULL
@@ -82,7 +82,7 @@ CREATE TABLE IF NOT EXISTS `clubtranslation` (
 --
 
 CREATE TABLE IF NOT EXISTS `competition` (
-  `id` int(10) unsigned NOT NULL,
+`id` int(10) unsigned NOT NULL,
   `name` varchar(50) NOT NULL,
   `code` varchar(4) DEFAULT NULL,
   `nation_id` tinyint(3) unsigned NOT NULL,
@@ -97,7 +97,7 @@ CREATE TABLE IF NOT EXISTS `competition` (
 --
 
 CREATE TABLE IF NOT EXISTS `competition_category` (
-  `id` tinyint(2) unsigned NOT NULL,
+`id` tinyint(2) unsigned NOT NULL,
   `name` varchar(30) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -108,7 +108,7 @@ CREATE TABLE IF NOT EXISTS `competition_category` (
 --
 
 CREATE TABLE IF NOT EXISTS `competition_type` (
-  `id` int(10) unsigned NOT NULL,
+`id` int(10) unsigned NOT NULL,
   `name` varchar(20) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -119,7 +119,7 @@ CREATE TABLE IF NOT EXISTS `competition_type` (
 --
 
 CREATE TABLE IF NOT EXISTS `continent` (
-  `id` tinyint(1) unsigned NOT NULL,
+`id` tinyint(1) unsigned NOT NULL,
   `name` varchar(14) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='大洲';
 
@@ -141,7 +141,7 @@ CREATE TABLE IF NOT EXISTS `error_uri` (
 --
 
 CREATE TABLE IF NOT EXISTS `event` (
-  `id` int(10) unsigned NOT NULL,
+`id` int(10) unsigned NOT NULL,
   `competition_id` int(10) unsigned NOT NULL,
   `season_id` int(10) unsigned NOT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -155,7 +155,7 @@ CREATE TABLE IF NOT EXISTS `event` (
 --
 
 CREATE TABLE IF NOT EXISTS `events_teams` (
-  `id` int(10) unsigned NOT NULL,
+`id` int(10) unsigned NOT NULL,
   `event_id` int(10) unsigned NOT NULL,
   `team_id` int(10) unsigned NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -167,7 +167,7 @@ CREATE TABLE IF NOT EXISTS `events_teams` (
 --
 
 CREATE TABLE IF NOT EXISTS `fm_player` (
-  `id` int(10) unsigned NOT NULL,
+`id` int(10) unsigned NOT NULL,
   `fm_player_id` int(10) unsigned NOT NULL,
   `player_id` int(10) unsigned NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -179,7 +179,7 @@ CREATE TABLE IF NOT EXISTS `fm_player` (
 --
 
 CREATE TABLE IF NOT EXISTS `goal_events` (
-  `id` int(10) unsigned NOT NULL,
+`id` int(10) unsigned NOT NULL,
   `event_id` int(10) unsigned NOT NULL,
   `penalty` tinyint(1) NOT NULL DEFAULT '0',
   `owngoal` tinyint(1) NOT NULL DEFAULT '0',
@@ -194,7 +194,7 @@ CREATE TABLE IF NOT EXISTS `goal_events` (
 --
 
 CREATE TABLE IF NOT EXISTS `matchs` (
-  `id` int(10) unsigned NOT NULL,
+`id` int(10) unsigned NOT NULL,
   `round_id` int(10) unsigned NOT NULL,
   `team1_id` int(10) unsigned NOT NULL,
   `team2_id` int(10) unsigned NOT NULL,
@@ -212,7 +212,7 @@ CREATE TABLE IF NOT EXISTS `matchs` (
 --
 
 CREATE TABLE IF NOT EXISTS `match_events` (
-  `id` int(10) unsigned NOT NULL,
+`id` int(10) unsigned NOT NULL,
   `player_id` int(10) unsigned NOT NULL,
   `match_id` int(10) unsigned NOT NULL,
   `team_id` int(10) unsigned NOT NULL,
@@ -229,7 +229,7 @@ CREATE TABLE IF NOT EXISTS `match_events` (
 --
 
 CREATE TABLE IF NOT EXISTS `match_player_statistics` (
-  `id` int(10) unsigned NOT NULL,
+`id` int(10) unsigned NOT NULL,
   `playerId` int(10) DEFAULT NULL,
   `age` tinyint(1) unsigned DEFAULT '0',
   `isManOfTheMatch` tinyint(1) DEFAULT '0',
@@ -282,7 +282,7 @@ CREATE TABLE IF NOT EXISTS `match_player_statistics` (
 --
 
 CREATE TABLE IF NOT EXISTS `nation` (
-  `id` tinyint(3) unsigned NOT NULL,
+`id` tinyint(3) unsigned NOT NULL,
   `name` varchar(60) NOT NULL,
   `continent_id` tinyint(3) unsigned DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='国家';
@@ -294,7 +294,7 @@ CREATE TABLE IF NOT EXISTS `nation` (
 --
 
 CREATE TABLE IF NOT EXISTS `nation2player` (
-  `id` int(10) unsigned NOT NULL,
+`id` int(10) unsigned NOT NULL,
   `nation_id` int(10) unsigned NOT NULL,
   `player_id` int(10) unsigned NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='球员国籍';
@@ -306,7 +306,7 @@ CREATE TABLE IF NOT EXISTS `nation2player` (
 --
 
 CREATE TABLE IF NOT EXISTS `nationtranslation` (
-  `id` int(10) unsigned NOT NULL,
+`id` int(10) unsigned NOT NULL,
   `language_code` char(5) NOT NULL,
   `full_name` varchar(60) NOT NULL,
   `short_name` varchar(30) NOT NULL,
@@ -322,7 +322,7 @@ CREATE TABLE IF NOT EXISTS `nationtranslation` (
 --
 
 CREATE TABLE IF NOT EXISTS `player` (
-  `id` int(10) unsigned NOT NULL,
+`id` int(10) unsigned NOT NULL,
   `name` varchar(60) NOT NULL,
   `date_of_birth` date NOT NULL,
   `height` tinyint(3) unsigned DEFAULT NULL,
@@ -340,7 +340,7 @@ CREATE TABLE IF NOT EXISTS `player` (
 --
 
 CREATE TABLE IF NOT EXISTS `player2position` (
-  `id` int(10) unsigned NOT NULL,
+`id` int(10) unsigned NOT NULL,
   `player_id` int(10) unsigned NOT NULL,
   `position_id` tinyint(3) unsigned NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='球员位置';
@@ -352,7 +352,7 @@ CREATE TABLE IF NOT EXISTS `player2position` (
 --
 
 CREATE TABLE IF NOT EXISTS `playertranslation` (
-  `id` int(10) unsigned NOT NULL,
+`id` int(10) unsigned NOT NULL,
   `player` int(10) unsigned NOT NULL,
   `language_code` char(6) NOT NULL,
   `full_name` varchar(60) NOT NULL,
@@ -366,7 +366,7 @@ CREATE TABLE IF NOT EXISTS `playertranslation` (
 --
 
 CREATE TABLE IF NOT EXISTS `position` (
-  `id` tinyint(3) unsigned NOT NULL,
+`id` tinyint(3) unsigned NOT NULL,
   `name` varchar(30) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='位置';
 
@@ -377,7 +377,7 @@ CREATE TABLE IF NOT EXISTS `position` (
 --
 
 CREATE TABLE IF NOT EXISTS `registrationprofile` (
-  `id` int(10) unsigned NOT NULL,
+`id` int(10) unsigned NOT NULL,
   `user_id` int(11) NOT NULL,
   `activation_key` char(41) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -389,7 +389,7 @@ CREATE TABLE IF NOT EXISTS `registrationprofile` (
 --
 
 CREATE TABLE IF NOT EXISTS `round` (
-  `id` int(10) unsigned NOT NULL,
+`id` int(10) unsigned NOT NULL,
   `event_id` int(10) unsigned NOT NULL,
   `name` varchar(50) DEFAULT NULL,
   `round` int(2) unsigned NOT NULL,
@@ -406,7 +406,7 @@ CREATE TABLE IF NOT EXISTS `round` (
 --
 
 CREATE TABLE IF NOT EXISTS `season` (
-  `id` int(10) unsigned NOT NULL,
+`id` int(10) unsigned NOT NULL,
   `year` int(11) NOT NULL,
   `title` char(5) NOT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -432,7 +432,7 @@ CREATE TABLE IF NOT EXISTS `sessions` (
 --
 
 CREATE TABLE IF NOT EXISTS `tables` (
-  `id` int(10) unsigned NOT NULL,
+`id` int(10) unsigned NOT NULL,
   `event_id` int(10) unsigned NOT NULL,
   `team_id` int(10) unsigned NOT NULL,
   `wins` tinyint(2) unsigned DEFAULT NULL,
@@ -450,7 +450,7 @@ CREATE TABLE IF NOT EXISTS `tables` (
 --
 
 CREATE TABLE IF NOT EXISTS `team` (
-  `id` int(10) unsigned NOT NULL,
+`id` int(10) unsigned NOT NULL,
   `club` tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否是俱乐部',
   `national` tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否是国家队',
   `name` varchar(40) NOT NULL,
@@ -466,7 +466,7 @@ CREATE TABLE IF NOT EXISTS `team` (
 --
 
 CREATE TABLE IF NOT EXISTS `teamplayer` (
-  `id` int(10) unsigned NOT NULL,
+`id` int(10) unsigned NOT NULL,
   `team_id` int(4) unsigned NOT NULL,
   `player_id` int(6) unsigned NOT NULL,
   `date` date NOT NULL
@@ -479,7 +479,7 @@ CREATE TABLE IF NOT EXISTS `teamplayer` (
 --
 
 CREATE TABLE IF NOT EXISTS `transfer` (
-  `id` int(11) unsigned NOT NULL,
+`id` int(11) unsigned NOT NULL,
   `taking_team_id` int(6) unsigned NOT NULL,
   `releasing_team_id` int(6) unsigned NOT NULL,
   `season` int(4) unsigned NOT NULL,
@@ -514,7 +514,7 @@ CREATE TABLE IF NOT EXISTS `transfermarket_club` (
 --
 
 CREATE TABLE IF NOT EXISTS `transfermarket_competition_category` (
-  `id` tinyint(2) unsigned NOT NULL,
+`id` tinyint(2) unsigned NOT NULL,
   `name` varchar(30) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -525,7 +525,7 @@ CREATE TABLE IF NOT EXISTS `transfermarket_competition_category` (
 --
 
 CREATE TABLE IF NOT EXISTS `transfermarket_competition_competition` (
-  `id` int(10) unsigned NOT NULL,
+`id` int(10) unsigned NOT NULL,
   `transfermarket_competition_id` varchar(4) NOT NULL,
   `competition_id` int(10) unsigned NOT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -539,7 +539,7 @@ CREATE TABLE IF NOT EXISTS `transfermarket_competition_competition` (
 --
 
 CREATE TABLE IF NOT EXISTS `transfermarket_competition_level` (
-  `id` int(10) unsigned NOT NULL,
+`id` int(10) unsigned NOT NULL,
   `type_name` char(40) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -572,7 +572,7 @@ CREATE TABLE IF NOT EXISTS `transfermarket_position` (
 --
 
 CREATE TABLE IF NOT EXISTS `transfermarket_team_player` (
-  `id` int(10) unsigned NOT NULL,
+`id` int(10) unsigned NOT NULL,
   `team_id` int(10) unsigned NOT NULL,
   `player_id` int(10) unsigned NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -605,7 +605,7 @@ CREATE TABLE IF NOT EXISTS `transfermarket_transfer` (
 --
 
 CREATE TABLE IF NOT EXISTS `transfermarkt_competition` (
-  `id` int(10) unsigned NOT NULL,
+`id` int(10) unsigned NOT NULL,
   `name` char(60) NOT NULL,
   `code` char(10) NOT NULL,
   `nation_id` int(4) unsigned NOT NULL,
@@ -620,7 +620,7 @@ CREATE TABLE IF NOT EXISTS `transfermarkt_competition` (
 --
 
 CREATE TABLE IF NOT EXISTS `transfermarkt_competition_competition` (
-  `id` int(10) unsigned NOT NULL,
+`id` int(10) unsigned NOT NULL,
   `transfermarkt_competition_id` int(10) unsigned NOT NULL,
   `competition_id` int(10) unsigned NOT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -634,7 +634,7 @@ CREATE TABLE IF NOT EXISTS `transfermarkt_competition_competition` (
 --
 
 CREATE TABLE IF NOT EXISTS `transfermarkt_event` (
-  `id` int(11) NOT NULL,
+`id` int(11) NOT NULL,
   `competition_id` int(11) NOT NULL,
   `season_id` int(11) NOT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -648,7 +648,7 @@ CREATE TABLE IF NOT EXISTS `transfermarkt_event` (
 --
 
 CREATE TABLE IF NOT EXISTS `transfermarkt_event_event` (
-  `id` int(10) unsigned NOT NULL,
+`id` int(10) unsigned NOT NULL,
   `transfermarkt_event_id` int(10) unsigned NOT NULL,
   `event_id` int(10) unsigned NOT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -662,7 +662,7 @@ CREATE TABLE IF NOT EXISTS `transfermarkt_event_event` (
 --
 
 CREATE TABLE IF NOT EXISTS `transfermarkt_match` (
-  `id` int(10) unsigned NOT NULL,
+`id` int(10) unsigned NOT NULL,
   `round_id` int(10) unsigned NOT NULL,
   `team1_id` int(10) unsigned NOT NULL,
   `team2_id` int(10) unsigned NOT NULL,
@@ -680,7 +680,7 @@ CREATE TABLE IF NOT EXISTS `transfermarkt_match` (
 --
 
 CREATE TABLE IF NOT EXISTS `transfermarkt_match_match` (
-  `id` int(10) unsigned NOT NULL,
+`id` int(10) unsigned NOT NULL,
   `transfermarkt_match_id` int(10) unsigned NOT NULL,
   `match_id` int(10) unsigned NOT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -707,7 +707,7 @@ CREATE TABLE IF NOT EXISTS `transfermarkt_nation` (
 --
 
 CREATE TABLE IF NOT EXISTS `transfermarkt_nation_nation` (
-  `id` int(10) unsigned NOT NULL,
+`id` int(10) unsigned NOT NULL,
   `transfermarkt_nation_id` int(10) unsigned NOT NULL,
   `nation_id` int(10) unsigned NOT NULL,
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
@@ -742,7 +742,7 @@ CREATE TABLE IF NOT EXISTS `transfermarkt_player` (
 --
 
 CREATE TABLE IF NOT EXISTS `transfermarkt_player_player` (
-  `id` int(11) NOT NULL,
+`id` int(11) NOT NULL,
   `transfermarkt_player_id` int(10) unsigned NOT NULL,
   `player_id` int(10) unsigned NOT NULL,
   `created_at` datetime DEFAULT NULL,
@@ -756,7 +756,7 @@ CREATE TABLE IF NOT EXISTS `transfermarkt_player_player` (
 --
 
 CREATE TABLE IF NOT EXISTS `transfermarkt_round` (
-  `id` int(10) unsigned NOT NULL,
+`id` int(10) unsigned NOT NULL,
   `event_id` int(10) unsigned NOT NULL,
   `name` varchar(50) DEFAULT NULL,
   `round` int(2) unsigned NOT NULL,
@@ -773,7 +773,7 @@ CREATE TABLE IF NOT EXISTS `transfermarkt_round` (
 --
 
 CREATE TABLE IF NOT EXISTS `transfermarkt_round_round` (
-  `id` int(10) unsigned NOT NULL,
+`id` int(10) unsigned NOT NULL,
   `transfermarkt_round_id` int(10) unsigned NOT NULL,
   `round_id` int(10) unsigned NOT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -801,7 +801,7 @@ CREATE TABLE IF NOT EXISTS `transfermarkt_season` (
 --
 
 CREATE TABLE IF NOT EXISTS `transfermarkt_season_season` (
-  `id` int(10) unsigned NOT NULL,
+`id` int(10) unsigned NOT NULL,
   `transfermarkt_season_id` int(10) unsigned NOT NULL,
   `season_id` int(10) unsigned NOT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -836,7 +836,7 @@ CREATE TABLE IF NOT EXISTS `transfermarkt_team` (
 --
 
 CREATE TABLE IF NOT EXISTS `transfermarkt_team_team` (
-  `id` int(10) unsigned NOT NULL,
+`id` int(10) unsigned NOT NULL,
   `transfermarkt_team_id` int(10) unsigned NOT NULL,
   `team_id` int(10) unsigned NOT NULL,
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
@@ -850,7 +850,7 @@ CREATE TABLE IF NOT EXISTS `transfermarkt_team_team` (
 --
 
 CREATE TABLE IF NOT EXISTS `transfermarkt_transfer_transfer` (
-  `id` int(10) unsigned NOT NULL,
+`id` int(10) unsigned NOT NULL,
   `transfermarkt_transfer_id` int(10) unsigned NOT NULL,
   `transfer_id` int(10) unsigned NOT NULL,
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
@@ -864,7 +864,7 @@ CREATE TABLE IF NOT EXISTS `transfermarkt_transfer_transfer` (
 --
 
 CREATE TABLE IF NOT EXISTS `user` (
-  `id` int(10) unsigned NOT NULL,
+`id` int(10) unsigned NOT NULL,
   `date_joined` datetime NOT NULL,
   `username` varchar(60) NOT NULL,
   `email` varchar(60) NOT NULL,
@@ -880,7 +880,7 @@ CREATE TABLE IF NOT EXISTS `user` (
 --
 
 CREATE TABLE IF NOT EXISTS `whoscored_event_event` (
-  `id` int(10) unsigned NOT NULL,
+`id` int(10) unsigned NOT NULL,
   `whoscored_event_id` int(10) unsigned NOT NULL,
   `event_id` int(10) unsigned NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -892,7 +892,7 @@ CREATE TABLE IF NOT EXISTS `whoscored_event_event` (
 --
 
 CREATE TABLE IF NOT EXISTS `whoscored_goals` (
-  `id` int(10) unsigned NOT NULL,
+`id` int(10) unsigned NOT NULL,
   `event_id` int(10) unsigned NOT NULL,
   `penalty` tinyint(1) NOT NULL DEFAULT '0',
   `owngoal` tinyint(1) NOT NULL DEFAULT '0',
@@ -927,7 +927,7 @@ CREATE TABLE IF NOT EXISTS `whoscored_matches` (
 --
 
 CREATE TABLE IF NOT EXISTS `whoscored_match_events` (
-  `id` int(10) unsigned NOT NULL,
+`id` int(10) unsigned NOT NULL,
   `player_id` int(10) unsigned NOT NULL,
   `match_id` int(10) unsigned NOT NULL,
   `team_id` int(10) unsigned NOT NULL,
@@ -944,7 +944,7 @@ CREATE TABLE IF NOT EXISTS `whoscored_match_events` (
 --
 
 CREATE TABLE IF NOT EXISTS `whoscored_match_match` (
-  `id` int(10) unsigned NOT NULL,
+`id` int(10) unsigned NOT NULL,
   `whoscored_match_id` int(10) unsigned NOT NULL,
   `match_id` int(10) unsigned NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -956,7 +956,7 @@ CREATE TABLE IF NOT EXISTS `whoscored_match_match` (
 --
 
 CREATE TABLE IF NOT EXISTS `whoscored_match_player_statistics` (
-  `id` int(10) unsigned NOT NULL,
+`id` int(10) unsigned NOT NULL,
   `name` varchar(30) DEFAULT NULL,
   `wSName` varchar(30) DEFAULT NULL,
   `playerId` int(10) DEFAULT NULL,
@@ -1029,7 +1029,7 @@ CREATE TABLE IF NOT EXISTS `whoscored_player` (
 --
 
 CREATE TABLE IF NOT EXISTS `whoscored_player_player` (
-  `id` int(10) unsigned NOT NULL,
+`id` int(10) unsigned NOT NULL,
   `whoscored_player_id` int(10) unsigned NOT NULL,
   `player_id` int(10) unsigned NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -1055,7 +1055,7 @@ CREATE TABLE IF NOT EXISTS `whoscored_regions` (
 --
 
 CREATE TABLE IF NOT EXISTS `whoscored_registration` (
-  `id` int(10) unsigned NOT NULL,
+`id` int(10) unsigned NOT NULL,
   `match_id` int(10) unsigned NOT NULL,
   `player_id` int(10) unsigned NOT NULL,
   `shirt_no` tinyint(3) unsigned DEFAULT NULL,
@@ -1112,7 +1112,7 @@ CREATE TABLE IF NOT EXISTS `whoscored_teams` (
 --
 
 CREATE TABLE IF NOT EXISTS `whoscored_team_team` (
-  `id` int(10) unsigned NOT NULL,
+`id` int(10) unsigned NOT NULL,
   `whoscored_team_id` int(10) unsigned NOT NULL,
   `team_id` int(10) unsigned NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -1140,435 +1140,421 @@ CREATE TABLE IF NOT EXISTS `whoscored_tournaments` (
 -- Indexes for table `city`
 --
 ALTER TABLE `city`
-  ADD PRIMARY KEY (`id`);
+ ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `citytranslation`
 --
 ALTER TABLE `citytranslation`
-  ADD PRIMARY KEY (`id`);
+ ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `club`
 --
 ALTER TABLE `club`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `nation_2` (`nation_id`),
-  ADD KEY `nation_3` (`nation_id`),
-  ADD KEY `nation_4` (`nation_id`),
-  ADD KEY `nation_5` (`nation_id`);
+ ADD PRIMARY KEY (`id`), ADD KEY `nation_2` (`nation_id`), ADD KEY `nation_3` (`nation_id`), ADD KEY `nation_4` (`nation_id`), ADD KEY `nation_5` (`nation_id`);
 
 --
 -- Indexes for table `clubtranslation`
 --
 ALTER TABLE `clubtranslation`
-  ADD PRIMARY KEY (`id`);
+ ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `competition`
 --
 ALTER TABLE `competition`
-  ADD PRIMARY KEY (`id`);
+ ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `competition_category`
 --
 ALTER TABLE `competition_category`
-  ADD PRIMARY KEY (`id`);
+ ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `competition_type`
 --
 ALTER TABLE `competition_type`
-  ADD PRIMARY KEY (`id`);
+ ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `continent`
 --
 ALTER TABLE `continent`
-  ADD PRIMARY KEY (`id`);
+ ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `event`
 --
 ALTER TABLE `event`
-  ADD PRIMARY KEY (`id`);
+ ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `events_teams`
 --
 ALTER TABLE `events_teams`
-  ADD PRIMARY KEY (`id`);
+ ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `fm_player`
 --
 ALTER TABLE `fm_player`
-  ADD PRIMARY KEY (`id`);
+ ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `goal_events`
 --
 ALTER TABLE `goal_events`
-  ADD PRIMARY KEY (`id`);
+ ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `matchs`
 --
 ALTER TABLE `matchs`
-  ADD PRIMARY KEY (`id`);
+ ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `match_events`
 --
 ALTER TABLE `match_events`
-  ADD PRIMARY KEY (`id`);
+ ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `match_player_statistics`
 --
 ALTER TABLE `match_player_statistics`
-  ADD PRIMARY KEY (`id`);
+ ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `nation`
 --
 ALTER TABLE `nation`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `continent` (`continent_id`);
+ ADD PRIMARY KEY (`id`), ADD KEY `continent` (`continent_id`);
 
 --
 -- Indexes for table `nation2player`
 --
 ALTER TABLE `nation2player`
-  ADD PRIMARY KEY (`id`);
+ ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `nationtranslation`
 --
 ALTER TABLE `nationtranslation`
-  ADD PRIMARY KEY (`id`);
+ ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `player`
 --
 ALTER TABLE `player`
-  ADD PRIMARY KEY (`id`);
+ ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `player2position`
 --
 ALTER TABLE `player2position`
-  ADD PRIMARY KEY (`id`);
+ ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `playertranslation`
 --
 ALTER TABLE `playertranslation`
-  ADD PRIMARY KEY (`id`);
+ ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `position`
 --
 ALTER TABLE `position`
-  ADD PRIMARY KEY (`id`);
+ ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `registrationprofile`
 --
 ALTER TABLE `registrationprofile`
-  ADD PRIMARY KEY (`id`);
+ ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `round`
 --
 ALTER TABLE `round`
-  ADD PRIMARY KEY (`id`);
+ ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `season`
 --
 ALTER TABLE `season`
-  ADD PRIMARY KEY (`id`);
+ ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `sessions`
 --
 ALTER TABLE `sessions`
-  ADD PRIMARY KEY (`session_id`);
+ ADD PRIMARY KEY (`session_id`);
 
 --
 -- Indexes for table `tables`
 --
 ALTER TABLE `tables`
-  ADD PRIMARY KEY (`id`);
+ ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `team`
 --
 ALTER TABLE `team`
-  ADD PRIMARY KEY (`id`);
+ ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `teamplayer`
 --
 ALTER TABLE `teamplayer`
-  ADD PRIMARY KEY (`id`);
+ ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `transfer`
 --
 ALTER TABLE `transfer`
-  ADD PRIMARY KEY (`id`);
+ ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `transfermarket_club`
 --
 ALTER TABLE `transfermarket_club`
-  ADD PRIMARY KEY (`id`);
+ ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `transfermarket_competition_category`
 --
 ALTER TABLE `transfermarket_competition_category`
-  ADD PRIMARY KEY (`id`);
+ ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `transfermarket_competition_competition`
 --
 ALTER TABLE `transfermarket_competition_competition`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `competition_id` (`competition_id`);
+ ADD PRIMARY KEY (`id`), ADD UNIQUE KEY `competition_id` (`competition_id`);
 
 --
 -- Indexes for table `transfermarket_competition_level`
 --
 ALTER TABLE `transfermarket_competition_level`
-  ADD PRIMARY KEY (`id`);
+ ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `transfermarket_position`
 --
 ALTER TABLE `transfermarket_position`
-  ADD PRIMARY KEY (`id`);
+ ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `transfermarket_team_player`
 --
 ALTER TABLE `transfermarket_team_player`
-  ADD PRIMARY KEY (`id`);
+ ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `transfermarket_transfer`
 --
 ALTER TABLE `transfermarket_transfer`
-  ADD PRIMARY KEY (`id`);
+ ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `transfermarkt_competition`
 --
 ALTER TABLE `transfermarkt_competition`
-  ADD PRIMARY KEY (`id`);
+ ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `transfermarkt_competition_competition`
 --
 ALTER TABLE `transfermarkt_competition_competition`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `transfermarkt_competition_id` (`transfermarkt_competition_id`),
-  ADD UNIQUE KEY `competition_id` (`competition_id`);
+ ADD PRIMARY KEY (`id`), ADD UNIQUE KEY `transfermarkt_competition_id` (`transfermarkt_competition_id`), ADD UNIQUE KEY `competition_id` (`competition_id`);
 
 --
 -- Indexes for table `transfermarkt_event`
 --
 ALTER TABLE `transfermarkt_event`
-  ADD PRIMARY KEY (`id`);
+ ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `transfermarkt_event_event`
 --
 ALTER TABLE `transfermarkt_event_event`
-  ADD PRIMARY KEY (`id`);
+ ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `transfermarkt_match`
 --
 ALTER TABLE `transfermarkt_match`
-  ADD PRIMARY KEY (`id`);
+ ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `transfermarkt_match_match`
 --
 ALTER TABLE `transfermarkt_match_match`
-  ADD PRIMARY KEY (`id`);
+ ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `transfermarkt_nation`
 --
 ALTER TABLE `transfermarkt_nation`
-  ADD PRIMARY KEY (`id`);
+ ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `transfermarkt_nation_nation`
 --
 ALTER TABLE `transfermarkt_nation_nation`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `transfermarkt_nation_id` (`transfermarkt_nation_id`,`nation_id`);
+ ADD PRIMARY KEY (`id`), ADD UNIQUE KEY `transfermarkt_nation_id` (`transfermarkt_nation_id`,`nation_id`);
 
 --
 -- Indexes for table `transfermarkt_player`
 --
 ALTER TABLE `transfermarkt_player`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `id` (`id`);
+ ADD PRIMARY KEY (`id`), ADD UNIQUE KEY `id` (`id`);
 
 --
 -- Indexes for table `transfermarkt_player_player`
 --
 ALTER TABLE `transfermarkt_player_player`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `transfermarkt_player_id` (`transfermarkt_player_id`,`player_id`);
+ ADD PRIMARY KEY (`id`), ADD UNIQUE KEY `transfermarkt_player_id` (`transfermarkt_player_id`,`player_id`);
 
 --
 -- Indexes for table `transfermarkt_round`
 --
 ALTER TABLE `transfermarkt_round`
-  ADD PRIMARY KEY (`id`);
+ ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `transfermarkt_round_round`
 --
 ALTER TABLE `transfermarkt_round_round`
-  ADD PRIMARY KEY (`id`);
+ ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `transfermarkt_season`
 --
 ALTER TABLE `transfermarkt_season`
-  ADD PRIMARY KEY (`id`);
+ ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `transfermarkt_season_season`
 --
 ALTER TABLE `transfermarkt_season_season`
-  ADD PRIMARY KEY (`id`);
+ ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `transfermarkt_team`
 --
 ALTER TABLE `transfermarkt_team`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `id` (`id`);
+ ADD PRIMARY KEY (`id`), ADD UNIQUE KEY `id` (`id`);
 
 --
 -- Indexes for table `transfermarkt_team_team`
 --
 ALTER TABLE `transfermarkt_team_team`
-  ADD PRIMARY KEY (`id`);
+ ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `transfermarkt_transfer_transfer`
 --
 ALTER TABLE `transfermarkt_transfer_transfer`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `transfer_id` (`transfer_id`),
-  ADD UNIQUE KEY `transfermarkt_transfer_id` (`transfermarkt_transfer_id`);
+ ADD PRIMARY KEY (`id`), ADD UNIQUE KEY `transfer_id` (`transfer_id`), ADD UNIQUE KEY `transfermarkt_transfer_id` (`transfermarkt_transfer_id`);
 
 --
 -- Indexes for table `user`
 --
 ALTER TABLE `user`
-  ADD PRIMARY KEY (`id`);
+ ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `whoscored_event_event`
 --
 ALTER TABLE `whoscored_event_event`
-  ADD PRIMARY KEY (`id`);
+ ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `whoscored_goals`
 --
 ALTER TABLE `whoscored_goals`
-  ADD PRIMARY KEY (`id`);
+ ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `whoscored_matches`
 --
 ALTER TABLE `whoscored_matches`
-  ADD PRIMARY KEY (`id`);
+ ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `whoscored_match_events`
 --
 ALTER TABLE `whoscored_match_events`
-  ADD PRIMARY KEY (`id`);
+ ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `whoscored_match_match`
 --
 ALTER TABLE `whoscored_match_match`
-  ADD PRIMARY KEY (`id`);
+ ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `whoscored_match_player_statistics`
 --
 ALTER TABLE `whoscored_match_player_statistics`
-  ADD PRIMARY KEY (`id`);
+ ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `whoscored_player`
 --
 ALTER TABLE `whoscored_player`
-  ADD PRIMARY KEY (`id`);
+ ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `whoscored_player_player`
 --
 ALTER TABLE `whoscored_player_player`
-  ADD PRIMARY KEY (`id`);
+ ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `whoscored_regions`
 --
 ALTER TABLE `whoscored_regions`
-  ADD PRIMARY KEY (`id`);
+ ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `whoscored_registration`
 --
 ALTER TABLE `whoscored_registration`
-  ADD PRIMARY KEY (`id`);
+ ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `whoscored_seasons`
 --
 ALTER TABLE `whoscored_seasons`
-  ADD PRIMARY KEY (`id`);
+ ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `whoscored_stages`
 --
 ALTER TABLE `whoscored_stages`
-  ADD PRIMARY KEY (`id`);
+ ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `whoscored_teams`
 --
 ALTER TABLE `whoscored_teams`
-  ADD PRIMARY KEY (`id`);
+ ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `whoscored_team_team`
 --
 ALTER TABLE `whoscored_team_team`
-  ADD PRIMARY KEY (`id`);
+ ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `whoscored_tournaments`
 --
 ALTER TABLE `whoscored_tournaments`
-  ADD PRIMARY KEY (`id`);
+ ADD PRIMARY KEY (`id`);
 
 --
 -- AUTO_INCREMENT for dumped tables
@@ -1578,277 +1564,277 @@ ALTER TABLE `whoscored_tournaments`
 -- AUTO_INCREMENT for table `city`
 --
 ALTER TABLE `city`
-  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
+MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `citytranslation`
 --
 ALTER TABLE `citytranslation`
-  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
+MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `club`
 --
 ALTER TABLE `club`
-  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
+MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `clubtranslation`
 --
 ALTER TABLE `clubtranslation`
-  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
+MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `competition`
 --
 ALTER TABLE `competition`
-  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
+MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `competition_category`
 --
 ALTER TABLE `competition_category`
-  MODIFY `id` tinyint(2) unsigned NOT NULL AUTO_INCREMENT;
+MODIFY `id` tinyint(2) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `competition_type`
 --
 ALTER TABLE `competition_type`
-  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
+MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `continent`
 --
 ALTER TABLE `continent`
-  MODIFY `id` tinyint(1) unsigned NOT NULL AUTO_INCREMENT;
+MODIFY `id` tinyint(1) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `event`
 --
 ALTER TABLE `event`
-  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
+MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `events_teams`
 --
 ALTER TABLE `events_teams`
-  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
+MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `fm_player`
 --
 ALTER TABLE `fm_player`
-  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
+MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `goal_events`
 --
 ALTER TABLE `goal_events`
-  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
+MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `matchs`
 --
 ALTER TABLE `matchs`
-  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
+MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `match_events`
 --
 ALTER TABLE `match_events`
-  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
+MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `match_player_statistics`
 --
 ALTER TABLE `match_player_statistics`
-  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
+MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `nation`
 --
 ALTER TABLE `nation`
-  MODIFY `id` tinyint(3) unsigned NOT NULL AUTO_INCREMENT;
+MODIFY `id` tinyint(3) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `nation2player`
 --
 ALTER TABLE `nation2player`
-  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
+MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `nationtranslation`
 --
 ALTER TABLE `nationtranslation`
-  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
+MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `player`
 --
 ALTER TABLE `player`
-  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
+MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `player2position`
 --
 ALTER TABLE `player2position`
-  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
+MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `playertranslation`
 --
 ALTER TABLE `playertranslation`
-  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
+MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `position`
 --
 ALTER TABLE `position`
-  MODIFY `id` tinyint(3) unsigned NOT NULL AUTO_INCREMENT;
+MODIFY `id` tinyint(3) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `registrationprofile`
 --
 ALTER TABLE `registrationprofile`
-  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
+MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `round`
 --
 ALTER TABLE `round`
-  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
+MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `season`
 --
 ALTER TABLE `season`
-  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
+MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `tables`
 --
 ALTER TABLE `tables`
-  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
+MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `team`
 --
 ALTER TABLE `team`
-  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
+MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `teamplayer`
 --
 ALTER TABLE `teamplayer`
-  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
+MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `transfer`
 --
 ALTER TABLE `transfer`
-  MODIFY `id` int(11) unsigned NOT NULL AUTO_INCREMENT;
+MODIFY `id` int(11) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `transfermarket_competition_category`
 --
 ALTER TABLE `transfermarket_competition_category`
-  MODIFY `id` tinyint(2) unsigned NOT NULL AUTO_INCREMENT;
+MODIFY `id` tinyint(2) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `transfermarket_competition_competition`
 --
 ALTER TABLE `transfermarket_competition_competition`
-  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
+MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `transfermarket_competition_level`
 --
 ALTER TABLE `transfermarket_competition_level`
-  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
+MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `transfermarket_team_player`
 --
 ALTER TABLE `transfermarket_team_player`
-  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
+MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `transfermarkt_competition`
 --
 ALTER TABLE `transfermarkt_competition`
-  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
+MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `transfermarkt_competition_competition`
 --
 ALTER TABLE `transfermarkt_competition_competition`
-  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
+MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `transfermarkt_event`
 --
 ALTER TABLE `transfermarkt_event`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `transfermarkt_event_event`
 --
 ALTER TABLE `transfermarkt_event_event`
-  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
+MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `transfermarkt_match`
 --
 ALTER TABLE `transfermarkt_match`
-  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
+MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `transfermarkt_match_match`
 --
 ALTER TABLE `transfermarkt_match_match`
-  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
+MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `transfermarkt_nation_nation`
 --
 ALTER TABLE `transfermarkt_nation_nation`
-  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
+MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `transfermarkt_player_player`
 --
 ALTER TABLE `transfermarkt_player_player`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `transfermarkt_round`
 --
 ALTER TABLE `transfermarkt_round`
-  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
+MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `transfermarkt_round_round`
 --
 ALTER TABLE `transfermarkt_round_round`
-  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
+MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `transfermarkt_season_season`
 --
 ALTER TABLE `transfermarkt_season_season`
-  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
+MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `transfermarkt_team_team`
 --
 ALTER TABLE `transfermarkt_team_team`
-  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
+MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `transfermarkt_transfer_transfer`
 --
 ALTER TABLE `transfermarkt_transfer_transfer`
-  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
+MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `user`
 --
 ALTER TABLE `user`
-  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
+MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `whoscored_event_event`
 --
 ALTER TABLE `whoscored_event_event`
-  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
+MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `whoscored_goals`
 --
 ALTER TABLE `whoscored_goals`
-  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
+MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `whoscored_match_events`
 --
 ALTER TABLE `whoscored_match_events`
-  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
+MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `whoscored_match_match`
 --
 ALTER TABLE `whoscored_match_match`
-  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
+MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `whoscored_match_player_statistics`
 --
 ALTER TABLE `whoscored_match_player_statistics`
-  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
+MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `whoscored_player_player`
 --
 ALTER TABLE `whoscored_player_player`
-  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
+MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `whoscored_registration`
 --
 ALTER TABLE `whoscored_registration`
-  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
+MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `whoscored_team_team`
 --
 ALTER TABLE `whoscored_team_team`
-  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
+MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
