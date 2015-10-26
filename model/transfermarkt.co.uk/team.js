@@ -57,20 +57,25 @@ Team.get_team = function($){
     	return excute(mysql.format('SELECT 1 FROM `transfermarkt_team_team` WHERE transfermarkt_team_id = ? LIMIT 1',[team_id]))
     }).then(function(row){
     	if(!row.length){
-    		return excute(mysql.format('INSERT INTO `team` SET ?',{
-    			name:team_name,
-    			club:is_club,
-    			national:national,
-    			country_id:nation_id
-    		})).then(function(result){
-    			return excute(mysql.format('INSERT INTO `transfermarkt_team_team` SET ?',{
-    				transfermarkt_team_id:team_id,
-    				team_id:result.insertId
-    			}))
-    		})
+    		return excute(mysql.format('SELECT * FROM `transfermarkt_nation_nation` WHERE transfermarkt_nation_id = ?',[nation_id])).then(function(nation){
+                return excute(mysql.format('INSERT INTO `team` SET ?',{
+                    name:team_name,
+                    club:is_club,
+                    national:national,
+                    country_id:nation[0].nation_id
+                }))
+    		}).then(function(result){
+                return excute(mysql.format('INSERT INTO `transfermarkt_team_team` SET ?',{
+                    transfermarkt_team_id:team_id,
+                    team_id:result.insertId
+                }))
+            })
     	} else {
     		return Promise.resolve();
     	}
+    }).catch(function(err){
+        console.log(err)
+        return Promise.resolve();
     });
 };
 Team.get_team_by_id = function(id){

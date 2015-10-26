@@ -8,6 +8,7 @@ Team = require('../../model/transfermarkt.co.uk/team'),
 Player = require('../../model/transfermarkt.co.uk/player'),
 Nation = require('../../model/transfermarkt.co.uk/nation'),
 Transfer = require('../../model/transfermarkt.co.uk/transfer'),
+insert_match_by_competition = require('../../fn/transfermarkt/match/insert_match_by_competition'),
 difference = require('./utils').difference,
 host = 'http://www.transfermarkt.co.uk',
 fetchedUrls = [],
@@ -17,9 +18,9 @@ fetchedUrls = [],
 });*/
 //crawler.proxyHostname = 'http://127.0.0.1';
 //crawler.proxyPort = 8888;
-//crawler.discoverResources = false;
 //crawler = Crawler.crawl("http://www.transfermarkt.co.uk/");
 crawler = new Crawler("www.transfermarkt.co.uk", "/");
+crawler.discoverResources = false;
 /*crawler.useProxy = true;
 crawler.proxyHostname = '127.0.0.1';
 crawler.proxyPort = '11080';*/
@@ -57,7 +58,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 			next();
 		})
     };
-    if(/^\/\S+\/gesamtspielplan\/wettbewerb\/\S+?$/.test(queueItem.path)){
+    if(/^\/\S+\/gesamtspielplan\/wettbewerb\/\S+?\/saison_id\/\d{4}$/.test(queueItem.path)){
     	next = this.wait();
     	insert_match_by_competition(decoder.write(responseBuffer)).then(function(){
     		next()
@@ -86,8 +87,8 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 	if((/^\/\S+?\/startseite\/verein\/\d+?$/i.test(parsedURL.path) || 
 	/^\/\S+\/profil\/spieler\/\d{1,9}$/.test(parsedURL.path) || 
 	/^\/\S+\/korrektur\/spieler\/\d{1,6}$/.test(parsedURL.path) || 
-	/^\/\S+\/gesamtspielplan\/wettbewerb\/\S+?$/.test(parsedURL.path)/* || 
-	/^\/\S+\/transfers\/spieler\/\d{1,6}$/.test(parsedURL.path)*/) && parsedURL.path !== '/end-of-career/startseite/verein/123'){
+	/^\/\S+\/gesamtspielplan\/wettbewerb\/\S+?\/saison_id\/\d{4}$/.test(parsedURL.path)/* || 
+	/^\/\S+\/transfers\/spieler\/\d{1,6}$/.test(parsedURL.path)*/) && !/^\/end\-of\-career\/startseite\/verein\/\d+?$/.test(parsedURL.path) && !/^\/unattached\/startseite\/verein\/\d+?$/.test(parsedURL.path)){
 		if(fetchedUrls.indexOf(parsedURL.path) == -1){//if url not in fetchedUrl
 			fetchedUrls.push(parsedURL.path)//push it into to avoid fetch twice
 			return true
@@ -96,8 +97,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 	}
 	return false;
 });
-console.log('asdasd')
-crawler.queueURL(host + '/');
+crawler.queueURL(host + '/championship/gesamtspielplan/wettbewerb/GB2/saison_id/2015');
 crawler.start();
 //crawler.queue.add('http', 'www.transfermarkt.co.uk', '20', '/');
 //crawler.queueURL(host);
