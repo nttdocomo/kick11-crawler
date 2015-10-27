@@ -9,7 +9,6 @@ mysql = require('mysql'),
 difference = require('../../crawler/transfermarkt.co.uk/utils').difference,
 Kick11Transfer = require('../../model/kick11/transfer'),
 Transfer = Model.extend({
-	table:'transfermarket_transfer',
 	needToUpdate:function(data,row){
 		this._super(data,row);
 		var diff;
@@ -21,7 +20,7 @@ Transfer = Model.extend({
 		return false;
 	}
 })
-Transfer.table = 'transfermarket_transfer';
+Transfer.table = 'transfermarkt_transfer';
 Transfer.get_trasfer_from_korrektur = function($){
 	var transfer_table = $('#transfers'),transfer_tbody = transfer_table.find('>tbody'),transfers_id = [];
 	transfer_tbody.find(' > input[id$="trans_id"]').each(function(i,tr){
@@ -82,7 +81,9 @@ Transfer.get_trasfer_from_transfers = function($){
 		season = transfer_date.year(),
 		loan = $el.children().eq(11).text(),
 		releasing_team_id = $el.children().eq(5).find('a').attr('href').replace(/^\/\S+?\/transfers\/verein\/(\d+?)(\/\S+)?$/,'$1'),
+		releasing_team_name = $el.children().eq(5).find('a').attr('title'),
 		taking_team_id = $el.children().eq(9).find('a').attr('href').replace(/^\/\S+?\/transfers\/verein\/(\d+?)(\/\S+)?$/,'$1'),
+		taking_team_name = $el.children().eq(9).find('a').attr('title'),
 		transfer_sum = $el.children().eq(12).text(),
 		transfer = new Transfer({
 			'id':id,

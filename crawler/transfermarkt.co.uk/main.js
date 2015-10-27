@@ -7,6 +7,7 @@ excute = require('../../promiseExcute'),
 Team = require('../../model/transfermarkt.co.uk/team'),
 Player = require('../../model/transfermarkt.co.uk/player'),
 Nation = require('../../model/transfermarkt.co.uk/nation'),
+Competition = require('../../model/transfermarkt.co.uk/competition'),
 Transfer = require('../../model/transfermarkt.co.uk/transfer'),
 insert_match_by_competition = require('../../fn/transfermarkt/match/insert_match_by_competition'),
 difference = require('./utils').difference,
@@ -20,7 +21,7 @@ fetchedUrls = [],
 //crawler.proxyPort = 8888;
 //crawler = Crawler.crawl("http://www.transfermarkt.co.uk/");
 crawler = new Crawler("www.transfermarkt.co.uk", "/");
-crawler.discoverResources = false;
+//crawler.discoverResources = false;
 /*crawler.useProxy = true;
 crawler.proxyHostname = '127.0.0.1';
 crawler.proxyPort = '11080';*/
@@ -34,7 +35,9 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
     next;
     if(/^\/\S+?\/startseite\/verein\/\d+?$/i.test(queueItem.path)){//competition
     	next = this.wait();
-    	Team.get_team(cheerio.load(decoder.write(responseBuffer))).then(function(){
+    	Nation.get_nation_by_team(cheerio.load(decoder.write(responseBuffer))).then(function(){
+    		return Team.get_team(cheerio.load(decoder.write(responseBuffer)))
+    	}).then(function(){
     		next();
     	})
     };
@@ -42,6 +45,8 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
     	next = this.wait();
     	Nation.get_nation(cheerio.load(decoder.write(responseBuffer))).then(function(){
     		return Player.get_player(cheerio.load(decoder.write(responseBuffer)))
+    	}).then(function(){
+    		return Team.get_team_by_transfers(cheerio.load(decoder.write(responseBuffer)))
     	}).then(function(){
     		return Transfer.get_trasfer_from_transfers(cheerio.load(decoder.write(responseBuffer)))
     	}).then(function(){
@@ -58,9 +63,19 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 			next();
 		})
     };
-    if(/^\/\S+\/gesamtspielplan\/wettbewerb\/\S+?\/saison_id\/\d{4}$/.test(queueItem.path)){
+    if(/^\/\S+\/gesamtspielplan\/wettbewerb\/[\w|\d]+?(\/saison_id\/\d{4})?$/.test(queueItem.path)){
     	next = this.wait();
-    	insert_match_by_competition(decoder.write(responseBuffer)).then(function(){
+    	Nation.get_nation_by_competition(cheerio.load(decoder.write(responseBuffer))).then(function(){
+	    	return insert_match_by_competition(decoder.write(responseBuffer))
+    	}).then(function(){
+    		next()
+    	})
+    };
+    if(/^\/\S+\/startseite\/wettbewerb\/[\w|\d]+?(\/saison_id\/\d{4})?$/.test(queueItem.path)){
+    	next = this.wait();
+    	Nation.get_nation_by_competition(cheerio.load(decoder.write(responseBuffer))).then(function(){
+	    	return Competition.get_competition(decoder.write(responseBuffer))
+    	}).then(function(){
     		next()
     	})
     };
@@ -73,6 +88,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
     };*/
 }).on('complete',function(){
 	console.log('complete');
+	process.exit();
 }).on('fetcherror',function(queueItem, response){
 	console.log('fetcherror ' + queueItem.path)
 	crawler.queueURL(host + queueItem.path);
@@ -87,8 +103,9 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 	if((/^\/\S+?\/startseite\/verein\/\d+?$/i.test(parsedURL.path) || 
 	/^\/\S+\/profil\/spieler\/\d{1,9}$/.test(parsedURL.path) || 
 	/^\/\S+\/korrektur\/spieler\/\d{1,6}$/.test(parsedURL.path) || 
-	/^\/\S+\/gesamtspielplan\/wettbewerb\/\S+?\/saison_id\/\d{4}$/.test(parsedURL.path)/* || 
-	/^\/\S+\/transfers\/spieler\/\d{1,6}$/.test(parsedURL.path)*/) && !/^\/end\-of\-career\/startseite\/verein\/\d+?$/.test(parsedURL.path) && !/^\/unattached\/startseite\/verein\/\d+?$/.test(parsedURL.path)){
+	/^\/\S+\/gesamtspielplan\/wettbewerb\/[\w|\d]+?(\/saison_id\/\d{4})?$/.test(parsedURL.path) || 
+	/^\/\S+\/startseite\/wettbewerb\/[\w|\d]+?(\/saison_id\/\d{4})?$/i.test(parsedURL.path)/* || 
+	/^\/\S+\/transfers\/spieler\/\d{1,6}$/.test(parsedURL.path)*/) && !/^\/end\-of\-career\/startseite\/verein\/\d+?$/.test(parsedURL.path) && !/^\/(unattached|unknown|\-tm)\/startseite\/verein\/\d+?$/.test(parsedURL.path)){
 		if(fetchedUrls.indexOf(parsedURL.path) == -1){//if url not in fetchedUrl
 			fetchedUrls.push(parsedURL.path)//push it into to avoid fetch twice
 			return true
@@ -96,8 +113,10 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 		return false;
 	}
 	return false;
+	///unknown/startseite/verein/75
 });
-crawler.queueURL(host + '/championship/gesamtspielplan/wettbewerb/GB2/saison_id/2015');
+//crawler.queueURL(host + '/championship/gesamtspielplan/wettbewerb/GB2/saison_id/2015');
+crawler.queueURL(host + '/');
 crawler.start();
 //crawler.queue.add('http', 'www.transfermarkt.co.uk', '20', '/');
 //crawler.queueURL(host);

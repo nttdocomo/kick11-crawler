@@ -54,4 +54,31 @@ Nation.get_nation = function($){
 		return Promise.resolve();
 	}
 };
+Nation.get_nation_by_competition = Nation.get_nation_by_team = function($){
+	var nation_id = $("select[name='land_select_breadcrumb']").find("option:selected").val(),
+	nation_name = $("select[name='land_select_breadcrumb']").find("option:selected").text(),
+	nation = new Nation({
+		id:nation_id,
+		name:nation_name
+	})
+    return nation.save().then(function(){
+    	return excute(mysql.format('SELECT 1 FROM `transfermarkt_nation_nation` WHERE transfermarkt_nation_id = ? LIMIT 1',[nation_id]))
+    }).then(function(row){
+    	if(!row.length){
+    		return excute(mysql.format('INSERT INTO `nation` SET ?',{
+    			name:nation_name
+    		})).then(function(result){
+    			return excute(mysql.format('INSERT INTO `transfermarkt_nation_nation` SET ?',{
+    				transfermarkt_nation_id:nation_id,
+    				nation_id:result.insertId
+    			}))
+    		})
+    	} else {
+    		return Promise.resolve();
+    	}
+    }).catch(function(err){
+    	return Promise.resolve();
+    })
+};
+
 module.exports = Nation;

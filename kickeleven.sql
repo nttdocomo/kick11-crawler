@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: 2015-10-26 18:24:22
+-- Generation Time: 2015-10-27 18:18:30
 -- 服务器版本： 5.6.21
 -- PHP Version: 5.6.2
 
@@ -284,7 +284,9 @@ CREATE TABLE IF NOT EXISTS `match_player_statistics` (
 CREATE TABLE IF NOT EXISTS `nation` (
   `id` tinyint(3) unsigned NOT NULL,
   `name` varchar(60) NOT NULL,
-  `continent_id` tinyint(3) unsigned DEFAULT NULL
+  `continent_id` tinyint(3) unsigned DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='国家';
 
 -- --------------------------------------------------------
@@ -580,27 +582,6 @@ CREATE TABLE IF NOT EXISTS `transfermarket_team_player` (
 -- --------------------------------------------------------
 
 --
--- 表的结构 `transfermarket_transfer`
---
-
-CREATE TABLE IF NOT EXISTS `transfermarket_transfer` (
-  `id` int(11) NOT NULL,
-  `taking_team_id` int(6) unsigned NOT NULL,
-  `releasing_team_id` int(6) unsigned NOT NULL,
-  `season` int(4) unsigned NOT NULL,
-  `transfer_date` date NOT NULL,
-  `transfer_sum` int(11) unsigned NOT NULL,
-  `player_id` int(6) unsigned NOT NULL,
-  `contract_period` date DEFAULT NULL,
-  `loan` char(3) NOT NULL,
-  `transfer_ref_id` int(10) unsigned NOT NULL,
-  `created_at` datetime DEFAULT NULL,
-  `updated_at` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
--- --------------------------------------------------------
-
---
 -- 表的结构 `transfermarkt_competition`
 --
 
@@ -825,8 +806,8 @@ CREATE TABLE IF NOT EXISTS `transfermarkt_team` (
   `address` varchar(100) DEFAULT NULL,
   `profile_uri` varchar(200) DEFAULT NULL,
   `order_by` tinyint(2) DEFAULT NULL,
-  `created_at` datetime DEFAULT NULL,
-  `updated_at` datetime DEFAULT NULL
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -841,6 +822,27 @@ CREATE TABLE IF NOT EXISTS `transfermarkt_team_team` (
   `team_id` int(10) unsigned NOT NULL,
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- 表的结构 `transfermarkt_transfer`
+--
+
+CREATE TABLE IF NOT EXISTS `transfermarkt_transfer` (
+  `id` int(11) NOT NULL,
+  `taking_team_id` int(6) unsigned NOT NULL,
+  `releasing_team_id` int(6) unsigned NOT NULL,
+  `season` int(4) unsigned NOT NULL,
+  `transfer_date` date NOT NULL,
+  `transfer_sum` int(11) unsigned NOT NULL,
+  `player_id` int(6) unsigned NOT NULL,
+  `contract_period` date DEFAULT NULL,
+  `loan` char(3) NOT NULL,
+  `transfer_ref_id` int(10) unsigned NOT NULL,
+  `created_at` datetime DEFAULT NULL,
+  `updated_at` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -1359,12 +1361,6 @@ ALTER TABLE `transfermarket_team_player`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `transfermarket_transfer`
---
-ALTER TABLE `transfermarket_transfer`
-  ADD PRIMARY KEY (`id`);
-
---
 -- Indexes for table `transfermarkt_competition`
 --
 ALTER TABLE `transfermarkt_competition`
@@ -1465,6 +1461,13 @@ ALTER TABLE `transfermarkt_team`
 --
 ALTER TABLE `transfermarkt_team_team`
   ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `transfermarkt_transfer`
+--
+ALTER TABLE `transfermarkt_transfer`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `id` (`id`);
 
 --
 -- Indexes for table `transfermarkt_transfer_transfer`

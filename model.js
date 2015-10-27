@@ -22,6 +22,9 @@ module.exports = Class.extend({
     			return me.insert(data)
     		}
     		return Promise.resolve()
+		}).catch(function(err){
+			console.log(err)
+			return Promise.resolve()
 		})
 	},
 	is_exist:function(){
