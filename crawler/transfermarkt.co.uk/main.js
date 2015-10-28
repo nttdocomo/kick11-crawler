@@ -43,7 +43,9 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
     };
     if(/^\/\S+\/profil\/spieler\/\d{1,9}$/.test(queueItem.path)){//competition
     	next = this.wait();
-    	Nation.get_nation(cheerio.load(decoder.write(responseBuffer))).then(function(){
+    	Nation.get_nation_by_player_profile(cheerio.load(decoder.write(responseBuffer))).then(function(){
+            Nation.get_nation_by_player_transfer(cheerio.load(decoder.write(responseBuffer)));
+        }).then(function(){
     		return Player.get_player(cheerio.load(decoder.write(responseBuffer)))
     	}).then(function(){
     		return Team.get_team_by_transfers(cheerio.load(decoder.write(responseBuffer)))
@@ -52,7 +54,6 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
     	}).then(function(){
     		next();
     	}).catch(function(err){
-	    	console.log('main')
 	    	console.log(err);
 	    })
     };
@@ -66,6 +67,8 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
     if(/^\/\S+\/gesamtspielplan\/wettbewerb\/[\w|\d]+?(\/saison_id\/\d{4})?$/.test(queueItem.path)){
     	next = this.wait();
     	Nation.get_nation_by_competition(cheerio.load(decoder.write(responseBuffer))).then(function(){
+            return Team.get_team_by_match_plan(cheerio.load(decoder.write(responseBuffer)))
+        }).then(function(){
 	    	return insert_match_by_competition(decoder.write(responseBuffer))
     	}).then(function(){
     		next()

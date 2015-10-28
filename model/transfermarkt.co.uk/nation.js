@@ -20,7 +20,7 @@ Nation = Model.extend({
 	}
 })
 Nation.table = 'transfermarkt_nation';
-Nation.get_nation = function($){
+Nation.get_nation_by_player_profile = function($){
 	var nation_img = $("th:contains('Nationality:')").next().find('img'),
 	nation_name;
 	if(nation_img.length){
@@ -80,5 +80,39 @@ Nation.get_nation_by_competition = Nation.get_nation_by_team = function($){
     	return Promise.resolve();
     })
 };
-
+Nation.get_nation_by_player_transfer = function($){
+	var flaggenrahmen = [];
+	$('img.flaggenrahmen').each(function(i,img){
+		flaggenrahmen.push(img);
+	});
+	return flaggenrahmen.reduce(function(sequence, img){
+		var img = $(img),
+		src = img.attr('src'),
+        transfermarkt_nation_id = src.replace(/\S+\/(\d+)\.png/,'$1'),
+        name = img.attr('title'),
+        nation_id;
+        return sequence.then(function(){
+        	return excute(mysql.format('SELECT 1 FROM `transfermarkt_nation` WHERE id = ? LIMIT 1',[transfermarkt_nation_id])).then(function(nation){
+	            if(!nation.length){
+	                return excute(mysql.format('INSERT INTO `transfermarkt_nation` SET ?',{
+	                    name:name,
+	                    id:transfermarkt_nation_id
+	                })).then(function(){
+	                    return excute(mysql.format('INSERT INTO `nation` SET ?',{
+	                        name:name,
+	                    }))
+	                }).then(function(result){
+	                    nation_id = result.insertId;
+	                    return excute(mysql.format('INSERT INTO `transfermarkt_nation_nation` SET ?',{
+	                        transfermarkt_nation_id:transfermarkt_nation_id,
+	                        nation_id:nation_id,
+	                    }))
+	                })
+	            } else {
+	                return Promise.resolve();
+	            }
+	        });
+        })
+	},Promise.resolve())
+}
 module.exports = Nation;

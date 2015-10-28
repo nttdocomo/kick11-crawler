@@ -71,7 +71,14 @@ Team.get_team = function($){
                 }))
             })
     	} else {
-    		return Promise.resolve();
+            return excute(mysql.format('SELECT * FROM `transfermarkt_nation_nation` WHERE transfermarkt_nation_id = ?',[nation_id])).then(function(nation){
+                return excute(mysql.format('UPDATE `team` SET ? WHERE id = ?',[{
+                    name:team_name,
+                    club:is_club,
+                    national:national,
+                    country_id:nation[0].nation_id
+                },row[0].team_id]))
+            })
     	}
     }).catch(function(err){
         console.log(err)
@@ -85,9 +92,9 @@ Team.get_team_by_transfers = function($){
     });
     return transfers_tr.reduce(function(sequence, el){
         var $el = $(el),
-        releasing_team_nation_img = $el.children().eq(4).find('img').attr('src'),
+        releasing_team_nation_img = $el.children().eq(3).find('img').attr('src'),
         transfermarkt_releasing_team_nation_id = releasing_team_nation_img.replace(/\S+\/(\d+)\.png/,'$1'),
-        releasing_team_nation_name = $el.children().eq(4).find('img').attr('title'),
+        releasing_team_nation_name = $el.children().eq(3).find('img').attr('title'),
         transfermarkt_releasing_team_id = $el.children().eq(5).find('a').attr('href').replace(/^\/\S+?\/transfers\/verein\/(\d+?)(\/\S+)?$/,'$1'),
         releasing_team_name = $el.children().eq(5).find('a').attr('title'),
         taking_team_nation_img = $el.children().eq(7).find('img').attr('src'),
@@ -95,7 +102,7 @@ Team.get_team_by_transfers = function($){
         taking_team_nation_name = $el.children().eq(7).find('img').attr('title'),
         transfermarkt_taking_team_id = $el.children().eq(9).find('a').attr('href').replace(/^\/\S+?\/transfers\/verein\/(\d+?)(\/\S+)?$/,'$1'),
         taking_team_name = $el.children().eq(9).find('a').attr('title');
-        var team = new Team({
+        /*var team = new Team({
             team_name:team_name,
             club:is_club,
             national:national,
@@ -105,73 +112,63 @@ Team.get_team_by_transfers = function($){
             profile_uri:club_url,
             foundation:foundation,
             address:address
-        });
-        return excute(mysql.format('SELECT * FROM `transfermarkt_team` WHERE id = ? LIMIT 1',[releasing_team_id])).then(function(row){
-            if(!row.length){
-                return excute(mysql.format('INSERT INTO `transfermarkt_team` SET ?',{
-                    id:transfermarkt_releasing_team_id,
-                    team_name:releasing_team_name,
-                    country_id:releasing_team_nation_id
-                })).then(function(){
-                    return excute(mysql.format('SELECT * FROM `transfermarkt_nation_nation` WHERE transfermarkt_nation_id = ?',[releasing_team_nation_id])).then(function(nation){
-                        if(!nation.length){
-                            return excute(mysql.format('INSERT INTO `transfermarkt_nation` SET ?',{
-                                name:releasing_team_nation_name,
-                                id:transfermarkt_releasing_team_nation_id
-                            })).then(function(){
-                                return excute(mysql.format('INSERT INTO `nation` SET ?',{
-                                    name:releasing_team_nation_name,
-                                }))
-                            }).then(function(result){
-                                releasing_team_nation_id = result.insertId;
-                                return excute(mysql.format('INSERT INTO `transfermarkt_nation_nation` SET ?',{
-                                    transfermarkt_nation_id:transfermarkt_releasing_team_nation_id,
-                                    nation_id:releasing_team_nation_id,
-                                }))
-                            })
-                        } else {
-                            return Promise.resolve();
-                        }
-                    });
-                }).then(function(){
-                    return excute(mysql.format('INSERT INTO `team` SET ?',{
-                        name:releasing_team_name,
-                        country_id:releasing_team_nation_id
-                    }))
-                }).then(function(result){
-                    return excute(mysql.format('INSERT INTO `transfermarkt_team_team` SET ?',{
-                        transfermarkt_team_id:team_id,
-                        team_id:result.insertId
-                    }))
-                })
-            } else {
+        });*/
+        return sequence.then(function(){
+            return excute(mysql.format('SELECT * FROM `transfermarkt_team` WHERE id = ? LIMIT 1',[transfermarkt_releasing_team_id])).then(function(row){
+                if(!row.length){
+                    return excute(mysql.format('INSERT INTO `transfermarkt_team` SET ?',{
+                        id:transfermarkt_releasing_team_id,
+                        team_name:releasing_team_name,
+                        country_id:transfermarkt_releasing_team_nation_id
+                    })).then(function(){
+                        return excute(mysql.format('SELECT * FROM `transfermarkt_nation_nation` WHERE transfermarkt_nation_id = ?',[transfermarkt_releasing_team_nation_id]))
+                    }).then(function(nation){
+                        return excute(mysql.format('INSERT INTO `team` SET ?',{
+                            name:releasing_team_name,
+                            country_id:nation.nation_id
+                        }))
+                    }).then(function(result){
+                        return excute(mysql.format('INSERT INTO `transfermarkt_team_team` SET ?',{
+                            transfermarkt_team_id:transfermarkt_releasing_team_id,
+                            team_id:result.insertId
+                        }))
+                    })
+                } else {
+                    return Promise.resolve();
+                }
+            }).then(function(){
+                return excute(mysql.format('SELECT 1 FROM `transfermarkt_team_team` WHERE transfermarkt_team_id = ? LIMIT 1',[transfermarkt_taking_team_id]))
+            }).then(function(row){
+                if(!row.length){
+                    return excute(mysql.format('INSERT INTO `transfermarkt_team` SET ?',{
+                        id:transfermarkt_taking_team_id,
+                        team_name:taking_team_name,
+                        country_id:transfermarkt_taking_team_nation_id
+                    })).then(function(){
+                        return excute(mysql.format('SELECT * FROM `transfermarkt_nation_nation` WHERE transfermarkt_nation_id = ?',[transfermarkt_taking_team_nation_id]))
+                    }).then(function(nation){
+                        return excute(mysql.format('INSERT INTO `team` SET ?',{
+                            name:taking_team_name,
+                            country_id:nation.nation_id
+                        }))
+                    }).then(function(result){
+                        return excute(mysql.format('INSERT INTO `transfermarkt_team_team` SET ?',{
+                            transfermarkt_team_id:transfermarkt_taking_team_id,
+                            team_id:result.insertId
+                        }))
+                    })
+                } else {
+                    return Promise.resolve();
+                }
+            }).catch(function(err){
+                console.log(err)
                 return Promise.resolve();
-            }
-        }).then(function(){
-            return excute(mysql.format('SELECT 1 FROM `transfermarkt_team_team` WHERE transfermarkt_team_id = ? LIMIT 1',[team_id]))
-        }).then(function(row){
-            if(!row.length){
-                return excute(mysql.format('SELECT * FROM `transfermarkt_nation_nation` WHERE transfermarkt_nation_id = ?',[nation_id])).then(function(nation){
-                    return excute(mysql.format('INSERT INTO `team` SET ?',{
-                        name:team_name,
-                        club:is_club,
-                        national:national,
-                        country_id:nation[0].nation_id
-                    }))
-                }).then(function(result){
-                    return excute(mysql.format('INSERT INTO `transfermarkt_team_team` SET ?',{
-                        transfermarkt_team_id:team_id,
-                        team_id:result.insertId
-                    }))
-                })
-            } else {
-                return Promise.resolve();
-            }
-        }).catch(function(err){
-            console.log(err)
-            return Promise.resolve();
-        }); 
+            });
+        }) 
     },Promise.resolve())
+}
+Team.get_team_by_match_plan = function($){
+    $('table:not([class]) > tbody > tr:not(:first-child) > td:nth-child(3),table:not([class]) > tbody > tr:not(:first-child) > td:nth-child(6)')
 }
 Team.get_team_by_id = function(id){
     return excute(mysql.format('SELECT * FROM ?? WHERE id = ?',[this.table,id]));
