@@ -33,6 +33,9 @@ Player.get_player = function($){
 	position = $('.profilheader').eq(1).find('tr').eq(2).find('> td').text().replace(/^\s+(.+?)\s+$/,'$1') || $('.detailpositionen .auflistung tr').eq(0).find('a').text(),
 	profile_uri = url,
 	nation_id = $("th:contains('Nationality:')").next().find('img'),
+	nationality = _.map($(".auflistung th:contains('Nationality:')" ).next().find('img'),function(img,i){
+		return $(img).attr('src').replace(/\S+\/(\d+)\.png/,'$1')
+	}),
 	nation_name;
 	date_of_birth = moment.utc(date_of_birth,'MMM D, YYYY').format('YYYY-MM-DD');
 	if(nation_id.length){
@@ -53,7 +56,7 @@ Player.get_player = function($){
 		nation_id:nation_id
 	})
     return player.save().then(function(){
-    	return excute(mysql.format('SELECT 1 FROM `transfermarkt_player_player` WHERE transfermarkt_player_id = ? LIMIT 1',[id]))
+    	return excute(mysql.format('SELECT player_id FROM `transfermarkt_player_player` WHERE transfermarkt_player_id = ? LIMIT 1',[id]))
     }).then(function(row){
     	if(!row.length){
     		return excute(mysql.format('INSERT INTO `player` SET ?',{
@@ -65,7 +68,24 @@ Player.get_player = function($){
     			return excute(mysql.format('INSERT INTO `transfermarkt_player_player` SET ?',{
     				transfermarkt_player_id:id,
     				player_id:result.insertId
-    			}))
+    			})).then(function(){
+    				return nationality.reduce(function(sequence, country_id){
+    					return sequence.then(function(){
+    						return excute(mysql.format('SELECT nation_id FROM `transfermarkt_nation_nation` WHERE transfermarkt_nation_id = ? LIMIT 1',[country_id])).then(function(nation){
+    							return excute(mysql.format('SELECT 1 FROM `nationality` WHERE player_id = ? AND country_id = ? LIMIT 1',[result.insertId,nation[0].nation_id])).then(function(row){
+    								if(!row.length){
+    									return excute(mysql.format('INSERT INTO `nationality` SET ?',{
+    										player_id:result.insertId,
+    										country_id:nation[0].nation_id
+    									}))
+    								} else {
+    									return Promise.resolve();
+    								}
+    							})
+    						})
+    					})
+    				},Promise.resolve())
+    			})
     		})
     	} else {
     		return excute(mysql.format('UPDATE `player` SET ? WHERE id = ?',[{
@@ -73,7 +93,7 @@ Player.get_player = function($){
     			date_of_birth:date_of_birth,
     			height:height,
     			foot:foot,
-    		},row[0].id]))
+    		},row[0].player_id]))
     	}
     }).catch(function(err){
 	    console.log('player')

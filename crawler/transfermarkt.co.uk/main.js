@@ -69,6 +69,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
     	Nation.get_nation_by_competition(cheerio.load(decoder.write(responseBuffer))).then(function(){
             return Team.get_team_by_match_plan(cheerio.load(decoder.write(responseBuffer)))
         }).then(function(){
+            //console.log('team ok')
 	    	return insert_match_by_competition(decoder.write(responseBuffer))
     	}).then(function(){
     		next()
@@ -118,6 +119,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 	return false;
 	///unknown/startseite/verein/75
 });
+//crawler.queueURL(host + '/1-bundesliga/gesamtspielplan/wettbewerb/L1/saison_id/2015');
 //crawler.queueURL(host + '/championship/gesamtspielplan/wettbewerb/GB2/saison_id/2015');
 crawler.queueURL(host + '/');
 crawler.start();

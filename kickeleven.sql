@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: 2015-10-28 18:29:41
+-- Generation Time: 2015-10-29 18:10:21
 -- 服务器版本： 5.6.21
 -- PHP Version: 5.6.2
 
@@ -292,13 +292,15 @@ CREATE TABLE IF NOT EXISTS `nation` (
 -- --------------------------------------------------------
 
 --
--- 表的结构 `nation2player`
+-- 表的结构 `nationality`
 --
 
-CREATE TABLE IF NOT EXISTS `nation2player` (
+CREATE TABLE IF NOT EXISTS `nationality` (
   `id` int(10) unsigned NOT NULL,
-  `nation_id` int(10) unsigned NOT NULL,
-  `player_id` int(10) unsigned NOT NULL
+  `country_id` int(10) unsigned NOT NULL,
+  `player_id` int(10) unsigned NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='球员国籍';
 
 -- --------------------------------------------------------
@@ -1240,9 +1242,9 @@ ALTER TABLE `nation`
   ADD KEY `continent` (`continent_id`);
 
 --
--- Indexes for table `nation2player`
+-- Indexes for table `nationality`
 --
-ALTER TABLE `nation2player`
+ALTER TABLE `nationality`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -1658,9 +1660,9 @@ ALTER TABLE `match_player_statistics`
 ALTER TABLE `nation`
   MODIFY `id` tinyint(3) unsigned NOT NULL AUTO_INCREMENT;
 --
--- AUTO_INCREMENT for table `nation2player`
+-- AUTO_INCREMENT for table `nationality`
 --
-ALTER TABLE `nation2player`
+ALTER TABLE `nationality`
   MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `nationtranslation`
