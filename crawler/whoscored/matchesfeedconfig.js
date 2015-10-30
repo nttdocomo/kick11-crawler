@@ -1,4 +1,5 @@
 var http = require("http"),
+cheerio = require('cheerio'),
 excute = require('../../promiseExcute'),
 StringDecoder = require('string_decoder').StringDecoder,
 mysql = require('mysql'),
@@ -8,6 +9,7 @@ get_registration = require('./registration').get_registration,
 whoscored_registration = require('./whoscored_registration'),
 get_goals = require('./goals').get_goals,
 get_player = require('../../model/whoscored/player').get_player,
+Season = require('../../model/whoscored/season'),
 get_events = require('./events').get_events,
 MatchEvent = require('../../model/kick11/event').model,
 getMatchesFeed = require('./getmatchesfeed'),
@@ -38,7 +40,21 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
     if(content && content !== null && content != 'null'){
         if(/^\/matchesfeed\/\?d\=\d{8}$/.test(queueItem.path)){
             next = this.wait();
-            getMatchesFeed(queueItem, eval(content), response).then(function(){
+            content = eval(content);
+            Promise.resolve().then(function(){
+                return content[1].reduce(function(sequence, item){
+                    return sequence.then(function(){
+                        return excute(mysql.format('SELECT 1 FROM `whoscored_tournaments` WHERE id = ?',[item[4]]))
+                    }).then(function(row){
+                        if(row.length){
+                            crawler.queueURL(host + '/Regions/'+item[1]+'/Tournaments/'+item[4]);
+                        }
+                        return Promise.resolve()
+                    });
+                },Promise.resolve())
+            }).then(function(){
+                return getMatchesFeed(queueItem, content, response)
+            }).then(function(){
                 console.log('getMatchesFeed')
                 next();
             })
@@ -54,6 +70,12 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
             next = this.wait();
             getStatisticsFeed(queueItem, content, response).then(function(){
                 console.log('getStatisticsFeed')
+                next();
+            })
+        }
+        if(/^\/Regions\/\d+?\/Tournaments\/\d+?$/.test(queueItem.path)){
+            next = this.wait();
+            Season.get_seasons_by_tournament(cheerio.load(decoder.write(responseBuffer))).then(function(){
                 next();
             })
         }

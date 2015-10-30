@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: 2015-10-29 18:10:21
+-- Generation Time: 2015-10-30 18:23:29
 -- 服务器版本： 5.6.21
 -- PHP Version: 5.6.2
 
@@ -122,17 +122,6 @@ CREATE TABLE IF NOT EXISTS `continent` (
   `id` tinyint(1) unsigned NOT NULL,
   `name` varchar(14) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='大洲';
-
--- --------------------------------------------------------
-
---
--- 表的结构 `error_uri`
---
-
-CREATE TABLE IF NOT EXISTS `error_uri` (
-  `uri` varchar(200) NOT NULL,
-  `error_code` varchar(20) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 
@@ -880,6 +869,20 @@ CREATE TABLE IF NOT EXISTS `user` (
 -- --------------------------------------------------------
 
 --
+-- 表的结构 `whoscored_event`
+--
+
+CREATE TABLE IF NOT EXISTS `whoscored_event` (
+  `id` int(10) unsigned NOT NULL,
+  `tournament_id` int(10) unsigned NOT NULL,
+  `season_id` int(10) unsigned NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
 -- 表的结构 `whoscored_event_event`
 --
 
@@ -1076,10 +1079,10 @@ CREATE TABLE IF NOT EXISTS `whoscored_registration` (
 
 CREATE TABLE IF NOT EXISTS `whoscored_seasons` (
   `id` int(10) unsigned NOT NULL,
-  `name` varchar(10) NOT NULL,
+  `name` varchar(10) DEFAULT NULL,
   `year` int(4) unsigned NOT NULL,
-  `created_at` datetime DEFAULT NULL,
-  `updated_at` datetime DEFAULT NULL
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -1091,18 +1094,18 @@ CREATE TABLE IF NOT EXISTS `whoscored_seasons` (
 CREATE TABLE IF NOT EXISTS `whoscored_stages` (
   `id` int(10) unsigned NOT NULL,
   `tournament_id` int(10) unsigned NOT NULL,
-  `season_id` int(10) unsigned NOT NULL,
-  `created_at` datetime DEFAULT NULL,
-  `updated_at` datetime DEFAULT NULL
+  `event_id` int(10) unsigned NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 
 --
--- 表的结构 `whoscored_teams`
+-- 表的结构 `whoscored_team`
 --
 
-CREATE TABLE IF NOT EXISTS `whoscored_teams` (
+CREATE TABLE IF NOT EXISTS `whoscored_team` (
   `id` int(10) unsigned NOT NULL,
   `name` varchar(40) NOT NULL,
   `created_at` datetime DEFAULT NULL,
@@ -1118,7 +1121,9 @@ CREATE TABLE IF NOT EXISTS `whoscored_teams` (
 CREATE TABLE IF NOT EXISTS `whoscored_team_team` (
   `id` int(10) unsigned NOT NULL,
   `whoscored_team_id` int(10) unsigned NOT NULL,
-  `team_id` int(10) unsigned NOT NULL
+  `team_id` int(10) unsigned NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -1132,8 +1137,8 @@ CREATE TABLE IF NOT EXISTS `whoscored_tournaments` (
   `region_id` int(10) unsigned NOT NULL,
   `name` varchar(50) NOT NULL,
   `short_name` varchar(10) DEFAULT NULL,
-  `created_at` datetime DEFAULT NULL,
-  `updated_at` datetime DEFAULT NULL
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
@@ -1486,6 +1491,12 @@ ALTER TABLE `user`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `whoscored_event`
+--
+ALTER TABLE `whoscored_event`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `whoscored_event_event`
 --
 ALTER TABLE `whoscored_event_event`
@@ -1558,9 +1569,9 @@ ALTER TABLE `whoscored_stages`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `whoscored_teams`
+-- Indexes for table `whoscored_team`
 --
-ALTER TABLE `whoscored_teams`
+ALTER TABLE `whoscored_team`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -1818,6 +1829,11 @@ ALTER TABLE `transfermarkt_transfer_transfer`
 -- AUTO_INCREMENT for table `user`
 --
 ALTER TABLE `user`
+  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
+--
+-- AUTO_INCREMENT for table `whoscored_event`
+--
+ALTER TABLE `whoscored_event`
   MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `whoscored_event_event`

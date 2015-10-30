@@ -15,7 +15,7 @@ var date = [],
 condition = 0,
 now = moment.utc(),
 clone = now.clone();
-/*excute(mysql.format('SELECT DISTINCT play_at FROM whoscored_matches WHERE play_at = ? ORDER BY play_at DESC',[moment.utc().format('YYYY-MM-DD HH:mm')])).then(function(row){
+excute(mysql.format('SELECT DISTINCT play_at FROM whoscored_matches WHERE play_at < ? ORDER BY play_at DESC',[moment.utc().format('YYYY-MM-DD HH:mm')])).then(function(row){
     if(row.length){
         var play_at = _.find(row,function(item){
             var play = moment.utc(item.play_at);
@@ -31,9 +31,14 @@ clone = now.clone();
     }
     return Promise.resolve();
 }).then(function(){
+    return excute('SELECT DISTINCT play_at FROM whoscored_matches ORDER BY play_at ASC')
+}).then(function(row){
+    if(row.length){
+        crawler.queueURL(host + '/matchesfeed/?d='+moment.utc(row[0]).subtract(1,'d').format('YYYYMMDD'));
+    }
+    return Promise.resolve();
+}).then(function(){
     crawler.start();
-})*/
-crawler.queueURL(host + '/matchesfeed/?d=20130401');
-crawler.start();
+})
 //http://www.whoscored.com/matchesfeed/?d=20141021
 //http://www.whoscored.com/tournamentsfeed/9155/Fixtures/?d=2014W42&isAggregate=false

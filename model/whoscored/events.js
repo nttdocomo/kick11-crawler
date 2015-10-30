@@ -26,6 +26,34 @@ Event.table = 'whoscored_match_events';
 Event.all = function(){
     return excute('SELECT * FROM whoscored_matches ORDER BY play_at ASC');
 };
+Event.get_event_by_tournament = function($){
+    var options = $('#seasons').find("option");
+    options = _.map(options,function(option){
+        return option;
+    })
+    return options.reduce(function(sequence,option){
+        var id = $(option).val().replace(/^\/\S+\/(\d+?)$/,'$1'),
+        name = $(option).text(),
+        year = name.replace(/(\d{4})\/\d{4}/,'$1');
+        return sequence.then(function(){
+            return excute(mysql.format('SELECT 1 FROM `whoscored_season` WHERE id = ?',[id]))
+            return excute(mysql.format('SELECT 1 FROM `whoscored_event` WHERE id = ?',[id]))
+        }).then(function(row){
+            if(row.length){
+                return excute(mysql.format('UPDATE `whoscored_event` SET ? WHERE id = ?',[{
+                    name:name,
+                    year:year
+                },id]))
+            } else {
+                return excute(mysql.format('INSERT INTO `whoscored_event` SET ?',[{
+                    id:id,
+                    name:name,
+                    year:year
+                },id]))
+            }
+        })
+    },Promise.resolve())
+};
 module.exports.get_match_by_id = function(id){
     return excute(mysql.format('SELECT 1 FROM whoscored_match_events WHERE id = ?',[id]));
 };
@@ -66,4 +94,4 @@ module.exports.get_events = function(matchCentre2, match_id){
         },Promise.resolve())
     }
 };
-module.exports.model = Event;
+module.exports = Event;

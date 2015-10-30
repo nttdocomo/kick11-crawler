@@ -7,7 +7,7 @@ _ = require('underscore'),
 mysql = require('mysql'),
 difference = require('../../crawler/transfermarkt.co.uk/utils').difference,
 Team = Model.extend({
-	table:'whoscored_teams',
+	table:'whoscored_team',
 	needToUpdate:function(data,row){
 		this._super(data,row);
 		var diff;
@@ -19,8 +19,8 @@ Team = Model.extend({
 		return false;
 	}
 })
-Team.table = 'whoscored_teams';
+Team.table = 'whoscored_team';
 Team.get_team_by_id = function(id){
-    return excute(mysql.format('SELECT 1 FROM whoscored_teams WHERE id = ?',[id]));
+    return excute(mysql.format('SELECT 1 FROM whoscored_team WHERE id = ?',[id]));
 };
 module.exports = Team;
