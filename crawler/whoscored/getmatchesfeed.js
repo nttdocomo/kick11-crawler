@@ -7,27 +7,20 @@ get_seasons = require('../../model/whoscored/season').get_seasons,
 get_tournaments = require('../../model/whoscored/tournament').get_tournaments,
 WhoscoredMatch = require('../../model/whoscored/matches'),
 Team = require('../../model/whoscored/team'),
+Event = require('../../model/whoscored/event'),
 Match = require('../../model/kick11/match').model;
 module.exports = function(queueItem, matchesfeed, response){
     console.log('matchesfeed')
     //将teams里没有的team放到teams;
-    return Promise.resolve().then(function(){
-        return get_stages(matchesfeed[1]);
-    }).then(function(){
+    return get_stages(matchesfeed[1]).then(function(){
         console.log('get stages complete!')
         return get_regions(matchesfeed[1])
-    },function(err){
-        console.log(err)
-    }).then(function(){
+    })/*.then(function(){
         console.log('get regions complete!')
-        return get_seasons(matchesfeed[1]);
-    },function(err){
-        console.log(err)
-    }).then(function(){
-        console.log('get seasons complete!')
+        return Event.get_event_by_tournament(matchesfeed[1]);
+    })*/.then(function(){
+        console.log('get regions complete!')
         return get_tournaments(matchesfeed[1]);
-    },function(err){
-        console.log(err)
     }).then(function(){
         console.log('get tournaments complete!');
         return matchesfeed[2].reduce(function(sequence, match){
@@ -58,6 +51,8 @@ module.exports = function(queueItem, matchesfeed, response){
                 name : match[9]
             });
             var promise = sequence.then(function(){
+
+                //return Promise.resolve();
                 return whoscoredMatch.save();
                 //return get_match(match,queueItem.path.replace(/^\/matchesfeed\/\?d\=(\d{4})(\d{2})(\d{2})$/,"$1-$2-$3"))
             }).then(function(){
@@ -99,10 +94,7 @@ module.exports = function(queueItem, matchesfeed, response){
             }
             return promise;
         },Promise.resolve())
-    },function(err){
-        console.log(err)
     }).catch(function(err){
         console.log(err)
     });
-    return Promise.resolve();
 }

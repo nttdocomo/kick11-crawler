@@ -103,10 +103,14 @@ Transfer.get_trasfer_from_transfers = function($){
 	    	player_id = row[0].player_id;
 	    	return excute(mysql.format('SELECT team_id FROM transfermarkt_team_team WHERE transfermarkt_team_id = ? LIMIT 1',[releasing_team_id]))
 	    }).then(function(row){
-	    	releasing_team_id = row[0].team_id;
-	    	return excute(mysql.format('SELECT team_id FROM transfermarkt_team_team WHERE transfermarkt_team_id = ? LIMIT 1',[taking_team_id]))
+	    	if(row.length){
+		    	releasing_team_id = row[0].team_id;
+	    	}
+		   	return excute(mysql.format('SELECT team_id FROM transfermarkt_team_team WHERE transfermarkt_team_id = ? LIMIT 1',[taking_team_id]))
 	    }).then(function(row){
-	    	taking_team_id = row[0].team_id;
+	    	if(row.length){
+		    	taking_team_id = row[0].team_id;
+	    	}
 	    	return excute(mysql.format('SELECT transfer_id FROM transfermarkt_transfer_transfer WHERE transfermarkt_transfer_id = ? LIMIT 1',[id]))
 	    }).then(function(row){
 	    	if(!row.length){

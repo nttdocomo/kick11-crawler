@@ -24,8 +24,8 @@ Tournament.table = 'whoscored_tournaments';
 Tournament.get_by_id = function(id){
     return excute(mysql.format('SELECT 1 FROM '+this.table+' WHERE id = ?',[id]))
 }
-Tournament.get_tournaments = function(tournaments,fn){
-    return tournaments.reduce(function(sequence, item){
+Tournament.get_tournaments = function(tournaments){
+    return tournaments.reduce(function(sequence, item, i){
     	var tournament = new Tournament({
             id:item[4],
             region_id:item[1],

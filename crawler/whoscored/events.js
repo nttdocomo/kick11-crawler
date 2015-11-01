@@ -24,7 +24,7 @@ Event = Model.extend({
 Event.excute = excute;
 Event.table = 'whoscored_match_events';
 Event.all = function(){
-    return excute('SELECT * FROM whoscored_matches ORDER BY play_at ASC');
+    return excute('SELECT * FROM whoscored_match_events ORDER BY play_at ASC');
 };
 module.exports.get_match_by_id = function(id){
     return excute(mysql.format('SELECT 1 FROM whoscored_match_events WHERE id = ?',[id]));

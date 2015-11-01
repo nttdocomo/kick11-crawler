@@ -86,9 +86,12 @@ Team.get_team = function($){
     });
 };
 Team.get_team_by_transfers = function($){
-    var teams = [];
-    $('table:not([class]) > tbody > tr:not(:first-child) > td:nth-child(6) > a[title],table:not([class]) > tbody > tr:not(:first-child) > td:nth-child(10) > a[title]').each(function(i,team){
-        teams.push(team)
+    var teams = _.map($('table:not([class]) > tbody > tr:not(:first-child) > td:nth-child(6) > a[title],table:not([class]) > tbody > tr:not(:first-child) > td:nth-child(10) > a[title]'),function(team,i){
+        return team
+    });
+    //去掉重复的队伍
+    teams = _.uniq(teams,function(item){
+        return $(item).attr('href').replace(/^\/\S+?\/(\d+?)(\/\S+?\/\d{4})?$/,'$1');
     });
     return teams.reduce(function(sequence, el){
         var $el = $(el),
@@ -96,19 +99,19 @@ Team.get_team_by_transfers = function($){
         transfermarkt_team_id = $el.attr('href').replace(/^\/\S+?\/(\d+?)(\/\S+?\/\d{4})?$/,'$1');
         return sequence.then(function(){
             if(transfermarkt_team_id != '75'){
-                return excute(mysql.format('SELECT 1 FROM `transfermarkt_team` WHERE id = ? LIMIT 1',[transfermarkt_team_id])).then(function(row){
+                return excute(mysql.format('SELECT 1 FROM `transfermarkt_team_team` WHERE transfermarkt_team_id = ? LIMIT 1',[transfermarkt_team_id])).then(function(row){
                     if(!row.length){
-                        return excute(mysql.format('INSERT INTO `transfermarkt_team` SET ?',{
-                            id:transfermarkt_team_id,
-                            team_name:name
+                        return excute(mysql.format('INSERT INTO `team` SET ?',{
+                            name:name
                         })).then(function(){
-                            return excute(mysql.format('INSERT INTO `team` SET ?',{
-                                name:name
-                            }))
-                        }).then(function(result){
                             return excute(mysql.format('INSERT INTO `transfermarkt_team_team` SET ?',{
                                 transfermarkt_team_id:transfermarkt_team_id,
                                 team_id:result.insertId
+                            }))
+                        }).then(function(result){
+                            return excute(mysql.format('INSERT INTO `transfermarkt_team` SET ?',{
+                                id:transfermarkt_team_id,
+                                team_name:name
                             }))
                         })
                     } else {
@@ -122,9 +125,11 @@ Team.get_team_by_transfers = function($){
     },Promise.resolve())
 }
 Team.get_team_by_match_plan = function($){
-    var teams = [];
-    $('table:not([class]) > tbody > tr:not(:first-child) > td:nth-child(3) > a[title],table:not([class]) > tbody > tr:not(:first-child) > td:nth-child(6) > a[title]').each(function(i,team){
-        teams.push(team)
+    var teams = _.map($('table:not([class]) > tbody > tr:not(:first-child) > td:nth-child(3) > a[title],table:not([class]) > tbody > tr:not(:first-child) > td:nth-child(6) > a[title]'),function(team,i){
+        return team;
+    }));
+    teams = _.uniq(teams,function(item){
+        return $(item).attr('href').replace(/^\/\S+?\/(\d+?)(\/\S+?\/\d{4})?$/,'$1');
     });
     return teams.reduce(function(sequence, el){
         var $el = $(el),

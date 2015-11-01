@@ -10,8 +10,8 @@ whoscored_registration = require('./whoscored_registration'),
 get_goals = require('./goals').get_goals,
 get_player = require('../../model/whoscored/player').get_player,
 Season = require('../../model/whoscored/season'),
-get_events = require('./events').get_events,
-MatchEvent = require('../../model/kick11/event').model,
+Event = require('../../model/whoscored/event'),
+get_events = require('../../model/whoscored/matchEvents').get_events,
 getMatchesFeed = require('./getmatchesfeed'),
 getMatchCentre2 = require('./getmatchcentre2'),
 getStatisticsFeed = require('./getStatisticsFeed'),
@@ -29,9 +29,10 @@ crawler.customHeaders = {
     'X-Requested-With':'XMLHttpRequest',
     Cookie:'__gads=ID=e55debe14f69eef7:T=1436164463:S=ALNI_MZAB7Ks2P8iIOL4gPYkTxl-n37DtQ; OX_plg=swf|shk|pm; _ga=GA1.2.1737364748.1436164463'
 };
-/*crawler.useProxy = true;
+crawler.listenerTTL = 100000;
+crawler.useProxy = true;
 crawler.proxyHostname = "127.0.0.1";
-crawler.proxyPort="8087";*/
+crawler.proxyPort="1080";
 crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
     console.log("Completed fetching resource:", queueItem.path);
     //console.log(queueItem.status.redirected)
@@ -41,7 +42,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
         if(/^\/matchesfeed\/\?d\=\d{8}$/.test(queueItem.path)){
             next = this.wait();
             content = eval(content);
-            Promise.resolve().then(function(){
+            getMatchesFeed(queueItem, content, response).then(function(){
                 return content[1].reduce(function(sequence, item){
                     return sequence.then(function(){
                         return excute(mysql.format('SELECT 1 FROM `whoscored_tournaments` WHERE id = ?',[item[4]]))
@@ -53,10 +54,15 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
                     });
                 },Promise.resolve())
             }).then(function(){
-                return getMatchesFeed(queueItem, content, response)
-            }).then(function(){
                 console.log('getMatchesFeed')
+                /*return excute('TRUNCATE `whoscored_stage`').then(function(){
+                    excute('TRUNCATE `whoscored_regions`')
+                }).then(function(){
+                    excute('TRUNCATE `whoscored_tournaments`')
+                })*/
                 next();
+            }).catch(function(err){
+                console.log(err)
             })
         }
         if(/^\/MatchesFeed\/(\d{1,})\/MatchCentre2$/.test(queueItem.path)){
@@ -75,7 +81,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
         }
         if(/^\/Regions\/\d+?\/Tournaments\/\d+?$/.test(queueItem.path)){
             next = this.wait();
-            Season.get_seasons_by_tournament(cheerio.load(decoder.write(responseBuffer))).then(function(){
+            Event.get_seasons_by_tournament(cheerio.load(decoder.write(responseBuffer)),queueItem.path.replace(/^\/Regions\/\d+?\/Tournaments\/(\d+?)$/,'$1')).then(function(){
                 next();
             })
         }

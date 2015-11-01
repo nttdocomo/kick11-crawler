@@ -8,8 +8,8 @@ module.exports = function (sql){
 			connection.query(sql, function(err,result) {
 			    connection.release();
 			    if (err) {
-			    	reject(err)
-			    	throw err;
+			    	reject(err);
+			    	//throw err;
 			    } else {
 			    	resolve(result)
 			    }

@@ -28,10 +28,10 @@ Registration = Model.extend({
 });
 Registration.excute = excute;
 Registration.get_uncomplete_matches = function(){
-    return excute('SELECT id,play_at AS play_date FROM whoscored_matches WHERE score1 IS NULL AND score2 IS NULL ORDER BY play_at ASC');
+    return excute('SELECT id,play_at AS play_date FROM whoscored_match WHERE score1 IS NULL AND score2 IS NULL ORDER BY play_at ASC');
 };
 Registration.all = function(){
-    return excute('SELECT * FROM whoscored_matches ORDER BY play_at ASC');
+    return excute('SELECT * FROM whoscored_match ORDER BY play_at ASC');
 };
 module.exports.get_registration = function(matchCentre2, match_id){
     var away = matchCentre2.away,

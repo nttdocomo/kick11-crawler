@@ -25,7 +25,7 @@ Region.get_by_id = function(id){
     return excute(mysql.format('SELECT 1 FROM '+this.table+' WHERE id = ?',[id]))
 };
 Region.get_regions = function(regions){
-    return regions.reduce(function(sequence, item){
+    return regions.reduce(function(sequence, item,i){
         if(!item[2]){
             console.log({
                 id:item[1],

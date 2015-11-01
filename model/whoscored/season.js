@@ -7,7 +7,7 @@ _ = require('underscore'),
 difference = require('../../utils').difference,
 Model = require('../../model'),
 Season = Model.extend({
-    tableName:'whoscored_seasons',
+    tableName:'whoscored_season',
     needToUpdate:function(data,row){
         this._super(data,row);
         var diff;
@@ -20,7 +20,7 @@ Season = Model.extend({
     }
 });
 Season.excute = excute;
-Season.table = 'whoscored_seasons';
+Season.table = 'whoscored_season';
 Season.get_by_id = function(id){
     return excute(mysql.format('SELECT 1 FROM '+this.table+' WHERE id = ?',[id]))
 };
@@ -44,15 +44,15 @@ Season.get_seasons_by_tournament = function($){
         name = $(option).text(),
         year = name.replace(/(\d{4})\/\d{4}/,'$1');
         return sequence.then(function(){
-            return excute(mysql.format('SELECT 1 FROM `whoscored_seasons` WHERE id = ?',[id]))
+            return excute(mysql.format('SELECT 1 FROM `whoscored_season` WHERE id = ?',[id]))
         }).then(function(row){
             if(row.length){
-                return excute(mysql.format('UPDATE `whoscored_seasons` SET ? WHERE id = ?',[{
+                return excute(mysql.format('UPDATE `whoscored_season` SET ? WHERE id = ?',[{
                     name:name,
                     year:year
                 },id]))
             } else {
-                return excute(mysql.format('INSERT INTO `whoscored_seasons` SET ?',[{
+                return excute(mysql.format('INSERT INTO `whoscored_season` SET ?',[{
                     id:id,
                     name:name,
                     year:year

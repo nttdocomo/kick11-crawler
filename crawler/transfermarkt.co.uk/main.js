@@ -7,26 +7,20 @@ excute = require('../../promiseExcute'),
 Team = require('../../model/transfermarkt.co.uk/team'),
 Player = require('../../model/transfermarkt.co.uk/player'),
 Nation = require('../../model/transfermarkt.co.uk/nation'),
+Match = require('../../model/transfermarkt.co.uk/match'),
 Competition = require('../../model/transfermarkt.co.uk/competition'),
 Transfer = require('../../model/transfermarkt.co.uk/transfer'),
-insert_match_by_competition = require('../../fn/transfermarkt/match/insert_match_by_competition'),
 difference = require('./utils').difference,
 host = 'http://www.transfermarkt.co.uk',
 fetchedUrls = [],
-//crawler = new Crawler('www.transfermarkt.co.uk','/');
-/*Crawler.crawl("http://www.transfermarkt.co.uk/", function(queueItem){
-    console.log("Completed fetching resource:", queueItem.url);
-});*/
-//crawler.proxyHostname = 'http://127.0.0.1';
-//crawler.proxyPort = 8888;
-//crawler = Crawler.crawl("http://www.transfermarkt.co.uk/");
 crawler = new Crawler("www.transfermarkt.co.uk", "/");
 //crawler.discoverResources = false;
-/*crawler.useProxy = true;
+crawler.useProxy = true;
 crawler.proxyHostname = '127.0.0.1';
-crawler.proxyPort = '11080';*/
+crawler.proxyPort = '1080';
 crawler.maxConcurrency = 1;
 crawler.interval = 600;
+crawler.listenerTTL = 100000;
 //crawler.timeout = 30000;
 crawler.userAgent = 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.124 Safari/537.36';
 crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
@@ -43,9 +37,9 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
     };
     if(/^\/\S+\/profil\/spieler\/\d{1,9}$/.test(queueItem.path)){//competition
     	next = this.wait();
-    	Nation.get_nation_by_player_profile(cheerio.load(decoder.write(responseBuffer))).then(function(){
+    	Nation.get_nation_by_player_transfer(cheerio.load(decoder.write(responseBuffer)))/*.then(function(){
             Nation.get_nation_by_player_transfer(cheerio.load(decoder.write(responseBuffer)));
-        }).then(function(){
+        })*/.then(function(){
     		return Player.get_player(cheerio.load(decoder.write(responseBuffer)))
     	}).then(function(){
     		return Team.get_team_by_transfers(cheerio.load(decoder.write(responseBuffer)))
@@ -70,7 +64,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
             return Team.get_team_by_match_plan(cheerio.load(decoder.write(responseBuffer)))
         }).then(function(){
             //console.log('team ok')
-	    	return insert_match_by_competition(decoder.write(responseBuffer))
+	    	return Match.insert_match_by_competition(decoder.write(responseBuffer))
     	}).then(function(){
     		next()
     	})
@@ -121,6 +115,10 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 });
 //crawler.queueURL(host + '/1-bundesliga/gesamtspielplan/wettbewerb/L1/saison_id/2015');
 //crawler.queueURL(host + '/championship/gesamtspielplan/wettbewerb/GB2/saison_id/2015');
+//crawler.queueURL(host + '/pierre-emerick-aubameyang/profil/spieler/58864');
+//crawler.queueURL(host + '/luis-henrique/profil/spieler/379877');
+//crawler.queueURL(host + '/premier-league/startseite/wettbewerb/GB1');
+//crawler.queueURL(host + '/championship/startseite/wettbewerb/GB2');
 crawler.queueURL(host + '/');
 crawler.start();
 //crawler.queue.add('http', 'www.transfermarkt.co.uk', '20', '/');
