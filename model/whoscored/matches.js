@@ -23,6 +23,9 @@ Match = Model.extend({
 });
 Match.excute = excute;
 Match.table = 'whoscored_match';
+Match.get_match = function(){
+    return excute('SELECT id,play_at AS play_date FROM whoscored_match WHERE score1 IS NULL AND score2 IS NULL ORDER BY play_at ASC');
+};
 Match.get_uncomplete_matches = function(){
     return excute('SELECT id,play_at AS play_date FROM whoscored_match WHERE score1 IS NULL AND score2 IS NULL ORDER BY play_at ASC');
 };

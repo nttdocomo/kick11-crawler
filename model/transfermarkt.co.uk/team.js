@@ -22,7 +22,7 @@ Team = Model.extend({
 })
 Team.table = 'transfermarkt_team';
 Team.get_team = function($){
-	var is_club = !$('#verknupftevereine > img').attr('class') ? 1:0,
+	var is_club = $('#wettbewerb_select_breadcrumb').val() ? 1:0,
     team_name = trim($('.spielername-profil').text().replace(/^\s+(.+?)\s+$/,'$1')),
     club_url = $('#submenue > li').eq(1).find('a').attr('href').replace(/(^\/\S+?\/startseite\/verein\/\d+?)(\/saison_id\/\d{4})?$/,'$1'),
 	team_id = club_url.replace(/^\/\S+?\/startseite\/verein\/(\d+?)(\/\S+)?$/,'$1'),
@@ -103,12 +103,12 @@ Team.get_team_by_transfers = function($){
                     if(!row.length){
                         return excute(mysql.format('INSERT INTO `team` SET ?',{
                             name:name
-                        })).then(function(){
+                        })).then(function(result){
                             return excute(mysql.format('INSERT INTO `transfermarkt_team_team` SET ?',{
                                 transfermarkt_team_id:transfermarkt_team_id,
                                 team_id:result.insertId
                             }))
-                        }).then(function(result){
+                        }).then(function(){
                             return excute(mysql.format('INSERT INTO `transfermarkt_team` SET ?',{
                                 id:transfermarkt_team_id,
                                 team_name:name
@@ -127,7 +127,7 @@ Team.get_team_by_transfers = function($){
 Team.get_team_by_match_plan = function($){
     var teams = _.map($('table:not([class]) > tbody > tr:not(:first-child) > td:nth-child(3) > a[title],table:not([class]) > tbody > tr:not(:first-child) > td:nth-child(6) > a[title]'),function(team,i){
         return team;
-    }));
+    });
     teams = _.uniq(teams,function(item){
         return $(item).attr('href').replace(/^\/\S+?\/(\d+?)(\/\S+?\/\d{4})?$/,'$1');
     });

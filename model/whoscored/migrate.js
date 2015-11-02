@@ -1,0 +1,4 @@
+//INSERT INTO `whoscored_team_team` (whoscored_team_id,team_id) SELECT whoscored_team.id,transfermarkt_team_team.team_id FROM `whoscored_team` JOIN `team` ON team.name = whoscored_team.name JOIN `transfermarkt_team_team` ON transfermarkt_team_team.team_id = team.id WHERE whoscored_team.id NOT IN (SELECT whoscored_team_id FROM `whoscored_team_team`)
+
+//建立赛事关系
+//SELECT event.id,whoscored_event.id FROM `event` JOIN `whoscored_season_season` ON event.season_id = whoscored_season_season.season_id JOIN `whoscored_tournament_competition` ON event.competition_id = whoscored_tournament_competition.competition_id JOIN `whoscored_event` ON whoscored_event.tournament_id = whoscored_tournament_competition.whoscored_tournament_id AND whoscored_event.season_id = whoscored_season_season.whoscored_season_id WHERE event.id NOT IN (SELECT event_id FROM `whoscored_event_event`)

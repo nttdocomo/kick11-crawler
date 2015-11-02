@@ -15,7 +15,56 @@ var date = [],
 condition = 0,
 now = moment.utc(),
 clone = now.clone();
-excute(mysql.format('SELECT DISTINCT play_at FROM whoscored_match WHERE play_at < ? ORDER BY play_at DESC',[moment.utc().format('YYYY-MM-DD HH:mm')])).then(function(row){
+excute('SELECT * FROM `whoscored_match` WHERE id NOT IN (SELECT whoscored_match_id FROM `whoscored_match_match`)').then(function(whoscored_matches){
+    if(whoscored_matches.length){
+        return whoscored_matches.reduce(function(sequence,whoscored_match,i){
+            return sequence.then(function(){
+                var team1_id,team2_id;
+                return excute(mysql.format('SELECT team_id FROM `whoscored_team_team` WHERE whoscored_team_id = ?',[whoscored_match.team1_id])).then(function(row){
+                    team1_id = row[0].team_id;
+                    return excute(mysql.format('SELECT team_id FROM `whoscored_team_team` WHERE whoscored_team_id = ?',[whoscored_match.team2_id]))
+                }).then(function(row){
+                    team2_id = row[0].team_id;
+                    return excute(mysql.format('SELECT 1 FROM `match` WHERE team1_id = ? AND team2_id = ? AND play_at = ?',[team1_id,team2_id,whoscored_match.play_at]))
+                }).then(function(row){
+                    console.log(whoscored_match.id)
+                    var data = _.extend(_.pick(whoscored_match, 'play_at', 'score1','score2'),{
+                        team1_id:team1_id,
+                        team2_id:team2_id
+                    });
+                    if(row.length){
+                        console.log(mysql.format('UPDATE `match` SET ? WHERE team1_id = ? AND team2_id = ? AND play_at = ?',[_.pick(whoscored_match,'score1','score2'),team1_id,team2_id,whoscored_match.play_at]))
+                        //return excute(mysql.format('UPDATE `match` SET ? WHERE team1_id = ? AND team2_id = ? AND play_at = ?',[_.pick(whoscored_match,'score1','score2'),team1_id,team2_id,whoscored_match.play_at]))
+                    } else {
+                        console.log(mysql.format('INSERT INTO `match` SET ?',_.extend(_.pick(whoscored_match, 'play_at', 'score1','score2'),{
+                            team1_id:team1_id,
+                            team2_id:team2_id
+                        })))
+                        /*return excute(mysql.format('INSERT INTO `match` SET ?',_.extend(_.pick(whoscored_match, 'play_at', 'score1','score2'),{
+                            team1_id:team1_id,
+                            team2_id:team2_id
+                        }))).then(function(result){
+                            return excute(mysql.format('INSERT INTO `whoscored_match_match` SET ?',{
+                                match_id: result.insertId,
+                                whoscored_match_id:whoscored_match.id
+                            }))
+                        })*/
+                    }
+                }).catch(function(err){
+                    console.log(err)
+                    return Promise.resolve()
+                })
+            })
+        },Promise.resolve())
+    } else {
+        return Promise.resolve();
+    }
+}).then(function(){
+    console.log('complete')
+    process.exit()
+})/*.then(function(){
+    return excute(mysql.format('SELECT DISTINCT play_at FROM whoscored_match WHERE play_at < ? ORDER BY play_at DESC',[moment.utc().format('YYYY-MM-DD HH:mm')]));
+}).then(function(row){
     if(row.length){
         var play_at = _.find(row,function(item){
             var play = moment.utc(item.play_at);
@@ -41,7 +90,7 @@ excute(mysql.format('SELECT DISTINCT play_at FROM whoscored_match WHERE play_at 
     crawler.start();
 }).catch(function(err){
     console.log(err)
-})
+})*/
 /*crawler.queueURL(host + '/Regions/81/Tournaments/3');
 crawler.start();*/
 //http://www.whoscored.com/matchesfeed/?d=20141021
