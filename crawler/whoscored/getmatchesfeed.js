@@ -5,10 +5,10 @@ get_stages = require('../../model/whoscored/stage').get_stages,
 get_regions = require('../../model/whoscored/region').get_regions,
 get_seasons = require('../../model/whoscored/season').get_seasons,
 get_tournaments = require('../../model/whoscored/tournament').get_tournaments,
-WhoscoredMatch = require('../../model/whoscored/matches'),
+Match = require('../../model/whoscored/matches'),
 Team = require('../../model/whoscored/team'),
-Event = require('../../model/whoscored/event'),
-Match = require('../../model/kick11/match').model;
+Event = require('../../model/whoscored/event');
+//Match = require('../../model/kick11/match').model;
 module.exports = function(queueItem, matchesfeed, response){
     console.log('matchesfeed')
     //将teams里没有的team放到teams;
@@ -51,9 +51,9 @@ module.exports = function(queueItem, matchesfeed, response){
                 name : match[9]
             });
             var promise = sequence.then(function(){
-
+                return Match.get_match(values)
                 //return Promise.resolve();
-                return whoscoredMatch.save();
+                //return whoscoredMatch.save();
                 //return get_match(match,queueItem.path.replace(/^\/matchesfeed\/\?d\=(\d{4})(\d{2})(\d{2})$/,"$1-$2-$3"))
             }).then(function(){
                 return Match.save_from_whoscored(values);
