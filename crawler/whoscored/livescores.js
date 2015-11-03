@@ -6,6 +6,7 @@ excute = require('../../promiseExcute'),
 StringDecoder = require('string_decoder').StringDecoder,
 mysql = require('mysql'),
 moment = require('moment-timezone'),
+Match = require('../../model/whoscored/matches'),
 //migrate = require('../../migrate/whoscored/migrate').migrate,
 _ = require('underscore'),
 input_date = process.argv[2],
@@ -17,52 +18,20 @@ now = moment.utc(),
 clone = now.clone();
 excute('SELECT * FROM `whoscored_match` WHERE id NOT IN (SELECT whoscored_match_id FROM `whoscored_match_match`)').then(function(whoscored_matches){
     if(whoscored_matches.length){
-        return whoscored_matches.reduce(function(sequence,whoscored_match,i){
+        return whoscored_matches.reduce(function(sequence,match,i){
             return sequence.then(function(){
-                var team1_id,team2_id;
-                return excute(mysql.format('SELECT team_id FROM `whoscored_team_team` WHERE whoscored_team_id = ?',[whoscored_match.team1_id])).then(function(row){
-                    team1_id = row[0].team_id;
-                    return excute(mysql.format('SELECT team_id FROM `whoscored_team_team` WHERE whoscored_team_id = ?',[whoscored_match.team2_id]))
-                }).then(function(row){
-                    team2_id = row[0].team_id;
-                    return excute(mysql.format('SELECT 1 FROM `match` WHERE team1_id = ? AND team2_id = ? AND play_at = ?',[team1_id,team2_id,whoscored_match.play_at]))
-                }).then(function(row){
-                    console.log(whoscored_match.id)
-                    var data = _.extend(_.pick(whoscored_match, 'play_at', 'score1','score2'),{
-                        team1_id:team1_id,
-                        team2_id:team2_id
-                    });
-                    if(row.length){
-                        console.log(mysql.format('UPDATE `match` SET ? WHERE team1_id = ? AND team2_id = ? AND play_at = ?',[_.pick(whoscored_match,'score1','score2'),team1_id,team2_id,whoscored_match.play_at]))
-                        //return excute(mysql.format('UPDATE `match` SET ? WHERE team1_id = ? AND team2_id = ? AND play_at = ?',[_.pick(whoscored_match,'score1','score2'),team1_id,team2_id,whoscored_match.play_at]))
-                    } else {
-                        console.log(mysql.format('INSERT INTO `match` SET ?',_.extend(_.pick(whoscored_match, 'play_at', 'score1','score2'),{
-                            team1_id:team1_id,
-                            team2_id:team2_id
-                        })))
-                        /*return excute(mysql.format('INSERT INTO `match` SET ?',_.extend(_.pick(whoscored_match, 'play_at', 'score1','score2'),{
-                            team1_id:team1_id,
-                            team2_id:team2_id
-                        }))).then(function(result){
-                            return excute(mysql.format('INSERT INTO `whoscored_match_match` SET ?',{
-                                match_id: result.insertId,
-                                whoscored_match_id:whoscored_match.id
-                            }))
-                        })*/
-                    }
-                }).catch(function(err){
+                return Match.insert_match(match).catch(function(err){
                     console.log(err)
                     return Promise.resolve()
                 })
             })
         },Promise.resolve())
-    } else {
-        return Promise.resolve();
     }
-}).then(function(){
+    return Promise.resolve();
+})/*.then(function(){
     console.log('complete')
     process.exit()
-})/*.then(function(){
+})*/.then(function(){
     return excute(mysql.format('SELECT DISTINCT play_at FROM whoscored_match WHERE play_at < ? ORDER BY play_at DESC',[moment.utc().format('YYYY-MM-DD HH:mm')]));
 }).then(function(row){
     if(row.length){
@@ -90,7 +59,7 @@ excute('SELECT * FROM `whoscored_match` WHERE id NOT IN (SELECT whoscored_match_
     crawler.start();
 }).catch(function(err){
     console.log(err)
-})*/
+})
 /*crawler.queueURL(host + '/Regions/81/Tournaments/3');
 crawler.start();*/
 //http://www.whoscored.com/matchesfeed/?d=20141021

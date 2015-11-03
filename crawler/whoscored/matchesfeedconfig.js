@@ -42,7 +42,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
         if(/^\/matchesfeed\/\?d\=\d{8}$/.test(queueItem.path)){
             next = this.wait();
             content = eval(content);
-            getMatchesFeed(queueItem, content, response).then(function(){
+            getMatchesFeed(queueItem, content, response, crawler).then(function(){
                 return content[1].reduce(function(sequence, item){
                     return sequence.then(function(){
                         return excute(mysql.format('SELECT 1 FROM `whoscored_tournaments` WHERE id = ?',[item[4]]))

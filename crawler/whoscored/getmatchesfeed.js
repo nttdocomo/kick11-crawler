@@ -1,6 +1,7 @@
 var StringDecoder = require('string_decoder').StringDecoder,
 decoder = new StringDecoder('utf8'),
 moment = require('moment-timezone'),
+host = 'http://www.whoscored.com',
 get_stages = require('../../model/whoscored/stage').get_stages,
 get_regions = require('../../model/whoscored/region').get_regions,
 get_seasons = require('../../model/whoscored/season').get_seasons,
@@ -9,7 +10,7 @@ Match = require('../../model/whoscored/matches'),
 Team = require('../../model/whoscored/team'),
 Event = require('../../model/whoscored/event');
 //Match = require('../../model/kick11/match').model;
-module.exports = function(queueItem, matchesfeed, response){
+module.exports = function(queueItem, matchesfeed, response, crawler){
     console.log('matchesfeed')
     //将teams里没有的team放到teams;
     return get_stages(matchesfeed[1]).then(function(){
@@ -42,7 +43,7 @@ module.exports = function(queueItem, matchesfeed, response){
                 values.score1 = score.split(/\s\:\s/)[0];
                 values.score2 = score.split(/\s\:\s/)[1];
             }
-            var whoscoredMatch = new WhoscoredMatch(values);
+            //var whoscoredMatch = new WhoscoredMatch(values);
             var team1 = new Team({
                 id : team1_id,
                 name : match[5]
@@ -55,23 +56,23 @@ module.exports = function(queueItem, matchesfeed, response){
                 //return Promise.resolve();
                 //return whoscoredMatch.save();
                 //return get_match(match,queueItem.path.replace(/^\/matchesfeed\/\?d\=(\d{4})(\d{2})(\d{2})$/,"$1-$2-$3"))
-            }).then(function(){
+            })/*.then(function(){
                 return Match.save_from_whoscored(values);
-            }).then(function(){
+            })*/.then(function(){
                 return team1.save()
             }).then(function(){
                 return team2.save();
             });
             if(match[14] && match[15]){
                 promise.then(function(){
-                    return excute('SELECT 1 FROM `whoscored_registration` WHERE match_id = '+match_id).then(function(row){
+                    return excute(mysql.format('SELECT 1 FROM `whoscored_registration` WHERE match_id = ? LIMIT 1',[match_id])).then(function(row){
                         if(!row.length){
                             crawler.queueURL(host + '/MatchesFeed/'+match_id+'/MatchCentre2');
                         }
                         return Promise.resolve()
                     })
                 }).then(function(){
-                    return excute(mysql.format('SELECT * FROM `whoscored_match_player_statistics` WHERE matchId = ? AND teamId = ?',[match_id,match[4]])).then(function(row){
+                    return excute(mysql.format('SELECT * FROM `whoscored_match_player_statistics` WHERE matchId = ? AND teamId = ? LIMIT 1',[match_id,match[4]])).then(function(row){
                         if(!row.length){
                             crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=summary&subcategory=all&statsAccumulationType=0&isCurrent=true&teamIds='+match[4]+'&matchId='+match_id);
                             crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=passing&statsAccumulationType=0&teamIds='+match[4]+'&matchId='+match_id);
@@ -81,7 +82,7 @@ module.exports = function(queueItem, matchesfeed, response){
                         return Promise.resolve()
                     })
                 }).then(function(){
-                    return excute(mysql.format('SELECT 1 FROM `whoscored_match_player_statistics` WHERE matchId = ? AND teamId = ?',[match_id,match[8]])).then(function(row){
+                    return excute(mysql.format('SELECT 1 FROM `whoscored_match_player_statistics` WHERE matchId = ? AND teamId = ? LIMIT 1',[match_id,match[8]])).then(function(row){
                         if(!row.length){
                             crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=summary&subcategory=all&statsAccumulationType=0&isCurrent=true&teamIds='+match[8]+'&matchId='+match_id);
                             crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=passing&statsAccumulationType=0&teamIds='+match[8]+'&matchId='+match_id);

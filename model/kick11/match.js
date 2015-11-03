@@ -30,7 +30,7 @@ Match.all = function(){
 };
 Match.save_from_whoscored = function(data){
 	var team1_id,team2_id,play_at = data.play_at;
-	return excute(mysql.format('SELECT * FROM `match`'))excute(mysql.format('SELECT team_id FROM whoscored_team_team WHERE whoscored_team_id = ? LIMIT 1',[data.team1_id]))
+	return excute(mysql.format('SELECT * FROM `match` WHERE team'))excute(mysql.format('SELECT team_id FROM whoscored_team_team WHERE whoscored_team_id = ? LIMIT 1',[data.team1_id]))
 	.then(function(result){
 		team1_id = result[0].team_id;
 		return excute(mysql.format('SELECT team_id FROM whoscored_team_team WHERE whoscored_team_id = ? LIMIT 1',[data.team2_id]));
