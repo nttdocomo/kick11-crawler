@@ -1,5 +1,7 @@
 var StringDecoder = require('string_decoder').StringDecoder,
 decoder = new StringDecoder('utf8'),
+mysql = require('mysql'),
+excute = require('../../promiseExcute'),
 moment = require('moment-timezone'),
 host = 'http://www.whoscored.com',
 get_stages = require('../../model/whoscored/stage').get_stages,
@@ -63,34 +65,37 @@ module.exports = function(queueItem, matchesfeed, response, crawler){
             }).then(function(){
                 return team2.save();
             });
-            if(match[14] && match[15]){
+            //match[14]是否分出胜负,match[15]是否有matchreport
+            //console.log([match[17],match[15]].join('----'))
+            if((match[17] == 'FT' || match[17] == 'AET') && match[15]){
                 promise.then(function(){
-                    return excute(mysql.format('SELECT 1 FROM `whoscored_registration` WHERE match_id = ? LIMIT 1',[match_id])).then(function(row){
-                        if(!row.length){
-                            crawler.queueURL(host + '/MatchesFeed/'+match_id+'/MatchCentre2');
-                        }
-                        return Promise.resolve()
-                    })
+                    //console.log(mysql.format('SELECT 1 FROM `whoscored_registration` WHERE match_id = ? LIMIT 1',[match_id]))
+                    return excute(mysql.format('SELECT 1 FROM `whoscored_registration` WHERE match_id = ? LIMIT 1',[match_id]))
+                }).then(function(row){
+                    if(!row.length){
+                        crawler.queueURL(host + '/MatchesFeed/'+match_id+'/MatchCentre2');
+                    }
+                    return Promise.resolve()
                 }).then(function(){
-                    return excute(mysql.format('SELECT * FROM `whoscored_match_player_statistics` WHERE matchId = ? AND teamId = ? LIMIT 1',[match_id,match[4]])).then(function(row){
-                        if(!row.length){
-                            crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=summary&subcategory=all&statsAccumulationType=0&isCurrent=true&teamIds='+match[4]+'&matchId='+match_id);
-                            crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=passing&statsAccumulationType=0&teamIds='+match[4]+'&matchId='+match_id);
-                            crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=defensive&statsAccumulationType=0&isCurrent=true&teamIds='+match[4]+'&matchId='+match_id);
-                            crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=offensive&statsAccumulationType=0&isCurrent=true&teamIds='+match[4]+'&matchId='+match_id);
-                        }
-                        return Promise.resolve()
-                    })
+                    return excute(mysql.format('SELECT * FROM `whoscored_match_player_statistics` WHERE matchId = ? AND teamId = ? LIMIT 1',[match_id,match[4]]))
+                }).then(function(row){
+                    if(!row.length){
+                        crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=summary&subcategory=all&statsAccumulationType=0&isCurrent=true&teamIds='+match[4]+'&matchId='+match_id);
+                        crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=passing&statsAccumulationType=0&teamIds='+match[4]+'&matchId='+match_id);
+                        crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=defensive&statsAccumulationType=0&isCurrent=true&teamIds='+match[4]+'&matchId='+match_id);
+                        crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=offensive&statsAccumulationType=0&isCurrent=true&teamIds='+match[4]+'&matchId='+match_id);
+                    }
+                    return Promise.resolve()
                 }).then(function(){
-                    return excute(mysql.format('SELECT 1 FROM `whoscored_match_player_statistics` WHERE matchId = ? AND teamId = ? LIMIT 1',[match_id,match[8]])).then(function(row){
-                        if(!row.length){
-                            crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=summary&subcategory=all&statsAccumulationType=0&isCurrent=true&teamIds='+match[8]+'&matchId='+match_id);
-                            crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=passing&statsAccumulationType=0&teamIds='+match[8]+'&matchId='+match_id);
-                            crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=defensive&statsAccumulationType=0&isCurrent=true&teamIds='+match[8]+'&matchId='+match_id);
-                            crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=offensive&statsAccumulationType=0&isCurrent=true&teamIds='+match[8]+'&matchId='+match_id);
-                        }
-                        return Promise.resolve()
-                    })
+                    return excute(mysql.format('SELECT 1 FROM `whoscored_match_player_statistics` WHERE matchId = ? AND teamId = ? LIMIT 1',[match_id,match[8]]))
+                }).then(function(row){
+                    if(!row.length){
+                        crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=summary&subcategory=all&statsAccumulationType=0&isCurrent=true&teamIds='+match[8]+'&matchId='+match_id);
+                        crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=passing&statsAccumulationType=0&teamIds='+match[8]+'&matchId='+match_id);
+                        crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=defensive&statsAccumulationType=0&isCurrent=true&teamIds='+match[8]+'&matchId='+match_id);
+                        crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=offensive&statsAccumulationType=0&isCurrent=true&teamIds='+match[8]+'&matchId='+match_id);
+                    }
+                    return Promise.resolve()
                 });
             }
             return promise;

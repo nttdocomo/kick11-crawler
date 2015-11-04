@@ -8,7 +8,7 @@ moment = require('moment'),
 moment_tz = require('moment-timezone'),
 excute = require('../../promiseExcute'),
 difference = require('../../crawler/transfermarkt.co.uk/utils').difference,
-Player = require('./player').model,
+Player = require('./player'),
 Model = require('../../model'),
 Statistics = Model.extend({
     tableName:'whoscored_match_player_statistics',
@@ -56,7 +56,11 @@ var getMatchCentrePlayerStatistics = function(queueItem,content){
             return column.Field;
         })
         return playerTableStats.reduce(function(sequence,playerTableStat){
-            var alter_sql = [];
+            var alter_sql = [],
+            playerId = playerTableStat.playerId,
+            name = playerTableStat.name;
+            delete playerTableStat.name;
+            delete playerTableStat.incidents;
             //首先将值为null或者undefined的删除，因为无法判断值为数字还是字符串，如果表字段没有这个键，则无法创建列。
             _.each(playerTableStat, function(value,key){
                 if (value === null || value === undefined || value === '' || value === 0 || typeof(value) === 'object') {
@@ -68,17 +72,15 @@ var getMatchCentrePlayerStatistics = function(queueItem,content){
                     }
                 }
             })
-            var playerId = playerTableStat.playerId;
             if(!playerTableStat.teamId){
                 playerTableStat.teamId = teamId;
             }
             if(!playerTableStat.matchId){
                 playerTableStat.matchId = matchId;
             }
-            var statistics = new Statistics(playerTableStat),
             player = new Player({
-                id:playerTableStat.playerId,
-                name:playerTableStat.name
+                id:playerId,
+                name:name
             });
             return sequence.then(function(){
                 return player.save();
@@ -96,28 +98,67 @@ var getMatchCentrePlayerStatistics = function(queueItem,content){
                 return unknow_columns.reduce(function(sequence,column){
                     return sequence.then(function(){
                         if(typeof(playerTableStat[column]) == 'string'){
-                            return excute('ALTER TABLE whoscored_match_player_statistics ADD '+column+' varchar(30) DEFAULT NULL')
+                            return excute('ALTER TABLE whoscored_match_player_statistics ADD '+column+' varchar(30) DEFAULT NULL').then(function(){
+                                excute('ALTER TABLE match_player_statistics ADD '+column+' varchar(30) DEFAULT NULL')
+                            })
                         }
                         if(typeof(playerTableStat[column]) == 'number'){
-                            return excute('ALTER TABLE whoscored_match_player_statistics ADD '+column+' smallint UNSIGNED DEFAULT 0')
+                            return excute('ALTER TABLE whoscored_match_player_statistics ADD '+column+' smallint UNSIGNED DEFAULT 0').then(function(){
+                                excute('ALTER TABLE match_player_statistics ADD '+column+' smallint UNSIGNED DEFAULT 0')
+                            })
                         }
                         if(typeof(playerTableStat[column]) == 'boolean'){
-                            return excute('ALTER TABLE whoscored_match_player_statistics ADD '+column+' boolean DEFAULT 0')
+                            return excute('ALTER TABLE whoscored_match_player_statistics ADD '+column+' boolean DEFAULT 0').then(function(){
+                                excute('ALTER TABLE match_player_statistics ADD '+column+' boolean DEFAULT 0')
+                            })
                         }
                     })
                 },Promise.resolve())
             }).then(function(){
                 console.log('save')
-                return statistics.save();
-                /*return excute(mysql.format('SELECT playerId,teamId,matchId FROM whoscored_match_player_statistics WHERE playerId = ? AND teamId = ? AND matchId = ?',[item.playerId,item.teamId,item.matchId])).then(function(statistic){
-                    if(statistic){
-                        return excute(mysql.format('UPDATE whoscored_match_player_statistics SET ? WHERE teamId = ? AND playerId = ? AND matchId = ?',[playerTableStat,teamId,playerId,matchId]))
-                    } else {
-                        return excute(mysql.format('INSERT INTO whoscored_match_player_statistics SET ?',playerTableStat))
+                return excute(mysql.format('SELECT id FROM `whoscored_match_player_statistics` WHERE playerId = ? AND teamId = ? AND matchId = ? LIMIT 1',[playerTableStat.playerId,playerTableStat.teamId,playerTableStat.matchId])).then(function(row){
+                    if(row.length){
+                        return excute(mysql.format('INSERT INTO `whoscored_match_player_statistics` SET ?',playerTableStat)).then(function(result){
+                            return result.insertId;
+                        })
                     }
-                })*/
+                    return row[0].id
+                }).then(function(whoscored_match_player_statistics_id){
+                    var team_id,match_id,player_id;
+                    return excute(mysql.format('SELECT team_id FROM `whoscored_team_team` WHERE whoscored_team_id = ? LIMIT 1',[playerTableStat.teamId]))).then(function(){
+                        team_id = playerTableStat.teamId = row[0].team_id;
+                        return excute(mysql.format('SELECT match_id FROM `whoscored_match_match` WHERE whoscored_match_id = ? LIMIT 1',[playerTableStat.matchId])))
+                    }).then(function(row){
+                        match_id = playerTableStat.matchId = row[0].match_id;
+                        return excute(mysql.format('SELECT player_id FROM `whoscored_player_player` WHERE whoscored_player_id = ? LIMIT 1',[playerId])))
+                    }).then(function(row){
+                        player_id = playerTableStat.playerId = row[0].player_id;
+                        return excute(mysql.format('SELECT id FROM `match_player_statistics` WHERE playerId = ? AND teamId = ? AND matchId = ? LIMIT 1',[player_id,team_id,match_id])))
+                    }).then(function(row){
+                        if(!row.length){
+                            return excute(mysql.format('INSERT INTO `match_player_statistics` SET ?',playerTableStat)).then(function(result){
+                                return result.insertId
+                            })
+                        }
+                        return row[0].id
+                    }).then(function(match_player_statistics_id){
+                        return excute(mysql.format('SELECT 1 FROM `whoscored_match_player_statistics_relation` WHERE whoscored_match_player_statistics_id = ? LIMIT 1',[whoscored_match_player_statistics_id])).then(function(row){
+                            if(!row.length){
+                                return excute(mysql.format('INSERT INTO `whoscored_match_player_statistics_relation` SET ?',{
+                                    whoscored_match_player_statistics_id:whoscored_match_player_statistics_id,
+                                    match_player_statistics_id:match_player_statistics_id
+                                }))
+                            }
+                            return Promise.resolve();
+                        }) 
+                    })
+                });
+            }).catch(function(err){
+                console.log(err)
             })
         },Promise.resolve())
+    }).catch(function(err){
+        console.log(err)
     })
 };
 module.exports.getMatchCentrePlayerStatistics = getMatchCentrePlayerStatistics;

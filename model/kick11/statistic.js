@@ -90,20 +90,6 @@ Statistic.save_from_whoscored = function(queueItem, content){
 	    		})
 		    	var playerId = playerTableStat.playerId;
 				return sequence.then(function(){
-	    			return unknow_columns.reduce(function(sequence,column){
-	    				return sequence.then(function(){
-	    					if(typeof(playerTableStat[column]) == 'string'){
-								return excute('ALTER TABLE whoscored_match_player_statistics ADD '+column+' varchar(30) DEFAULT NULL')
-							}
-							if(typeof(playerTableStat[column]) == 'number'){
-								return excute('ALTER TABLE whoscored_match_player_statistics ADD '+column+' smallint UNSIGNED DEFAULT 0')
-							}
-							if(typeof(playerTableStat[column]) == 'boolean'){
-								return excute('ALTER TABLE whoscored_match_player_statistics ADD '+column+' boolean DEFAULT 0')
-							}
-	    				})
-	    			},Promise.resolve())
-	    		}).then(function(){
 					return excute(mysql.format('SELECT player_id FROM `whoscored_player_player` WHERE whoscored_player_id = ?',[playerId]))
 				}).then(function(row){
 					console.log('aaaaaa')

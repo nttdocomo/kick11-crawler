@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: 2015-11-03 18:22:57
+-- Generation Time: 2015-11-04 18:24:36
 -- 服务器版本： 5.6.21
 -- PHP Version: 5.6.2
 
@@ -634,8 +634,8 @@ CREATE TABLE IF NOT EXISTS `transfermarkt_event_event` (
 --
 
 CREATE TABLE IF NOT EXISTS `transfermarkt_match` (
-  `id` int(10) unsigned NOT NULL,
-  `round_id` int(10) unsigned NOT NULL,
+  `id` mediumint(8) unsigned NOT NULL,
+  `round_id` smallint(5) unsigned NOT NULL,
   `team1_id` smallint(5) unsigned NOT NULL,
   `team2_id` smallint(5) unsigned NOT NULL,
   `play_at` datetime NOT NULL,
@@ -652,9 +652,9 @@ CREATE TABLE IF NOT EXISTS `transfermarkt_match` (
 --
 
 CREATE TABLE IF NOT EXISTS `transfermarkt_match_match` (
-  `id` int(10) unsigned NOT NULL,
-  `transfermarkt_match_id` int(10) unsigned NOT NULL,
-  `match_id` int(10) unsigned NOT NULL,
+  `id` mediumint(8) unsigned NOT NULL,
+  `transfermarkt_match_id` mediumint(8) unsigned NOT NULL,
+  `match_id` mediumint(8) unsigned NOT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -702,7 +702,7 @@ CREATE TABLE IF NOT EXISTS `transfermarkt_player` (
   `foot` varchar(10) DEFAULT NULL,
   `position` varchar(20) DEFAULT NULL,
   `profile_uri` varchar(100) DEFAULT NULL,
-  `nation_id` int(10) unsigned NOT NULL,
+  `nation_id` smallint(5) unsigned NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='球员';
@@ -1013,8 +1013,22 @@ CREATE TABLE IF NOT EXISTS `whoscored_match_player_statistics` (
   `totalPasses` tinyint(4) DEFAULT '0',
   `passSuccessInMatch` float(5,2) DEFAULT NULL,
   `matchId` int(11) NOT NULL,
-  `created_at` datetime DEFAULT NULL,
-  `updated_at` datetime DEFAULT NULL
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- 表的结构 `whoscored_match_player_statistics_relation`
+--
+
+CREATE TABLE IF NOT EXISTS `whoscored_match_player_statistics_relation` (
+  `id` int(10) unsigned NOT NULL,
+  `whoscored_match_player_statistics_id` int(10) unsigned NOT NULL,
+  `match_player_statistics_id` int(10) unsigned NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -1567,6 +1581,12 @@ ALTER TABLE `whoscored_match_player_statistics`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `whoscored_match_player_statistics_relation`
+--
+ALTER TABLE `whoscored_match_player_statistics_relation`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `whoscored_player`
 --
 ALTER TABLE `whoscored_player`
@@ -1825,12 +1845,12 @@ ALTER TABLE `transfermarkt_event_event`
 -- AUTO_INCREMENT for table `transfermarkt_match`
 --
 ALTER TABLE `transfermarkt_match`
-  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
+  MODIFY `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `transfermarkt_match_match`
 --
 ALTER TABLE `transfermarkt_match_match`
-  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
+  MODIFY `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `transfermarkt_nation_nation`
 --
@@ -1905,6 +1925,11 @@ ALTER TABLE `whoscored_match_match`
 -- AUTO_INCREMENT for table `whoscored_match_player_statistics`
 --
 ALTER TABLE `whoscored_match_player_statistics`
+  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
+--
+-- AUTO_INCREMENT for table `whoscored_match_player_statistics_relation`
+--
+ALTER TABLE `whoscored_match_player_statistics_relation`
   MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `whoscored_player_player`
