@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: 2015-11-04 18:24:36
+-- Generation Time: 2015-11-06 21:11:13
 -- 服务器版本： 5.6.21
 -- PHP Version: 5.6.2
 
@@ -197,10 +197,10 @@ CREATE TABLE IF NOT EXISTS `match` (
 -- --------------------------------------------------------
 
 --
--- 表的结构 `match_events`
+-- 表的结构 `match_event`
 --
 
-CREATE TABLE IF NOT EXISTS `match_events` (
+CREATE TABLE IF NOT EXISTS `match_event` (
   `id` int(10) unsigned NOT NULL,
   `player_id` int(10) unsigned NOT NULL,
   `match_id` int(10) unsigned NOT NULL,
@@ -262,6 +262,22 @@ CREATE TABLE IF NOT EXISTS `match_player_statistics` (
   `matchId` int(11) NOT NULL,
   `created_at` datetime DEFAULT NULL,
   `updated_at` datetime DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- 表的结构 `match_registration`
+--
+
+CREATE TABLE IF NOT EXISTS `match_registration` (
+  `id` int(10) unsigned NOT NULL,
+  `match_id` int(10) unsigned NOT NULL,
+  `player_id` int(10) unsigned NOT NULL,
+  `shirt_no` tinyint(3) unsigned DEFAULT NULL,
+  `team_id` int(10) unsigned NOT NULL,
+  `is_first_eleven` tinyint(1) NOT NULL DEFAULT '0',
+  `is_man_of_the_match` tinyint(1) NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -925,6 +941,7 @@ CREATE TABLE IF NOT EXISTS `whoscored_match` (
   `score2` tinyint(3) unsigned DEFAULT NULL,
   `score1i` tinyint(2) unsigned DEFAULT NULL,
   `score2i` tinyint(2) unsigned DEFAULT NULL,
+  `weatherCode` tinyint(2) unsigned NOT NULL DEFAULT '0',
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -932,10 +949,10 @@ CREATE TABLE IF NOT EXISTS `whoscored_match` (
 -- --------------------------------------------------------
 
 --
--- 表的结构 `whoscored_match_events`
+-- 表的结构 `whoscored_match_event`
 --
 
-CREATE TABLE IF NOT EXISTS `whoscored_match_events` (
+CREATE TABLE IF NOT EXISTS `whoscored_match_event` (
   `id` int(10) unsigned NOT NULL,
   `player_id` int(10) unsigned NOT NULL,
   `match_id` int(10) unsigned NOT NULL,
@@ -944,6 +961,20 @@ CREATE TABLE IF NOT EXISTS `whoscored_match_events` (
   `offset` tinyint(2) unsigned NOT NULL DEFAULT '0',
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- 表的结构 `whoscored_match_event_match_event`
+--
+
+CREATE TABLE IF NOT EXISTS `whoscored_match_event_match_event` (
+  `id` int(10) unsigned NOT NULL,
+  `whoscored_match_event_id` int(10) unsigned NOT NULL,
+  `match_event_id` int(10) unsigned NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -1034,6 +1065,22 @@ CREATE TABLE IF NOT EXISTS `whoscored_match_player_statistics_relation` (
 -- --------------------------------------------------------
 
 --
+-- 表的结构 `whoscored_match_registration`
+--
+
+CREATE TABLE IF NOT EXISTS `whoscored_match_registration` (
+  `id` int(10) unsigned NOT NULL,
+  `match_id` int(10) unsigned NOT NULL,
+  `player_id` int(10) unsigned NOT NULL,
+  `shirt_no` tinyint(3) unsigned DEFAULT NULL,
+  `team_id` int(10) unsigned NOT NULL,
+  `is_first_eleven` tinyint(1) NOT NULL DEFAULT '0',
+  `is_man_of_the_match` tinyint(1) NOT NULL DEFAULT '0'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
 -- 表的结构 `whoscored_player`
 --
 
@@ -1056,7 +1103,9 @@ CREATE TABLE IF NOT EXISTS `whoscored_player` (
 CREATE TABLE IF NOT EXISTS `whoscored_player_player` (
   `id` int(10) unsigned NOT NULL,
   `whoscored_player_id` int(10) unsigned NOT NULL,
-  `player_id` int(10) unsigned NOT NULL
+  `player_id` int(10) unsigned NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -1071,22 +1120,6 @@ CREATE TABLE IF NOT EXISTS `whoscored_regions` (
   `short_name` varchar(10) DEFAULT NULL,
   `created_at` datetime DEFAULT NULL,
   `updated_at` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
--- --------------------------------------------------------
-
---
--- 表的结构 `whoscored_registration`
---
-
-CREATE TABLE IF NOT EXISTS `whoscored_registration` (
-  `id` int(10) unsigned NOT NULL,
-  `match_id` int(10) unsigned NOT NULL,
-  `player_id` int(10) unsigned NOT NULL,
-  `shirt_no` tinyint(3) unsigned DEFAULT NULL,
-  `team_id` int(10) unsigned NOT NULL,
-  `is_first_eleven` tinyint(1) NOT NULL DEFAULT '0',
-  `is_man_of_the_match` tinyint(1) NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -1274,15 +1307,21 @@ ALTER TABLE `match`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `match_events`
+-- Indexes for table `match_event`
 --
-ALTER TABLE `match_events`
+ALTER TABLE `match_event`
   ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `match_player_statistics`
 --
 ALTER TABLE `match_player_statistics`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `match_registration`
+--
+ALTER TABLE `match_registration`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -1563,9 +1602,15 @@ ALTER TABLE `whoscored_match`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `whoscored_match_events`
+-- Indexes for table `whoscored_match_event`
 --
-ALTER TABLE `whoscored_match_events`
+ALTER TABLE `whoscored_match_event`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `whoscored_match_event_match_event`
+--
+ALTER TABLE `whoscored_match_event_match_event`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -1587,6 +1632,12 @@ ALTER TABLE `whoscored_match_player_statistics_relation`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `whoscored_match_registration`
+--
+ALTER TABLE `whoscored_match_registration`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `whoscored_player`
 --
 ALTER TABLE `whoscored_player`
@@ -1602,12 +1653,6 @@ ALTER TABLE `whoscored_player_player`
 -- Indexes for table `whoscored_regions`
 --
 ALTER TABLE `whoscored_regions`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `whoscored_registration`
---
-ALTER TABLE `whoscored_registration`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -1722,14 +1767,19 @@ ALTER TABLE `goal_events`
 ALTER TABLE `match`
   MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 --
--- AUTO_INCREMENT for table `match_events`
+-- AUTO_INCREMENT for table `match_event`
 --
-ALTER TABLE `match_events`
+ALTER TABLE `match_event`
   MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `match_player_statistics`
 --
 ALTER TABLE `match_player_statistics`
+  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
+--
+-- AUTO_INCREMENT for table `match_registration`
+--
+ALTER TABLE `match_registration`
   MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `nation`
@@ -1912,9 +1962,14 @@ ALTER TABLE `whoscored_event_event`
 ALTER TABLE `whoscored_goals`
   MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 --
--- AUTO_INCREMENT for table `whoscored_match_events`
+-- AUTO_INCREMENT for table `whoscored_match_event`
 --
-ALTER TABLE `whoscored_match_events`
+ALTER TABLE `whoscored_match_event`
+  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
+--
+-- AUTO_INCREMENT for table `whoscored_match_event_match_event`
+--
+ALTER TABLE `whoscored_match_event_match_event`
   MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `whoscored_match_match`
@@ -1932,14 +1987,14 @@ ALTER TABLE `whoscored_match_player_statistics`
 ALTER TABLE `whoscored_match_player_statistics_relation`
   MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 --
+-- AUTO_INCREMENT for table `whoscored_match_registration`
+--
+ALTER TABLE `whoscored_match_registration`
+  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
+--
 -- AUTO_INCREMENT for table `whoscored_player_player`
 --
 ALTER TABLE `whoscored_player_player`
-  MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
---
--- AUTO_INCREMENT for table `whoscored_registration`
---
-ALTER TABLE `whoscored_registration`
   MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `whoscored_season`
