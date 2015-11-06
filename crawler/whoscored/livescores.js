@@ -7,6 +7,7 @@ StringDecoder = require('string_decoder').StringDecoder,
 mysql = require('mysql'),
 moment = require('moment-timezone'),
 Match = require('../../model/whoscored/matches'),
+MatchPlayerStatistic = require('../../model/kick11/statistic'),
 //migrate = require('../../migrate/whoscored/migrate').migrate,
 _ = require('underscore'),
 input_date = process.argv[2],
@@ -26,9 +27,21 @@ excute('SELECT * FROM `whoscored_match` WHERE id NOT IN (SELECT whoscored_match_
                 })
             })
         },Promise.resolve())
-    }*/
+    }
+    return excute(mysql.format('SELECT * FROM `match` WHERE play_at = ?',['2015-08-08 10:45'])).then(function(row){
+        console.log(row.length)
+    })*/
     return Promise.resolve();
 })/*.then(function(){
+    return excute('SELECT * FROM `whoscored_match_player_statistics` WHERE id NOT IN (SELECT whoscored_match_player_statistics_id FROM `whoscored_match_player_statistics_relation`)').then(function(whoscored_match_player_statistics){
+        if(whoscored_match_player_statistics.length){
+            return whoscored_match_player_statistics.reduce(function(sequence,whoscored_match_player_statistic){
+                return MatchPlayerStatistic.getMatchCentrePlayerStatistics(whoscored_match_player_statistic)
+            },Promise.resolve())
+        }
+        return Promise.resolve()
+    })
+}).then(function(){
     console.log('complete')
     process.exit()
 }).then(function(){
@@ -52,7 +65,7 @@ excute('SELECT * FROM `whoscored_match` WHERE id NOT IN (SELECT whoscored_match_
     return excute('SELECT DISTINCT play_at FROM whoscored_match ORDER BY play_at ASC')
 }).then(function(row){
     if(row.length){
-        crawler.queueURL(host + '/matchesfeed/?d='+moment.utc(row[0]).subtract(1,'d').format('YYYYMMDD'));
+        crawler.queueURL(host + '/matchesfeed/?d='+moment(row[0].play_at).subtract(1,'d').format('YYYYMMDD'));
     }
     return Promise.resolve();
 }).then(function(){
@@ -60,8 +73,9 @@ excute('SELECT * FROM `whoscored_match` WHERE id NOT IN (SELECT whoscored_match_
 }).catch(function(err){
     console.log(err)
 })*/.then(function(){
+    crawler.queueURL(host + '/MatchesFeed/959599/MatchCentre2');
     //crawler.queueURL(host + '/matchesfeed/?d=20151103');
-    crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=summary&subcategory=all&statsAccumulationType=0&isCurrent=true&teamIds=7121&matchId=1017566');
+    //crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=summary&subcategory=all&statsAccumulationType=0&isCurrent=true&teamIds=7121&matchId=1017566');
     crawler.start();
 })
 /*crawler.queueURL(host + '/Regions/81/Tournaments/3');

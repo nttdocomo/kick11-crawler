@@ -63,7 +63,7 @@ Match.insert_match = function(match){
     }).then(function(row){
         var data = {};
         if(!row.length){
-            data = _.extend(_.pick(data,'play_at','score1','score2'),{
+            data = _.extend(_.pick(match,'play_at','score1','score2'),{
                 team1_id:team1_id,
                 team2_id:team2_id
             })

@@ -45,8 +45,7 @@ Player.get_player = function(matchCentre2){
     },Promise.resolve())
 };
 Player.get_player_from_matchcenter = function(matchCentre2){
-    var matchCentre2 = JSON.parse(matchCentre2),
-    away = matchCentre2.away,
+    var away = matchCentre2.away,
     home = matchCentre2.home,
     players = home.players.concat(away.players);
     return players.reduce(function(sequence, player){

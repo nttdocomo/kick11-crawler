@@ -9,8 +9,9 @@ moment_tz = require('moment-timezone'),
 excute = require('../../promiseExcute'),
 difference = require('../../crawler/transfermarkt.co.uk/utils').difference,
 Player = require('./player'),
-Model = require('../../model'),
-Statistics = Model.extend({
+MatchPlayerStatistic = require('../kick11/statistic'),
+BaseModel = require('../../model'),
+Model = BaseModel.extend({
     tableName:'whoscored_match_player_statistics',
     is_exist:function(){
         var data = this.attributes;
@@ -38,9 +39,9 @@ Statistics = Model.extend({
         return this._super(data);
     }
 });
-Statistics.excute = excute;
-Statistics.table = 'whoscored_match_player_statistics';
-Statistics.all = function(){
+Model.excute = excute;
+Model.table = 'whoscored_match_player_statistics';
+Model.all = function(){
     return excute('SELECT * FROM whoscored_match_player_statistics');
 };
 var getMatchCentrePlayerStatistics = function(queueItem,content){
@@ -115,51 +116,24 @@ var getMatchCentrePlayerStatistics = function(queueItem,content){
                     })
                 },Promise.resolve())
             }).then(function(){
-                console.log('save')
-                return excute(mysql.format('SELECT id FROM `whoscored_match_player_statistics` WHERE playerId = ? AND teamId = ? AND matchId = ? LIMIT 1',[playerTableStat.playerId,playerTableStat.teamId,playerTableStat.matchId])).then(function(row){
-                    if(row.length){
+                return excute(mysql.format('SELECT * FROM `whoscored_match_player_statistics` WHERE playerId = ? AND teamId = ? AND matchId = ? LIMIT 1',[playerTableStat.playerId,playerTableStat.teamId,playerTableStat.matchId])).then(function(row){
+                    if(!row.length){
                         return excute(mysql.format('INSERT INTO `whoscored_match_player_statistics` SET ?',playerTableStat)).then(function(result){
-                            return result.insertId;
+                            playerTableStat.id = result.insertId;
+                            return playerTableStat;
                         })
                     }
-                    return row[0].id
-                }).then(function(whoscored_match_player_statistics_id){
-                    var team_id,match_id,player_id;
-                    return excute(mysql.format('SELECT team_id FROM `whoscored_team_team` WHERE whoscored_team_id = ? LIMIT 1',[playerTableStat.teamId]))).then(function(){
-                        team_id = playerTableStat.teamId = row[0].team_id;
-                        return excute(mysql.format('SELECT match_id FROM `whoscored_match_match` WHERE whoscored_match_id = ? LIMIT 1',[playerTableStat.matchId])))
-                    }).then(function(row){
-                        match_id = playerTableStat.matchId = row[0].match_id;
-                        return excute(mysql.format('SELECT player_id FROM `whoscored_player_player` WHERE whoscored_player_id = ? LIMIT 1',[playerId])))
-                    }).then(function(row){
-                        player_id = playerTableStat.playerId = row[0].player_id;
-                        return excute(mysql.format('SELECT id FROM `match_player_statistics` WHERE playerId = ? AND teamId = ? AND matchId = ? LIMIT 1',[player_id,team_id,match_id])))
-                    }).then(function(row){
-                        if(!row.length){
-                            return excute(mysql.format('INSERT INTO `match_player_statistics` SET ?',playerTableStat)).then(function(result){
-                                return result.insertId
-                            })
-                        }
-                        return row[0].id
-                    }).then(function(match_player_statistics_id){
-                        return excute(mysql.format('SELECT 1 FROM `whoscored_match_player_statistics_relation` WHERE whoscored_match_player_statistics_id = ? LIMIT 1',[whoscored_match_player_statistics_id])).then(function(row){
-                            if(!row.length){
-                                return excute(mysql.format('INSERT INTO `whoscored_match_player_statistics_relation` SET ?',{
-                                    whoscored_match_player_statistics_id:whoscored_match_player_statistics_id,
-                                    match_player_statistics_id:match_player_statistics_id
-                                }))
-                            }
-                            return Promise.resolve();
-                        }) 
-                    })
-                });
+                    return row[0]
+                }).then(MatchPlayerStatistic.getMatchCentrePlayerStatistics);
             }).catch(function(err){
                 console.log(err)
+                return Promise.resolve()
             })
         },Promise.resolve())
     }).catch(function(err){
-        console.log(err)
+        console.log(err);
+        return Promise.resolve()
     })
 };
-module.exports.getMatchCentrePlayerStatistics = getMatchCentrePlayerStatistics;
-module.exports.model = Statistics;
+Model.getMatchCentrePlayerStatistics = getMatchCentrePlayerStatistics;
+module.exports = Model;

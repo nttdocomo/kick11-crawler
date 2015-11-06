@@ -47,7 +47,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
                     return sequence.then(function(){
                         return excute(mysql.format('SELECT 1 FROM `whoscored_tournaments` WHERE id = ?',[item[4]]))
                     }).then(function(row){
-                        if(row.length){
+                        if(!row.length){
                             crawler.queueURL(host + '/Regions/'+item[1]+'/Tournaments/'+item[4]);
                         }
                         return Promise.resolve()
