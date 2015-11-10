@@ -7,6 +7,7 @@ _ = require('underscore'),
 moment = require('moment'),
 moment_tz = require('moment-timezone'),
 difference = require('../../utils').difference,
+EventType = require('./matchEventType');
 Model = require('../../model'),
 Event = Model.extend({
     tableName:'whoscored_match_event',
@@ -29,7 +30,7 @@ Event.all = function(){
 module.exports.get_match_by_id = function(id){
     return excute(mysql.format('SELECT 1 FROM whoscored_match_events WHERE id = ?',[id]));
 };
-module.exports.get_events = function(matchCentre2, match_id){
+Event.get_events = function(matchCentre2, match_id){
     var playerIdNameDictionary = matchCentre2.playerIdNameDictionary,
     events = matchCentre2.events;
     if(events.length){
@@ -40,6 +41,7 @@ module.exports.get_events = function(matchCentre2, match_id){
             player_id = event.playerId,
             player_name = playerIdNameDictionary[player_id],
             period = event.period,
+            event_type_value = event.type.value
             offset = 0;
             if(period.value == 1 && minute > 45){
                 offset = minute - 45
@@ -56,10 +58,13 @@ module.exports.get_events = function(matchCentre2, match_id){
                 team_id:team_id,
                 minute:minute,
                 offset:offset,
-                updated_at:moment.utc().format('YYYY-MM-DD hh:mm:ss')
+                updated_at:moment.utc().format('YYYY-MM-DD hh:mm:ss'),
+                event_type_id:event_type_value
             };
             var match_event = new Event(data);
             return sequence.then(function(){
+                return EventType.get_event_type(event.type)
+            }).then(function(){
                 return match_event.save();
             }).then(function(){
                 return excute(mysql.format('SELECT id FROM `whoscored_player_player` WHERE whoscored_player_id = ? LIMIT 1',[player_id]))
@@ -93,6 +98,9 @@ module.exports.get_events = function(matchCentre2, match_id){
                     }
                     return Promise.resolve();
                 })
+            }).catch(function(err){
+                console.log(err)
+                return Promise.resolve()
             })
         },Promise.resolve())
     }

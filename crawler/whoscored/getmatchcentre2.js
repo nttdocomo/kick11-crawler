@@ -19,6 +19,9 @@ module.exports = function(queueItem, content, response){
         return get_events(content, match_id)
     })/*.then(function(){
         return MatchEvent.save_from_whoscored(content, match_id)
-    })*/
+    })*/.catch(function(err){
+        console.log(err)
+        return Promise.resolve()
+    })
     return Promise.resolve();
 }

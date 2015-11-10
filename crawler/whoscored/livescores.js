@@ -18,7 +18,7 @@ condition = 0,
 now = moment.utc(),
 clone = now.clone();
 excute('SELECT * FROM `whoscored_match` WHERE id NOT IN (SELECT whoscored_match_id FROM `whoscored_match_match`)').then(function(whoscored_matches){
-    /*if(whoscored_matches.length){
+    if(whoscored_matches.length){
         return whoscored_matches.reduce(function(sequence,match,i){
             return sequence.then(function(){
                 return Match.insert_match(match).catch(function(err){
@@ -28,11 +28,8 @@ excute('SELECT * FROM `whoscored_match` WHERE id NOT IN (SELECT whoscored_match_
             })
         },Promise.resolve())
     }
-    return excute(mysql.format('SELECT * FROM `match` WHERE play_at = ?',['2015-08-08 10:45'])).then(function(row){
-        console.log(row.length)
-    })*/
     return Promise.resolve();
-})/*.then(function(){
+}).then(function(){
     return excute('SELECT * FROM `whoscored_match_player_statistics` WHERE id NOT IN (SELECT whoscored_match_player_statistics_id FROM `whoscored_match_player_statistics_relation`)').then(function(whoscored_match_player_statistics){
         if(whoscored_match_player_statistics.length){
             return whoscored_match_player_statistics.reduce(function(sequence,whoscored_match_player_statistic){
@@ -42,11 +39,8 @@ excute('SELECT * FROM `whoscored_match` WHERE id NOT IN (SELECT whoscored_match_
         return Promise.resolve()
     })
 }).then(function(){
-    console.log('complete')
-    process.exit()
-}).then(function(){
     return excute(mysql.format('SELECT DISTINCT play_at FROM whoscored_match WHERE play_at < ? ORDER BY play_at DESC',[moment.utc().format('YYYY-MM-DD HH:mm')]));
-}).then(function(row){
+})/*.then(function(row){
     if(row.length){
         var play_at = _.find(row,function(item){
             var play = moment.utc(item.play_at);
@@ -73,8 +67,8 @@ excute('SELECT * FROM `whoscored_match` WHERE id NOT IN (SELECT whoscored_match_
 }).catch(function(err){
     console.log(err)
 })*/.then(function(){
-    crawler.queueURL(host + '/MatchesFeed/959599/MatchCentre2');
-    //crawler.queueURL(host + '/matchesfeed/?d=20151103');
+    //crawler.queueURL(host + '/MatchesFeed/959599/MatchCentre2');
+    crawler.queueURL(host + '/matchesfeed/?d=20151108');
     //crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=summary&subcategory=all&statsAccumulationType=0&isCurrent=true&teamIds=7121&matchId=1017566');
     crawler.start();
 })

@@ -66,12 +66,13 @@ module.exports = function(queueItem, matchesfeed, response, crawler){
                 return team2.save();
             });
             //match[14]是否分出胜负,match[15]是否有matchreport
-            //console.log([match[17],match[15]].join('----'))
-            if((match[17] == 'FT' || match[17] == 'AET') && match[15]){
+            if((match[17] == 'FT' || match[17] == 'AET' || match[17] == 'PEN') && match[15]){
+                console.log([match[17],match[15]].join('----'))
                 promise.then(function(){
                     //console.log(mysql.format('SELECT 1 FROM `whoscored_registration` WHERE match_id = ? LIMIT 1',[match_id]))
-                    return excute(mysql.format('SELECT 1 FROM `whoscored_registration` WHERE match_id = ? LIMIT 1',[match_id]))
+                    return excute(mysql.format('SELECT 1 FROM `whoscored_match_registration` WHERE match_id = ? LIMIT 1',[match_id]))
                 }).then(function(row){
+                    console.log([match[17],match[15]].join('||||'))
                     if(!row.length){
                         crawler.queueURL(host + '/MatchesFeed/'+match_id+'/MatchCentre2');
                     }
@@ -98,9 +99,13 @@ module.exports = function(queueItem, matchesfeed, response, crawler){
                     return Promise.resolve()
                 });
             }
-            return promise;
+            return promise.catch(function(err){
+                console.log(err)
+                return Promise.resolve()
+            });
         },Promise.resolve())
     }).catch(function(err){
         console.log(err)
+        return Promise.resolve()
     });
 }

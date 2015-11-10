@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: 2015-11-06 21:11:13
+-- Generation Time: 2015-11-10 18:34:45
 -- 服务器版本： 5.6.21
 -- PHP Version: 5.6.2
 
@@ -202,13 +202,27 @@ CREATE TABLE IF NOT EXISTS `match` (
 
 CREATE TABLE IF NOT EXISTS `match_event` (
   `id` int(10) unsigned NOT NULL,
-  `player_id` int(10) unsigned NOT NULL,
+  `player_id` mediumint(8) unsigned DEFAULT '0',
   `match_id` int(10) unsigned NOT NULL,
   `team_id` int(10) unsigned NOT NULL,
   `minute` tinyint(3) unsigned NOT NULL,
   `offset` tinyint(2) unsigned NOT NULL DEFAULT '0',
+  `event_type_id` tinyint(3) unsigned NOT NULL,
   `created_at` datetime DEFAULT NULL,
   `updated_at` datetime DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- 表的结构 `match_event_type`
+--
+
+CREATE TABLE IF NOT EXISTS `match_event_type` (
+  `id` tinyint(3) unsigned NOT NULL,
+  `displayName` char(10) NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -954,11 +968,12 @@ CREATE TABLE IF NOT EXISTS `whoscored_match` (
 
 CREATE TABLE IF NOT EXISTS `whoscored_match_event` (
   `id` int(10) unsigned NOT NULL,
-  `player_id` int(10) unsigned NOT NULL,
+  `player_id` mediumint(8) unsigned DEFAULT '0',
   `match_id` int(10) unsigned NOT NULL,
   `team_id` int(10) unsigned NOT NULL,
   `minute` tinyint(3) unsigned NOT NULL,
   `offset` tinyint(2) unsigned NOT NULL DEFAULT '0',
+  `event_type_id` tinyint(3) unsigned NOT NULL,
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -973,6 +988,19 @@ CREATE TABLE IF NOT EXISTS `whoscored_match_event_match_event` (
   `id` int(10) unsigned NOT NULL,
   `whoscored_match_event_id` int(10) unsigned NOT NULL,
   `match_event_id` int(10) unsigned NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- 表的结构 `whoscored_match_event_type`
+--
+
+CREATE TABLE IF NOT EXISTS `whoscored_match_event_type` (
+  `id` tinyint(3) unsigned NOT NULL,
+  `displayName` char(10) NOT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -1313,6 +1341,12 @@ ALTER TABLE `match_event`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `match_event_type`
+--
+ALTER TABLE `match_event_type`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `match_player_statistics`
 --
 ALTER TABLE `match_player_statistics`
@@ -1611,6 +1645,12 @@ ALTER TABLE `whoscored_match_event`
 -- Indexes for table `whoscored_match_event_match_event`
 --
 ALTER TABLE `whoscored_match_event_match_event`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `whoscored_match_event_type`
+--
+ALTER TABLE `whoscored_match_event_type`
   ADD PRIMARY KEY (`id`);
 
 --

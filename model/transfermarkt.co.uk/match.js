@@ -249,8 +249,6 @@ Match.insert_match_by_competition = function(content){
 				});
 				return trows.reduce(function(sequence,row){
 					var td = $(row).children(),
-					date = td.eq(0).find('a').attr('href').replace(/\S+(\d{4}\-\d{2}\-\d{2})/,'$1') || date,
-					time = trim(td.eq(1).text()) || time,
 					transfermarkt_team1_id = td.eq(2).find('a').attr('href').replace(/\S+?\/(\d{1,})\/\S+?$/,'$1'),
 					transfermarkt_team2_id = td.eq(6).find('a').attr('href').replace(/\S+?\/(\d{1,})\/\S+?$/,'$1'),
 					team1_name = td.eq(3).find('img').attr('title'),
@@ -261,9 +259,13 @@ Match.insert_match_by_competition = function(content){
 					result = td.eq(4).find('a'),
 					result = result.length ? result.text() : td.eq(4).text().replace(/\s?(\d{1,2}\:\d{1,2})\s?$/,"$1"),
 					score1,
-					score2,
+					score2;
+					date = td.eq(0).find('a').attr('href').replace(/\S+(\d{4}\-\d{2}\-\d{2})/,'$1') || date;
+					time = trim(td.eq(1).text()) == "" ? time : trim(td.eq(1).text());
 					//play_at = moment([date,time].join(' ')).format('YYYY-MM-DD HH:mm:ss');
-					play_at = moment.tz([date,time].join(' '), "YYYY-MM-DD h:mm A", "Europe/Luxembourg").utc().format('YYYY-MM-DD HH:mm');
+					//console.log('-----'+(trim(td.eq(1).text()) == "")+'||||||'+[date,time,moment.tz([date,time].join(' '), "YYYY-MM-DD h:mm A", "Europe/London").utc().format('YYYY-MM-DD HH:mm')].join(' '))
+					var play_at = moment.tz([date,time].join(' '), "YYYY-MM-DD h:mm A", "Europe/London").utc().format('YYYY-MM-DD HH:mm');
+					//console.log([date,time,moment.tz([date,time].join(' '), "YYYY-MM-DD h:mm A", "Europe/London").utc().format('YYYY-MM-DD HH:mm')].join(' '))
 					if(/\d{1,2}\:\d{1,2}/.test(result)){
 						result = result.split(':');
 						score1 = result[0];

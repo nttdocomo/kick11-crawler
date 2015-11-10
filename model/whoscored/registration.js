@@ -37,7 +37,7 @@ Model.get_registration = function(matchCentre2, whoscored_match_id){
     var away = matchCentre2.away,
     home = matchCentre2.home,
     players = away.players.concat(home.players);
-    return excute(mysql.format('SELECT match_id FROM `whoscored_match` WHERE whoscored_match_id = ? LIMIT 1',[match_id])).then(function(row){
+    return excute(mysql.format('SELECT match_id FROM `whoscored_match_match` WHERE whoscored_match_id = ? LIMIT 1',[whoscored_match_id])).then(function(row){
         var match_id;
         if(row.length){
             match_id = row[0].match_id;
@@ -81,7 +81,7 @@ Model.get_registration = function(matchCentre2, whoscored_match_id){
                     return Promise.resolve();
                 })
             }
-            return 
+            return promise
         },Promise.resolve())
     })
 };

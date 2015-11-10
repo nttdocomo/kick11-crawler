@@ -63,6 +63,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
                 next();
             }).catch(function(err){
                 console.log(err)
+                next();
             })
         }
         if(/^\/MatchesFeed\/(\d{1,})\/MatchCentre2$/.test(queueItem.path)){

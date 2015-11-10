@@ -17,7 +17,7 @@ crawler = new Crawler("www.transfermarkt.co.uk", "/");
 //crawler.discoverResources = false;
 crawler.useProxy = true;
 crawler.proxyHostname = '127.0.0.1';
-crawler.proxyPort = '1080';
+crawler.proxyPort = '11080';
 crawler.maxConcurrency = 1;
 crawler.interval = 600;
 crawler.listenerTTL = 100000;
@@ -119,6 +119,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 //crawler.queueURL(host + '/luis-henrique/profil/spieler/379877');
 //crawler.queueURL(host + '/premier-league/startseite/wettbewerb/GB1');
 //crawler.queueURL(host + '/championship/startseite/wettbewerb/GB2');
+//crawler.queueURL(host + '//premier-league/gesamtspielplan/wettbewerb/GB1/saison_id/2015');
 crawler.queueURL(host + '/');
 crawler.start();
 //crawler.queue.add('http', 'www.transfermarkt.co.uk', '20', '/');
