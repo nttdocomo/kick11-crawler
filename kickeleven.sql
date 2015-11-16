@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: 2015-11-10 18:34:45
+-- Generation Time: 2015-11-16 18:35:28
 -- 服务器版本： 5.6.21
 -- PHP Version: 5.6.2
 
@@ -233,12 +233,15 @@ CREATE TABLE IF NOT EXISTS `match_event_type` (
 
 CREATE TABLE IF NOT EXISTS `match_player_statistics` (
   `id` int(10) unsigned NOT NULL,
+  `wSName` varchar(30) DEFAULT NULL,
   `playerId` int(10) DEFAULT NULL,
-  `age` tinyint(1) unsigned DEFAULT '0',
+  `age` tinyint(3) unsigned DEFAULT '0',
   `isManOfTheMatch` tinyint(1) DEFAULT '0',
   `isActive` tinyint(1) DEFAULT '0',
-  `positionText` char(3) DEFAULT NULL,
+  `isOpta` tinyint(1) DEFAULT '0',
+  `positionText` varchar(30) DEFAULT NULL,
   `teamId` smallint(5) unsigned DEFAULT '0',
+  `regionCode` varchar(30) DEFAULT NULL,
   `rating` float(4,2) DEFAULT NULL,
   `positionOrder` tinyint(4) DEFAULT '0',
   `shotOnTarget` tinyint(4) DEFAULT '0',
@@ -274,8 +277,8 @@ CREATE TABLE IF NOT EXISTS `match_player_statistics` (
   `totalPasses` tinyint(4) DEFAULT '0',
   `passSuccessInMatch` float(5,2) DEFAULT NULL,
   `matchId` int(11) NOT NULL,
-  `created_at` datetime DEFAULT NULL,
-  `updated_at` datetime DEFAULT NULL
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -1027,7 +1030,6 @@ CREATE TABLE IF NOT EXISTS `whoscored_match_match` (
 
 CREATE TABLE IF NOT EXISTS `whoscored_match_player_statistics` (
   `id` int(10) unsigned NOT NULL,
-  `name` varchar(30) DEFAULT NULL,
   `wSName` varchar(30) DEFAULT NULL,
   `playerId` int(10) DEFAULT NULL,
   `age` tinyint(3) unsigned DEFAULT '0',

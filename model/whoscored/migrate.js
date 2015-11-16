@@ -5,3 +5,5 @@
 
 //建立whoscored_player和player的关系
 INSERT INTO `whoscored_player_player` (whoscored_player_id,player_id) SELECT whoscored_player.id,transfermarkt_player_player.player_id FROM `whoscored_player` JOIN `player` ON player.name = whoscored_player.name JOIN `transfermarkt_player_player` ON transfermarkt_player_player.player_id = player.id WHERE whoscored_player.id NOT IN (SELECT whoscored_player_id FROM `whoscored_player_player`) AND transfermarkt_player_player.transfermarkt_player_id != 214906
+
+SELECT whoscored_player.id,whoscored_player.name,player.name,transfermarkt_player_player.player_id,transfermarkt_player_player.transfermarkt_player_id FROM `whoscored_player` JOIN `player` ON player.name = whoscored_player.name JOIN `transfermarkt_player_player` ON transfermarkt_player_player.player_id = player.id WHERE whoscored_player.id NOT IN (SELECT whoscored_player_id FROM `whoscored_player_player`) AND transfermarkt_player_player.transfermarkt_player_id != 214906
