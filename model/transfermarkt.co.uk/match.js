@@ -7,6 +7,8 @@ moment = require('moment-timezone'),
 mysql = require('mysql'),
 _ = require('underscore'),
 difference = require('../../utils').difference,
+Season = require('./season'),
+Event = require('./event'),
 Model = require('../../model'),
 trim = require('../../utils').trim,
 Match = Model.extend({
@@ -59,9 +61,8 @@ Match.save_from_whoscored = function(data){
 		return Promise.resolve()
 	});
 };
-Match.insert_match_by_competition = function(content){
-	var $ = cheerio.load(content),
-	tables = $('#main .six.columns:not(.mobile-four)'),
+Match.insert_match_by_competition = function($){
+	var tables = $('#main .six.columns:not(.mobile-four)'),
 	year = $("select[name='saison_id']").find("option:selected").val(),
 	name = $("select[name='wettbewerb_select_breadcrumb']").find("option:selected").text(),
 	nation_id = $("select[name='land_select_breadcrumb']").find("option:selected").val(),
@@ -123,80 +124,16 @@ Match.insert_match_by_competition = function(content){
 			})
 		}
 	}).then(function(row){
-		return excute(mysql.format('SELECT id FROM `transfermarkt_season` WHERE title = ?',[title])).then(function(row){
-			if(!row.length){
-    			return excute(mysql.format('INSERT INTO `transfermarkt_season` SET ?',{
-    				year : year,
-    				title : title
-    			})).then(function(result){
-    				transfermarkt_season_id = result.insertId;
-    				return excute(mysql.format('INSERT INTO `season` SET ?',{
-	    				year:year,
-	    				title:title
-	    			})).then(function(season){
-						season_id = season.insertId;
-						return excute(mysql.format('INSERT INTO `transfermarkt_season_season` SET ?',{
-							transfermarkt_season_id:transfermarkt_season_id,
-							season_id:season_id
-						}))
-					})
-    			})
-    		} else {
-    			return excute(mysql.format('SELECT * FROM `transfermarkt_season_season` WHERE transfermarkt_season_id = ?',[row[0].id])).then(function(row){
-    				transfermarkt_season_id = row[0].transfermarkt_season_id;
-    				season_id = row[0].season_id;
-    			})
-    		}
-		})
-	}).then(function(){
-		return excute(mysql.format('SELECT id FROM transfermarkt_event WHERE competition_id = ? AND season_id = ? LIMIT 1',[transfermarkt_competition_id,transfermarkt_season_id])).then(function(row){
-			if(!row.length){
-    			return excute(mysql.format('INSERT INTO `transfermarkt_event` SET ?',{
-    				competition_id : transfermarkt_competition_id,
-    				season_id : transfermarkt_season_id
-    			})).then(function(result){
-    				transfermarkt_event_id = result.insertId;
-    				if(competition_id){
-	    				return excute(mysql.format('INSERT INTO `event` SET ?',{
-		    				competition_id:competition_id,
-		    				season_id:season_id
-		    			})).then(function(season){
-							event_id = season.insertId;
-							return excute(mysql.format('INSERT INTO `transfermarkt_event_event` SET ?',{
-								transfermarkt_event_id:transfermarkt_event_id,
-								event_id:event_id
-							}))
-						})
-    				} else {
-    					return Promise.resolve();
-    				}
-    			})
-    		} else {
-    			transfermarkt_event_id = row[0].id;
-    			return excute(mysql.format('SELECT * FROM `transfermarkt_event_event` WHERE transfermarkt_event_id = ?',[transfermarkt_event_id])).then(function(row){
-    				if(row.length){
-    					event_id = row[0].event_id;
-    				} else {
-	    				if(competition_id){
-		    				return excute(mysql.format('INSERT INTO `event` SET ?',{
-			    				competition_id:competition_id,
-			    				season_id:season_id
-			    			})).then(function(season){
-								event_id = season.insertId;
-								return excute(mysql.format('INSERT INTO `transfermarkt_event_event` SET ?',{
-									transfermarkt_event_id:transfermarkt_event_id,
-									event_id:event_id
-								}))
-							})
-	    				} else {
-	    					return Promise.resolve();
-	    				}
-    				}
-    			})
-    		}
-		})
-	}).then(function(){
-	    var matchdays = [];
+		return Season.get_season($)
+	}).then(function(season){
+		return Event.get_event(season,{
+			transfermarkt_competition_id:transfermarkt_competition_id,
+			competition_id:competition_id
+		});
+	}).then(function(event){
+	    var matchdays = [],
+	    transfermarkt_event_id = event.transfermarkt_event_id,
+	    event_id = event.event_id;
 	    tables.each(function(i,el){
 	    	matchdays.push(el);
 	    });

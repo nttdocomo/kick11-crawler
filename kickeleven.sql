@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: 2015-11-16 18:35:28
+-- Generation Time: 2015-11-20 18:57:35
 -- 服务器版本： 5.6.21
 -- PHP Version: 5.6.2
 
@@ -140,13 +140,15 @@ CREATE TABLE IF NOT EXISTS `event` (
 -- --------------------------------------------------------
 
 --
--- 表的结构 `events_teams`
+-- 表的结构 `event_team`
 --
 
-CREATE TABLE IF NOT EXISTS `events_teams` (
+CREATE TABLE IF NOT EXISTS `event_team` (
   `id` int(10) unsigned NOT NULL,
   `event_id` int(10) unsigned NOT NULL,
-  `team_id` int(10) unsigned NOT NULL
+  `team_id` int(10) unsigned NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -656,6 +658,20 @@ CREATE TABLE IF NOT EXISTS `transfermarkt_event_event` (
   `id` int(10) unsigned NOT NULL,
   `transfermarkt_event_id` int(10) unsigned NOT NULL,
   `event_id` int(10) unsigned NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- 表的结构 `transfermarkt_event_team`
+--
+
+CREATE TABLE IF NOT EXISTS `transfermarkt_event_team` (
+  `id` int(11) unsigned NOT NULL,
+  `event_id` int(11) unsigned NOT NULL,
+  `team_id` int(11) unsigned NOT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -1313,9 +1329,9 @@ ALTER TABLE `event`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `events_teams`
+-- Indexes for table `event_team`
 --
-ALTER TABLE `events_teams`
+ALTER TABLE `event_team`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -1512,6 +1528,12 @@ ALTER TABLE `transfermarkt_event`
 -- Indexes for table `transfermarkt_event_event`
 --
 ALTER TABLE `transfermarkt_event_event`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `transfermarkt_event_team`
+--
+ALTER TABLE `transfermarkt_event_team`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -1789,9 +1811,9 @@ ALTER TABLE `continent`
 ALTER TABLE `event`
   MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 --
--- AUTO_INCREMENT for table `events_teams`
+-- AUTO_INCREMENT for table `event_team`
 --
-ALTER TABLE `events_teams`
+ALTER TABLE `event_team`
   MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `fm_player`
@@ -1933,6 +1955,11 @@ ALTER TABLE `transfermarkt_event`
 --
 ALTER TABLE `transfermarkt_event_event`
   MODIFY `id` int(10) unsigned NOT NULL AUTO_INCREMENT;
+--
+-- AUTO_INCREMENT for table `transfermarkt_event_team`
+--
+ALTER TABLE `transfermarkt_event_team`
+  MODIFY `id` int(11) unsigned NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `transfermarkt_match`
 --
