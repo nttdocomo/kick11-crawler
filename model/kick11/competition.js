@@ -23,12 +23,17 @@ Model.table = 'transfermarkt_competition';
 Model.get_competition_from_transfermarkt = function(name,code,nation_id){
 	var transfermarkt_competition_id,
 	competition_id;
-	return excute(mysql.format('SELECT nation_id FROM `transfermarkt_nation_nation` WHERE transfermarkt_nation_id = ? LIMIT 1',[nation_id])).then(function(row){
-		return excute(mysql.format('INSERT INTO `competition` SET ?',{
-			name:name,
-			code:code,
-			nation_id:row[0].nation_id
-		}))
+	return excute(mysql.format('SELECT 1 FROM `competition` WHERE code = ? LIMIT 1',[code])).then(function(row){
+		if(!row.length){
+			return excute(mysql.format('SELECT nation_id FROM `transfermarkt_nation_nation` WHERE transfermarkt_nation_id = ? LIMIT 1',[nation_id])).then(function(row){
+				return excute(mysql.format('INSERT INTO `competition` SET ?',{
+					name:name,
+					code:code,
+					nation_id:row[0].nation_id
+				}))
+			})
+		}
+		return Promise.resolve();
 	})
 }
 module.exports = Model;

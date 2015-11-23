@@ -43,28 +43,29 @@ Transfer.get_trasfer_from_korrektur = function($){
 			'id':id,
 			'contract_period':contract_period
 		})
-	    return sequence.then(function(){
-	    	return transfer.save()
-	    }).then(function(){
-	    	return excute(mysql.format('SELECT player_id FROM transfermarkt_player_player WHERE transfermarkt_player_id = ? LIMIT 1',[player_id]))
-	    }).then(function(row){
-	    	player_id = row[0].player_id;
-	    	return excute(mysql.format('SELECT team_id FROM transfermarkt_team_team WHERE transfermarkt_team_id = ? LIMIT 1',[releasing_team_id]))
-	    }).then(function(row){
-	    	releasing_team_id = row[0].team_id;
-	    	return excute(mysql.format('SELECT team_id FROM transfermarkt_team_team WHERE transfermarkt_team_id = ? LIMIT 1',[taking_team_id]))
-	    }).then(function(row){
-	    	taking_team_id = row[0].team_id;
-	    	return excute(mysql.format('SELECT 1 FROM transfer WHERE season = ? AND player_id = ? AND releasing_team_id = ? AND taking_team_id = ? LIMIT 1',[season,player_id,releasing_team_id,taking_team_id]))
-	    }).then(function(row){
-	    	var kick11transfer;
-    		kick11transfer = new Kick11Transfer(_.extend(row[0],{
-				'contract_period':contract_period
-			}))
-			return kick11transfer.save();
-	    }).catch(function(){
-	    	return Promise.resolve()
-	    });
+		console.log('transfer_sum:'+transfer_sum)
+    return sequence.then(function(){
+    	return transfer.save()
+    }).then(function(){
+    	return excute(mysql.format('SELECT player_id FROM transfermarkt_player_player WHERE transfermarkt_player_id = ? LIMIT 1',[player_id]))
+    }).then(function(row){
+    	player_id = row[0].player_id;
+    	return excute(mysql.format('SELECT team_id FROM transfermarkt_team_team WHERE transfermarkt_team_id = ? LIMIT 1',[releasing_team_id]))
+    }).then(function(row){
+    	releasing_team_id = row[0].team_id;
+    	return excute(mysql.format('SELECT team_id FROM transfermarkt_team_team WHERE transfermarkt_team_id = ? LIMIT 1',[taking_team_id]))
+    }).then(function(row){
+    	taking_team_id = row[0].team_id;
+    	return excute(mysql.format('SELECT 1 FROM transfer WHERE season = ? AND player_id = ? AND releasing_team_id = ? AND taking_team_id = ? LIMIT 1',[season,player_id,releasing_team_id,taking_team_id]))
+    }).then(function(row){
+    	var kick11transfer;
+  		kick11transfer = new Kick11Transfer(_.extend(row[0],{
+			'contract_period':contract_period
+		}))
+		return kick11transfer.save();
+    }).catch(function(){
+    	return Promise.resolve()
+    });
 	},Promise.resolve())
 };
 Transfer.get_trasfer_from_transfers = function($){
@@ -79,21 +80,19 @@ Transfer.get_trasfer_from_transfers = function($){
 		player_id = match[1],
 		transfer_date = moment($el.children().eq(1).text(),'MMM D, YYYY'),
 		season = transfer_date.year(),
-		loan = $el.children().eq(11).text(),
+		//loan = $el.children().eq(11).text(),
 		releasing_team_id = $el.children().eq(5).find('a').attr('href').replace(/^\/\S+?\/transfers\/verein\/(\d+?)(\/\S+)?$/,'$1'),
 		releasing_team_name = $el.children().eq(5).find('a').attr('title'),
 		taking_team_id = $el.children().eq(9).find('a').attr('href').replace(/^\/\S+?\/transfers\/verein\/(\d+?)(\/\S+)?$/,'$1'),
 		taking_team_name = $el.children().eq(9).find('a').attr('title'),
-		transfer_sum = $el.children().eq(12).text(),
+		//transfer_sum = $el.children().eq(12).text(),
 		transfer = new Transfer({
 			'id':id,
 			'season':season,
 			'transfer_date':transfer_date.format('YYYY-MM-DD'),
-			'transfer_sum':transfer_sum,
 			'player_id':player_id,
-    		'loan':loan,
-    		'releasing_team_id':releasing_team_id,
-    		'taking_team_id':taking_team_id
+  		'releasing_team_id':releasing_team_id,
+  		'taking_team_id':taking_team_id
 		})
 	    return sequence.then(function(){
 	    	return transfer.save();
@@ -116,10 +115,8 @@ Transfer.get_trasfer_from_transfers = function($){
 	    	if(!row.length){
 	    		return excute(mysql.format('INSERT INTO `transfer` SET ?',{
 	    			'season':season,
-					'transfer_date':transfer_date.format('YYYY-MM-DD'),
-					'transfer_sum':transfer_sum,
-					'player_id':player_id,
-		    		'loan':loan,
+						'transfer_date':transfer_date.format('YYYY-MM-DD'),
+						'player_id':player_id,
 		    		'releasing_team_id':releasing_team_id,
 		    		'taking_team_id':taking_team_id
 	    		})).then(function(result){
@@ -131,9 +128,9 @@ Transfer.get_trasfer_from_transfers = function($){
 	    	} else {
 	    		return excute(mysql.format('UPDATE `transfer` SET ? WHERE id = ?',[{
 	    			'season':season,
-					'transfer_date':transfer_date.format('YYYY-MM-DD'),
-					'transfer_sum':transfer_sum,
-					'player_id':player_id,
+						'transfer_date':transfer_date.format('YYYY-MM-DD'),
+						'transfer_sum':transfer_sum,
+						'player_id':player_id,
 		    		'loan':loan,
 		    		'releasing_team_id':releasing_team_id,
 		    		'taking_team_id':taking_team_id
