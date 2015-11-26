@@ -152,7 +152,21 @@ Match.insert_match_by_competition = function($){
 					if(round.length){
 						transfermarkt_round_id = round[0].id;
 						return excute(mysql.format('SELECT * FROM `transfermarkt_round_round` WHERE transfermarkt_round_id = ?',[round[0].id])).then(function(row){
+							if(!row.length){
+								return excute(mysql.format('INSERT INTO `transfermarkt_round` SET ?',{
+									event_id:transfermarkt_event_id,
+									name:matchday,
+									round:pos
+								})).then(function(result){
+									round_id = result.insertId;
+									return excute(mysql.format('INSERT INTO `transfermarkt_round_round` SET ?',{
+										transfermarkt_round_id:transfermarkt_round_id,
+										round_id:round_id
+									}))
+								})
+							}
 							round_id = row[0].round_id;
+							return Promise.resolve();
 						})
 					} else {
 						return excute(mysql.format('INSERT INTO `transfermarkt_round` SET ?',{

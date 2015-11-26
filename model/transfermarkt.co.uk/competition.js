@@ -47,8 +47,8 @@ Model.get_competition = function($){
 			})
 		} else {
 			transfermarkt_competition_id = row[0].id;
-			return Competition.get_competition_from_transfermarkt(name,code,nation_id).then(function(competition){
-				competition_id = competition.insertId;
+			return Competition.get_competition_from_transfermarkt(name,code,nation_id).then(function(insertId){
+				competition_id = insertId;
 				return excute(mysql.format('SELECT 1 FROM `transfermarkt_competition_competition` WHERE transfermarkt_competition_id = ? LIMIT 1',[transfermarkt_competition_id]))
 			}).then(function(row){
 				if(!row.length){

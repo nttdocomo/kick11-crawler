@@ -37,12 +37,12 @@ Transfer.get_trasfer_from_korrektur = function($){
 		transfer_sum = $el.next().children().eq(7).find('input').val(),
 		contract_period = [$el.next().next().children().eq(0).find('input').eq(2).val(),$el.next().next().children().eq(0).find('input').eq(1).val(),$el.next().next().children().eq(0).find('input').eq(0).val()].join('-'),
 		transfer_date = /\d{2}\.\d{2}\.\d{4}/.test(transfer_date) ? transfer_date.replace(/(\d{2})\.(\d{2})\.(\d{4})/,'$3-$2-$1') : moment(month + ' 1,' + season).format('YYYY-MM-DD'),
-		transfer_sum = /\d/.test(transfer_sum) ? transfer_sum.replace(/\./g,'') : 0;
 		contract_period = /\d{4}\-\d{2}\-\d{2}/.test(contract_period) ? contract_period : undefined,
 		transfer = new Transfer({
 			'id':id,
 			'contract_period':contract_period
 		})
+		transfer_sum = /\d/.test(transfer_sum) ? transfer_sum.replace(/\./g,'') : 0;
 		console.log('transfer_sum:'+transfer_sum)
     return sequence.then(function(){
     	return transfer.save()
@@ -129,9 +129,9 @@ Transfer.get_trasfer_from_transfers = function($){
 	    		return excute(mysql.format('UPDATE `transfer` SET ? WHERE id = ?',[{
 	    			'season':season,
 						'transfer_date':transfer_date.format('YYYY-MM-DD'),
-						'transfer_sum':transfer_sum,
+						//'transfer_sum':transfer_sum,
 						'player_id':player_id,
-		    		'loan':loan,
+		    		//'loan':loan,
 		    		'releasing_team_id':releasing_team_id,
 		    		'taking_team_id':taking_team_id
 	    		},row[0].transfer_id]))

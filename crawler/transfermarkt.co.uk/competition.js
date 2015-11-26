@@ -79,11 +79,11 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
   };
   if(/^\/\S+\/startseite\/wettbewerb\/[\w|\d]+?(\/saison_id\/\d{4})?$/.test(queueItem.path)){
   	next = this.wait();
-      $ = cheerio.load(decoder.write(responseBuffer));
-      $('#yw1 td:first-child > [href*="startseite/verein"]').each(function(i,el){
-          crawler.queueURL(host + $(el).attr('href'));
-      })
-      crawler.queueURL(host + queueItem.path.replace(/startseite/,'gesamtspielplan'));
+    $ = cheerio.load(decoder.write(responseBuffer));
+    $('#yw1 td:first-child > [href*="startseite/verein"]').each(function(i,el){
+        crawler.queueURL(host + $(el).attr('href'));
+    })
+    crawler.queueURL(host + queueItem.path.replace(/startseite/,'gesamtspielplan'));
   	Nation.get_nation_by_competition($).then(function(){
     	return Competition.get_competition($)
   	}).then(function(){
@@ -99,7 +99,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
   };*/
 }).on('complete',function(){
 	console.log('complete:'+crawler.queue.complete());
-    console.log('errors:'+crawler.queue.errors());
+  console.log('errors:'+crawler.queue.errors());
 	process.exit();
 }).on('fetcherror',function(queueItem, response){
 	console.log('fetcherror ' + queueItem.path)
@@ -115,7 +115,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 	if((/^\/\S+?\/startseite\/verein\/\d+?\/\S*$/i.test(parsedURL.path) ||
 	/^\/\S+\/profil\/spieler\/\d{1,9}$/.test(parsedURL.path) ||
 	/^\/\S+\/korrektur\/spieler\/\d{1,6}$/.test(parsedURL.path) ||
-	/^\/\S+\/gesamtspielplan\/wettbewerb\/[\w|\d]+?(\/saison_id\/\d{4})?$/.test(parsedURL.path) ||
+	/^\/\S+\/gesamtspielplan\/wettbewerb\/[\w|\d]+?(\/saison_id\/\d{4})*$/.test(parsedURL.path) ||
 	/^\/\S+\/startseite\/wettbewerb\/[\w|\d]+?(\/saison_id\/\d{4})?$/i.test(parsedURL.path)/* ||
 	/^\/\S+\/transfers\/spieler\/\d{1,6}$/.test(parsedURL.path)*/) && !/^\/end\-of\-career\/startseite\/verein\/\d+?$/.test(parsedURL.path) && !/^\/(unattached|unknown|\-tm)\/startseite\/verein\/\d+?$/.test(parsedURL.path)){
 		if(fetchedUrls.indexOf(parsedURL.path) == -1){//if url not in fetchedUrl
@@ -128,5 +128,5 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 	///unknown/startseite/verein/75
 });
 crawler.queueURL(host + '/premier-league/startseite/wettbewerb/GB1');
-//crawler.queueURL(host + '/jumplist/startseite/wettbewerb/GB1');
+//crawler.queueURL(host + '/premier-league/gesamtspielplan/wettbewerb/GB1');
 crawler.start();
