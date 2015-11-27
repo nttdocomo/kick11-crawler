@@ -12,7 +12,7 @@ MatchPlayerStatistic = require('../../model/kick11/statistic'),
 _ = require('underscore'),
 input_date = process.argv[2],
 host = 'http://www.whoscored.com',
-crawler = require('./test_matchesfeedconfig');
+crawler = require('./matchesfeedconfig');
 var date = [],
 condition = 0,
 now = moment.utc(),
@@ -71,11 +71,11 @@ excute('SELECT * FROM `whoscored_match` WHERE id NOT IN (SELECT whoscored_match_
     console.log(err)
 })*/.then(function(){
     //crawler.queueURL(host + '/MatchesFeed/959599/MatchCentre2');
-    //crawler.queueURL(host + '/matchesfeed/?d=20151108');
+    crawler.queueURL(host + '/matchesfeed/?d=20151108');
     //crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=summary&subcategory=all&statsAccumulationType=0&isCurrent=true&teamIds=7121&matchId=1017566');
-    //crawler.start();
+    crawler.start();
     console.log('complete')
-    process.exit()
+    //process.exit()
 })
 /*crawler.queueURL(host + '/Regions/81/Tournaments/3');
 crawler.start();*/

@@ -37,8 +37,8 @@ Model.get_competition = function($){
 				nation_id:nation_id
 			})).then(function(result){
 				transfermarkt_competition_id = result.insertId;
-				return Competition.get_competition_from_transfermarkt(name,code,nation_id).then(function(competition){
-					competition_id = competition.insertId;
+				return Competition.get_competition_from_transfermarkt(name,code,nation_id).then(function(insertId){
+					competition_id = insertId;
 					return excute(mysql.format('INSERT INTO `transfermarkt_competition_competition` SET ?',{
 						transfermarkt_competition_id:transfermarkt_competition_id,
 						competition_id:competition_id
