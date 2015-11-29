@@ -104,8 +104,8 @@ var getMatchCentrePlayerStatistics = function(queueItem,content){
                             })
                         }
                         if(typeof(playerTableStat[column]) == 'number'){
-                            return excute('ALTER TABLE whoscored_match_player_statistics ADD '+column+' smallint UNSIGNED DEFAULT 0').then(function(){
-                                excute('ALTER TABLE match_player_statistics ADD '+column+' smallint UNSIGNED DEFAULT 0')
+                            return excute('ALTER TABLE whoscored_match_player_statistics ADD '+column+' tinyint UNSIGNED DEFAULT 0').then(function(){
+                                excute('ALTER TABLE match_player_statistics ADD '+column+' tinyint UNSIGNED DEFAULT 0')
                             })
                         }
                         if(typeof(playerTableStat[column]) == 'boolean'){

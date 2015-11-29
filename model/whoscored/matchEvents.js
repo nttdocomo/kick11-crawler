@@ -41,7 +41,8 @@ Event.get_events = function(matchCentre2, match_id){
             player_id = event.playerId,
             player_name = playerIdNameDictionary[player_id],
             period = event.period,
-            event_type_value = event.type.value
+            event_type_value = event.type.value,
+            match_event_type_id,
             offset = 0;
             if(period.value == 1 && minute > 45){
                 offset = minute - 45
@@ -67,22 +68,26 @@ Event.get_events = function(matchCentre2, match_id){
             }).then(function(){
                 return match_event.save();
             }).then(function(){
-                return excute(mysql.format('SELECT id FROM `whoscored_player_player` WHERE whoscored_player_id = ? LIMIT 1',[player_id]))
+                return excute(mysql.format('SELECT player_id FROM `whoscored_player_player` WHERE whoscored_player_id = ? LIMIT 1',[player_id]))
                 //return excute(mysql.format('SELECT id FROM `match_event` WHERE whoscored_match_event_id = ? LIMIT 1',[eventId]))
             }).then(function(row){
-                player_id = row[0].id;
-                return excute(mysql.format('SELECT id FROM `whoscored_team_team` WHERE whoscored_team_id = ? LIMIT 1',[team_id]))
+                player_id = row[0].player_id;
+                return excute(mysql.format('SELECT team_id FROM `whoscored_team_team` WHERE whoscored_team_id = ? LIMIT 1',[team_id]))
             }).then(function(row){
-                team_id = row[0].id;
-                return excute(mysql.format('SELECT id FROM `whoscored_match_match` WHERE whoscored_match_id = ? LIMIT 1',[match_id]))
+                team_id = row[0].team_id;
+                return excute(mysql.format('SELECT match_id FROM `whoscored_match_match` WHERE whoscored_match_id = ? LIMIT 1',[match_id]))
             }).then(function(row){
-                match_id = row[0].id;
+                match_id = row[0].match_id;
+                return excute(mysql.format('SELECT match_event_type_id FROM `whoscored_match_event_type_relation` WHERE player_id = ? AND team_id = ? AND match_id = ? LIMIT 1',[player_id,team_id,match_id]))
+            }).then(function(row){
+                match_event_type_id = row[0].match_event_type_id;
                 return excute(mysql.format('SELECT id FROM `match_event` WHERE player_id = ? AND team_id = ? AND match_id = ? LIMIT 1',[player_id,team_id,match_id]))
             }).then(function(row){
                 if(!row.length){
                     data.player_id = player_id;
                     data.match_id = match_id;
                     data.team_id = team_id;
+                    data.event_type_id = match_event_type_id;
                     return excute(mysql.format('INSERT INTO `match_event` SET ?',data)).then(function(result){
                         return result.insertId;
                     })

@@ -26,7 +26,7 @@ module.exports = function(queueItem, matchesfeed, response, crawler){
         return get_tournaments(matchesfeed[1]);
     }).then(function(){
         console.log('get tournaments complete!');
-        return matchesfeed[2].reduce(function(sequence, match){
+        return matchesfeed[2].reduce(function(sequence, match,i){
             var match_id = match[1],
             //console.log(match_id)
             stage_id = match[0],
@@ -41,10 +41,14 @@ module.exports = function(queueItem, matchesfeed, response, crawler){
                 'play_at':play_at,
                 'stage_id':stage_id
             };
-            if(score != 'vs'){
-                values.score1 = score.split(/\s\:\s/)[0];
-                values.score2 = score.split(/\s\:\s/)[1];
+            if(score == 'vs'){
+              return sequence
             }
+            if(match[17] == 'AET'){
+              score = score.replace(/\*/g,'');
+            }
+            values.score1 = score.split(/\s\:\s/)[0];
+            values.score2 = score.split(/\s\:\s/)[1];
             //var whoscoredMatch = new WhoscoredMatch(values);
             var team1 = new Team({
                 id : team1_id,
@@ -53,6 +57,9 @@ module.exports = function(queueItem, matchesfeed, response, crawler){
                 id : team2_id,
                 name : match[9]
             });
+            if(!values.score1 && !values.score2){
+              console.log(i)
+            }
             var promise = sequence.then(function(){
                 return Match.get_match(values)
                 //return Promise.resolve();
@@ -67,12 +74,12 @@ module.exports = function(queueItem, matchesfeed, response, crawler){
             });
             //match[14]是否分出胜负,match[15]是否有matchreport
             if((match[17] == 'FT' || match[17] == 'AET' || match[17] == 'PEN') && match[15]){
-                console.log([match[17],match[15]].join('----'))
+                //console.log([match[17],match[15]].join('----'))
                 promise.then(function(){
                     //console.log(mysql.format('SELECT 1 FROM `whoscored_registration` WHERE match_id = ? LIMIT 1',[match_id]))
                     return excute(mysql.format('SELECT 1 FROM `whoscored_match_registration` WHERE match_id = ? LIMIT 1',[match_id]))
                 }).then(function(row){
-                    console.log([match[17],match[15]].join('||||'))
+                    //console.log([match[17],match[15]].join('||||'))
                     if(!row.length){
                         crawler.queueURL(host + '/MatchesFeed/'+match_id+'/MatchCentre2');
                     }
@@ -100,6 +107,7 @@ module.exports = function(queueItem, matchesfeed, response, crawler){
                 });
             }
             return promise.catch(function(err){
+                console.log(i)
                 console.log(err)
                 return Promise.resolve()
             });
