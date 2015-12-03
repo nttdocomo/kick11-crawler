@@ -18,7 +18,7 @@ getStatisticsFeed = require('./getStatisticsFeed'),
 //migrate = require('../../migrate/whoscored/migrate').migrate,
 _ = require('underscore'),
 host = 'http://www.whoscored.com',
-crawler = new Crawler("www.whoscored.com", "/");
+crawler = require('./crawler');
 crawler.maxConcurrency = 1;
 crawler.interval = 5000;
 crawler.discoverResources = false;
@@ -83,6 +83,12 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
         if(/^\/Regions\/\d+?\/Tournaments\/\d+?$/.test(queueItem.path)){
             next = this.wait();
             Event.get_seasons_by_tournament(cheerio.load(decoder.write(responseBuffer)),queueItem.path.replace(/^\/Regions\/\d+?\/Tournaments\/(\d+?)$/,'$1')).then(function(){
+                next();
+            })
+        }
+        if(/^\/Players\/\d+?$/.test(queueItem.path)){
+            next = this.wait();
+            Player.get_player_info(cheerio.load(decoder.write(responseBuffer))).then(function(){
                 next();
             })
         }

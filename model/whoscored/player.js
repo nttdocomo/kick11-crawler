@@ -8,6 +8,8 @@ moment = require('moment'),
 moment_tz = require('moment-timezone'),
 difference = require('../../crawler/transfermarkt.co.uk/utils').difference,
 Model = require('../../model'),
+crawler = require('./crawler'),
+host = 'http://www.whoscored.com',
 Player = Model.extend({
     tableName:'whoscored_player',
     needToUpdate:function(data,row){
@@ -49,6 +51,7 @@ Player.get_player_from_matchcenter = function(matchCentre2){
     home = matchCentre2.home,
     players = home.players.concat(away.players);
     return players.reduce(function(sequence, player){
+        crawler.queueURL(host + '/Players/'+player.playerId);
         var data = {
             id :player.playerId,
             name:player.name,
@@ -60,5 +63,9 @@ Player.get_player_from_matchcenter = function(matchCentre2){
             return person.save();
         })
     },Promise.resolve())
+}
+Player.get_player_info = function($){
+    var date_of_birth = $("dt:contains('Age:')").next().find('i').text(),
+    weight = $("dt:contains('Weight:')").next().text();
 }
 module.exports = Player;
