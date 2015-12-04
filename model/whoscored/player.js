@@ -8,7 +8,7 @@ moment = require('moment'),
 moment_tz = require('moment-timezone'),
 difference = require('../../crawler/transfermarkt.co.uk/utils').difference,
 Model = require('../../model'),
-crawler = require('./crawler'),
+crawler = require('../../crawler/whoscored/crawler'),
 host = 'http://www.whoscored.com',
 Player = Model.extend({
     tableName:'whoscored_player',
