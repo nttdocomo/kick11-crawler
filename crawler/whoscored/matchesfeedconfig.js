@@ -88,7 +88,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
         }
         if(/^\/Players\/\d+?$/.test(queueItem.path)){
             next = this.wait();
-            Player.get_player_info(cheerio.load(decoder.write(responseBuffer))).then(function(){
+            Player.get_player_info(cheerio.load(decoder.write(responseBuffer)),queueItem.path.replace(/^\/Players\/(\d+?)$/,'$1')).then(function(){
                 next();
             })
         }

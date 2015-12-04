@@ -43,7 +43,7 @@ Transfer.get_trasfer_from_korrektur = function($){
 			'contract_period':contract_period
 		})
 		transfer_sum = /\d/.test(transfer_sum) ? transfer_sum.replace(/\./g,'') : 0;
-		console.log('transfer_sum:'+transfer_sum)
+		console.log('transfer_date:'+transfer_date)
     return sequence.then(function(){
     	return transfer.save()
     }).then(function(){
