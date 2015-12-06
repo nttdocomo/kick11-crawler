@@ -74,6 +74,7 @@ Player.get_player_info = function($,id){
     var date_of_birth = $("dt:contains('Age:')").next().find('i').text();
     if(date_of_birth){
       date_of_birth = date_of_birth.replace(/(\d{2})\-(\d{2})\-(\d{4})/,'$3-$2-$1');
+      console.log(date_of_birth)
       return excute(mysql.format('UPDATE `whoscored_player` SET ? WHERE id = ?',[{
         date_of_birth:date_of_birth
       },id])).then(function(){
@@ -93,7 +94,11 @@ Player.get_player_info = function($,id){
           })
         }
         return Promise.resolve();
+      }).catch(function(err){
+        console.log(err)
+        return Promise.resolve();
       })
     }
+    return Promise.resolve();
 }
 module.exports = Player;

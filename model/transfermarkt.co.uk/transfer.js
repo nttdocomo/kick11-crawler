@@ -31,19 +31,19 @@ Transfer.get_trasfer_from_korrektur = function($){
 		id = $el.val(),
 		player_id = $('#submenue > li').eq(1).find('> a').attr('href').replace(/\S+?\/(\d{1,9})$/,'$1'),
 		season = $el.next().children().eq(0).find('select').val(),
-		transfer_date = $el.next().children().eq(3).find('input').val(),
+		//transfer_date = $el.next().children().eq(3).find('input').val(),
 		month = $el.next().children().eq(4).find('select').val(),
 		loan = $el.next().children().eq(5).find('select').val(),
 		transfer_sum = $el.next().children().eq(7).find('input').val(),
 		contract_period = [$el.next().next().children().eq(0).find('input').eq(2).val(),$el.next().next().children().eq(0).find('input').eq(1).val(),$el.next().next().children().eq(0).find('input').eq(0).val()].join('-'),
-		transfer_date = /\d{2}\.\d{2}\.\d{4}/.test(transfer_date) ? transfer_date.replace(/(\d{2})\.(\d{2})\.(\d{4})/,'$3-$2-$1') : moment(month + ' 1,' + season).format('YYYY-MM-DD'),
+		//transfer_date = /\d{2}\.\d{2}\.\d{4}/.test(transfer_date) ? transfer_date.replace(/(\d{2})\.(\d{2})\.(\d{4})/,'$3-$2-$1') : moment(month + ' 1,' + season).format('YYYY-MM-DD'),
 		contract_period = /\d{4}\-\d{2}\-\d{2}/.test(contract_period) ? contract_period : undefined,
 		transfer = new Transfer({
 			'id':id,
 			'contract_period':contract_period
 		})
 		transfer_sum = /\d/.test(transfer_sum) ? transfer_sum.replace(/\./g,'') : 0;
-		console.log('transfer_date:'+transfer_date)
+		//console.log('transfer_date:'+transfer_date)
     return sequence.then(function(){
     	return transfer.save()
     }).then(function(){
@@ -93,7 +93,7 @@ Transfer.get_trasfer_from_transfers = function($){
 			'player_id':player_id,
   		'releasing_team_id':releasing_team_id,
   		'taking_team_id':taking_team_id
-		})
+		});
 	    return sequence.then(function(){
 	    	return transfer.save();
 	    }).then(function(){
@@ -138,6 +138,7 @@ Transfer.get_trasfer_from_transfers = function($){
 	    	}
 	    }).catch(function(err){
 	    	console.log(err)
+				console.log($el.children().eq(1).text())
 	    	return Promise.resolve()
 	    })
 	},Promise.resolve())

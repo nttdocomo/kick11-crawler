@@ -44,11 +44,12 @@ module.exports = function(queueItem, matchesfeed, response, crawler){
             if(score == 'vs'){
               return sequence
             }
-            if(match[17] == 'AET'){
+            if(match[17] == 'AET' || match[17] == 'PEN'){
               score = score.replace(/\*/g,'');
             }
-            values.score1 = score.split(/\s\:\s/)[0];
-            values.score2 = score.split(/\s\:\s/)[1];
+            score = score.split(/\s\:\s/)[0];
+            values.score1 = score[0];
+            values.score2 = score[1];
             //var whoscoredMatch = new WhoscoredMatch(values);
             var team1 = new Team({
                 id : team1_id,
