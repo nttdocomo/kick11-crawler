@@ -250,7 +250,7 @@ Match.insert_match_by_competition = function($){
 										team1_id:team1_id,
 										team2_id:team2_id,
 										score1 : score1,
-										score2 : score1,
+										score2 : score2,
 										play_at:play_at
 									}))
 								}).then(function(match){
@@ -265,7 +265,7 @@ Match.insert_match_by_competition = function($){
 									team1_id:transfermarkt_team1_id,
 									team2_id:transfermarkt_team2_id,
 									score1 : score1,
-									score2 : score1,
+									score2 : score2,
 									play_at:play_at
 								},transfermarkt_match_id])).then(function(){
 									return excute(mysql.format('SELECT team_id FROM `transfermarkt_team_team` WHERE transfermarkt_team_id = ? LIMIT 1',[transfermarkt_team1_id])).then(function(team){
@@ -282,7 +282,7 @@ Match.insert_match_by_competition = function($){
 											team1_id:team1_id,
 											team2_id:team2_id,
 											score1 : score1,
-											score2 : score1,
+											score2 : score2,
 											play_at:play_at
 										},match[0].match_id]))
 									}).catch(function(err) {

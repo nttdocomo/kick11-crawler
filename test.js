@@ -1,14 +1,13 @@
-Promise.resolve().then(function(){
-	console.log('1')
-	return Promise.resolve()
-}).then(function(){
-	console.log('2')
-	throw {};
-	return Promise.resolve()
-}).then(function(){
-	console.log('3')
-	throw {};
-	//return Promise.resolve()
-}).catch(function(){
-	console.log('err')
+$.ajax({
+	url:'/matchesfeed/?d=20151210',
+	success:function(resp){
+		var len = 0;
+		resp = eval(resp);
+		resp[1].forEach(function(item){
+			if(item[7].length > len){
+				len = item[7].length
+			}
+		})
+		console.log(len)
+	}
 })

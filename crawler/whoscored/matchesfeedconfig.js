@@ -31,6 +31,7 @@ crawler.customHeaders = {
     Cookie:'__gads=ID=e55debe14f69eef7:T=1436164463:S=ALNI_MZAB7Ks2P8iIOL4gPYkTxl-n37DtQ; OX_plg=swf|shk|pm; _ga=GA1.2.1737364748.1436164463'
 };
 crawler.listenerTTL = 100000;
+crawler.timeout = 30000;
 /*crawler.useProxy = true;
 crawler.proxyHostname = "127.0.0.1";
 crawler.proxyPort="11080";*/

@@ -71,8 +71,29 @@ excute('SELECT * FROM `whoscored_match` WHERE id NOT IN (SELECT whoscored_match_
     console.log(err)
 })*/.then(function(){
     //crawler.queueURL(host + '/MatchesFeed/959599/MatchCentre2');
-    crawler.queueURL(host + '/matchesfeed/?d=20151204');
-    //crawler.queueURL(host + '/Players/1735');
+    //crawler.queueURL(host + '/matchesfeed/?d=20151211');
+    crawler.queueURL(host + '/Players/295012')
+    crawler.queueURL(host + '/Players/101238')
+    crawler.queueURL(host + '/Players/125375')
+    crawler.queueURL(host + '/Players/86235')
+    crawler.queueURL(host + '/Players/110424')
+    crawler.queueURL(host + '/Players/297541')
+    crawler.queueURL(host + '/Players/129648')
+    crawler.queueURL(host + '/Players/91088')
+    crawler.queueURL(host + '/Players/80703')
+    crawler.queueURL(host + '/Players/90467')
+    crawler.queueURL(host + '/Players/178719')
+    crawler.queueURL(host + '/Players/132964')
+    crawler.queueURL(host + '/Players/122399')
+    crawler.queueURL(host + '/Players/34168')
+    crawler.queueURL(host + '/Players/13387')
+    crawler.queueURL(host + '/Players/143955')
+    crawler.queueURL(host + '/Players/80930')
+    crawler.queueURL(host + '/Players/94905')
+    crawler.queueURL(host + '/Players/13668')
+    crawler.queueURL(host + '/Players/8782')
+    //crawler.queueURL(host + '/Players/21194');
+    //crawler.queueURL(host + '/Players/261670');
     //crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=summary&subcategory=all&statsAccumulationType=0&isCurrent=true&teamIds=7121&matchId=1017566');
     crawler.start();
     console.log('complete')

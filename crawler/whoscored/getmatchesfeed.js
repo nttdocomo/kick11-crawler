@@ -47,7 +47,7 @@ module.exports = function(queueItem, matchesfeed, response, crawler){
             if(match[17] == 'AET' || match[17] == 'PEN'){
               score = score.replace(/\*/g,'');
             }
-            score = score.split(/\s\:\s/)[0];
+            score = score.split(/\s\:\s/);
             values.score1 = score[0];
             values.score2 = score[1];
             //var whoscoredMatch = new WhoscoredMatch(values);

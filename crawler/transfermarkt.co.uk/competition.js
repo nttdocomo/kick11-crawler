@@ -23,14 +23,14 @@ crawler.interval = 600;
 crawler.listenerTTL = 100000;
 //crawler.timeout = 30000;
 crawler.userAgent = 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.124 Safari/537.36';
-crawler.on('fetchstart',function(queueItem, requestOptions){
+crawler/*.on('fetchstart',function(queueItem, requestOptions){
 	console.log("Start fetching resource:", queueItem.path);
 }).on('fetchheaders',function(queueItem, responseObject){
 	var decoder = new StringDecoder('utf8');
 	responseObject.on("data",function(chunk) {
 		console.log(decoder.write(chunk))
 	}).on('end',function(){
-		
+
 	})
 	console.log("fetchheaders fetching resource:", queueItem.path);
 }).on('fetchdataerror',function(queueItem, responseBuffer, response){
@@ -39,7 +39,7 @@ crawler.on('fetchstart',function(queueItem, requestOptions){
 	console.log("fetchredirect fetching resource:", queueItem.path);
 }).on('gziperror',function(queueItem, responseBuffer, response){
 	console.log("gziperror fetching resource:", queueItem.path);
-}).on("fetchcomplete",function(queueItem, responseBuffer, response){
+})*/.on("fetchcomplete",function(queueItem, responseBuffer, response){
 	console.log("Completed fetching resource:", queueItem.path);
   var decoder = new StringDecoder('utf8'),$,
   next;
