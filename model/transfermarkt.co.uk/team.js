@@ -89,7 +89,7 @@ Team.get_team = function($){
         return excute(mysql.format('SELECT event_id FROM `transfermarkt_event_event` WHERE transfermarkt_event_id = ? LIMIT 1',[row[0].event_id]))
     }).then(function(row){
         var event_id = row[0].event_id;
-        return excute(mysql.format('SELECT 1 FROM `event_team` WHERE event_id = ? AND team_id = ? LIMIT 1',[row[0].event_id,team_id])).then(function(row){
+        return excute(mysql.format('SELECT 1 FROM `event_team` WHERE event_id = ? AND team_id = ? LIMIT 1',[event_id,team_id])).then(function(row){
             if(!row.length){
                 return excute(mysql.format('INSERT INTO `event_team` SET ?',{
                     event_id:event_id,
