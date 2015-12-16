@@ -33,9 +33,9 @@ crawler.customHeaders = {
 };
 crawler.listenerTTL = 100000;
 crawler.timeout = 30000;
-/*crawler.useProxy = true;
+crawler.useProxy = true;
 crawler.proxyHostname = "127.0.0.1";
-crawler.proxyPort="11080";*/
+crawler.proxyPort="11080";
 crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
     console.log("Completed fetching resource:", queueItem.path);
     //console.log(queueItem.status.redirected)
@@ -95,6 +95,11 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
                 next();
             })
         }
+        if(/^\/Matches\/\d+\/Live$/.test(queueItem.path)){
+            console.log('asdasdasdads')
+            console.log(content.replace(/(.*[\n|\r])+?.+(matchCentreData)(.*[\n|\r])+/,'$1'))
+            
+        }
     }
 }).on('complete',function(){
   	console.log('complete:'+crawler.queue.complete());
@@ -118,16 +123,18 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
     console.log('fetchtimeout:' + queueItem.path)
 }).on('fetchclienterror',function(queueItem, errorData){
     console.log('fetchclienterror')
-    console.log(errorData)
     console.log(queueItem.path);
     //crawler.queueURL(host + queueItem.path);
 }).on('fetchredirect',function(queueItem, parsedURL, errorData){
     console.log('fetchredirect');
+    if(/\/MatchesFeed\/\d+\/MatchCentre/.test(queueItem.path)){
+        crawler.queueURL(host + '/Matches/969706/Live')
+    }
     console.log(queueItem.path);
     //return false;
     //crawler.queueURL(host + queueItem.path);
 }).addFetchCondition(function(parsedURL) {
-    if(parsedURL.uriPath != '/Error.html'){
+    if(parsedURL.uriPath != '/Error.html' && parsedURL.uriPath != '/404.html'){
         return true;
     }
     return false;
