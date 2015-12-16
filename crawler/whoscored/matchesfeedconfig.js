@@ -96,9 +96,14 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
             })
         }
         if(/^\/Matches\/\d+\/Live$/.test(queueItem.path)){
-            console.log('asdasdasdads')
-            console.log(content.replace(/(.*[\n|\r])+?.+(matchCentreData)(.*[\n|\r])+/,'$1'))
-            
+            /*console.log('asdasdasdads')
+            console.log(content.replace(/(.*[\n|\r])+?.+?(matchCentreData).+?(\{.+\})\;[\n|\r](.*[\n|\r])+/,'$3'))*/
+            content = content.replace(/(.*[\n|\r])+?.+?(matchCentreData).+?(\{.+\})\;[\n|\r](.*[\n|\r])+/,'$3')
+            next = this.wait();
+            getMatchCentre2(queueItem, content, response).then(function(){
+                console.log('getMatchCentre2')
+                next();
+            })
         }
     }
 }).on('complete',function(){
@@ -127,9 +132,10 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
     //crawler.queueURL(host + queueItem.path);
 }).on('fetchredirect',function(queueItem, parsedURL, errorData){
     console.log('fetchredirect');
-    if(/\/MatchesFeed\/\d+\/MatchCentre/.test(queueItem.path)){
-        crawler.queueURL(host + '/Matches/969706/Live')
-    }
+    /*if(/\/MatchesFeed\/\d+\/MatchCentre/.test(queueItem.path)){
+      crawler.queueURL(host + '/MatchesFeed\/\d+\/MatchCentre2')
+      crawler.queueURL(host + '/Matches/969706/Live')
+    }*/
     console.log(queueItem.path);
     //return false;
     //crawler.queueURL(host + queueItem.path);
