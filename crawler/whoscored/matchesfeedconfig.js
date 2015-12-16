@@ -19,6 +19,7 @@ getStatisticsFeed = require('./getStatisticsFeed'),
 //migrate = require('../../migrate/whoscored/migrate').migrate,
 _ = require('underscore'),
 host = 'http://www.whoscored.com',
+fetchtimeout = [];
 crawler = require('./crawler');
 crawler.maxConcurrency = 1;
 crawler.interval = 600;
@@ -102,6 +103,10 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
         console.log("Whoah, the request for %s failed!", queueItem.url);
         // do something...
     });
+    crawler.queue.getWithStatus("timeout").forEach(function(queueItem) {
+        console.log("Whoah, the request for %s timeout!", queueItem.url);
+        // do something...
+    });
     console.log('complete')
     process.exit()
 }).on('fetcherror',function(queueItem, response){
@@ -109,6 +114,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
     console.log(queueItem.path)
 }).on('fetchtimeout',function(queueItem, response){
     //crawler.queueURL(host + queueItem.path);
+    fetchtimeout.push(queueItem.path)
     console.log('fetchtimeout:' + queueItem.path)
 }).on('fetchclienterror',function(queueItem, errorData){
     console.log('fetchclienterror')

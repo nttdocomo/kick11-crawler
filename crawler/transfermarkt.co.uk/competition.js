@@ -13,6 +13,7 @@ Transfer = require('../../model/transfermarkt.co.uk/transfer'),
 difference = require('./utils').difference,
 host = 'http://www.transfermarkt.co.uk',
 fetchedUrls = [],
+input_competition = process.argv[2],
 crawler = new Crawler("www.transfermarkt.co.uk", "/");
 crawler.discoverResources = false;
 /*crawler.useProxy = true;
@@ -143,6 +144,10 @@ crawler/*.on('fetchstart',function(queueItem, requestOptions){
 	return false;
 	///unknown/startseite/verein/75
 });
-crawler.queueURL(host + '/premier-league/startseite/wettbewerb/GB1');
+if(input_competition){
+  crawler.queueURL(host + '/premier-league/startseite/wettbewerb/'+input_competition);
+} else {
+  crawler.queueURL(host + '/premier-league/startseite/wettbewerb/GB1');
+}
 //crawler.queueURL(host + '/premier-league/gesamtspielplan/wettbewerb/GB1');
 crawler.start();
