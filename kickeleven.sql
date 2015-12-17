@@ -1,10 +1,10 @@
 -- phpMyAdmin SQL Dump
--- version 4.5.1
+-- version 4.5.2
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: 2015-12-11 12:31:19
--- 服务器版本： 5.7.9
+-- Generation Time: 2015-12-17 11:23:50
+-- 服务器版本： 5.6.21
 -- PHP Version: 5.6.2
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
@@ -1244,7 +1244,7 @@ CREATE TABLE `whoscored_team_team` (
 CREATE TABLE `whoscored_tournaments` (
   `id` int(10) UNSIGNED NOT NULL,
   `region_id` int(10) UNSIGNED NOT NULL,
-  `name` varchar(60) NOT NULL,
+  `name` varchar(50) NOT NULL,
   `short_name` varchar(10) DEFAULT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
@@ -1786,7 +1786,7 @@ ALTER TABLE `clubtranslation`
 -- 使用表AUTO_INCREMENT `competition`
 --
 ALTER TABLE `competition`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
 --
 -- 使用表AUTO_INCREMENT `competition_category`
 --
@@ -1806,12 +1806,12 @@ ALTER TABLE `continent`
 -- 使用表AUTO_INCREMENT `event`
 --
 ALTER TABLE `event`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
 --
 -- 使用表AUTO_INCREMENT `event_team`
 --
 ALTER TABLE `event_team`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=81;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
 --
 -- 使用表AUTO_INCREMENT `fm_player`
 --
@@ -1826,7 +1826,7 @@ ALTER TABLE `goal_events`
 -- 使用表AUTO_INCREMENT `match`
 --
 ALTER TABLE `match`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=381;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
 --
 -- 使用表AUTO_INCREMENT `match_event`
 --
@@ -1836,7 +1836,7 @@ ALTER TABLE `match_event`
 -- 使用表AUTO_INCREMENT `match_event_type`
 --
 ALTER TABLE `match_event_type`
-  MODIFY `id` tinyint(3) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=40;
+  MODIFY `id` tinyint(3) UNSIGNED NOT NULL AUTO_INCREMENT;
 --
 -- 使用表AUTO_INCREMENT `match_player_statistics`
 --
@@ -1851,12 +1851,12 @@ ALTER TABLE `match_registration`
 -- 使用表AUTO_INCREMENT `nation`
 --
 ALTER TABLE `nation`
-  MODIFY `id` tinyint(3) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=96;
+  MODIFY `id` tinyint(3) UNSIGNED NOT NULL AUTO_INCREMENT;
 --
 -- 使用表AUTO_INCREMENT `nationality`
 --
 ALTER TABLE `nationality`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=647;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
 --
 -- 使用表AUTO_INCREMENT `nationtranslation`
 --
@@ -1866,7 +1866,7 @@ ALTER TABLE `nationtranslation`
 -- 使用表AUTO_INCREMENT `player`
 --
 ALTER TABLE `player`
-  MODIFY `id` mediumint(6) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=474;
+  MODIFY `id` mediumint(6) UNSIGNED NOT NULL AUTO_INCREMENT;
 --
 -- 使用表AUTO_INCREMENT `player2position`
 --
@@ -1891,12 +1891,12 @@ ALTER TABLE `registrationprofile`
 -- 使用表AUTO_INCREMENT `round`
 --
 ALTER TABLE `round`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=39;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
 --
 -- 使用表AUTO_INCREMENT `season`
 --
 ALTER TABLE `season`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
 --
 -- 使用表AUTO_INCREMENT `tables`
 --
@@ -1906,7 +1906,7 @@ ALTER TABLE `tables`
 -- 使用表AUTO_INCREMENT `team`
 --
 ALTER TABLE `team`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=904;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
 --
 -- 使用表AUTO_INCREMENT `teamplayer`
 --
@@ -1916,7 +1916,7 @@ ALTER TABLE `teamplayer`
 -- 使用表AUTO_INCREMENT `transfer`
 --
 ALTER TABLE `transfer`
-  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3034;
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT;
 --
 -- 使用表AUTO_INCREMENT `transfermarket_competition_category`
 --
@@ -1936,77 +1936,77 @@ ALTER TABLE `transfermarket_team_player`
 -- 使用表AUTO_INCREMENT `transfermarkt_competition`
 --
 ALTER TABLE `transfermarkt_competition`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
 --
 -- 使用表AUTO_INCREMENT `transfermarkt_competition_competition`
 --
 ALTER TABLE `transfermarkt_competition_competition`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
 --
 -- 使用表AUTO_INCREMENT `transfermarkt_event`
 --
 ALTER TABLE `transfermarkt_event`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 --
 -- 使用表AUTO_INCREMENT `transfermarkt_event_event`
 --
 ALTER TABLE `transfermarkt_event_event`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
 --
 -- 使用表AUTO_INCREMENT `transfermarkt_event_team`
 --
 ALTER TABLE `transfermarkt_event_team`
-  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT;
 --
 -- 使用表AUTO_INCREMENT `transfermarkt_match`
 --
 ALTER TABLE `transfermarkt_match`
-  MODIFY `id` mediumint(8) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2578289;
+  MODIFY `id` mediumint(8) UNSIGNED NOT NULL AUTO_INCREMENT;
 --
 -- 使用表AUTO_INCREMENT `transfermarkt_match_match`
 --
 ALTER TABLE `transfermarkt_match_match`
-  MODIFY `id` mediumint(8) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=381;
+  MODIFY `id` mediumint(8) UNSIGNED NOT NULL AUTO_INCREMENT;
 --
 -- 使用表AUTO_INCREMENT `transfermarkt_nation_nation`
 --
 ALTER TABLE `transfermarkt_nation_nation`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=96;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
 --
 -- 使用表AUTO_INCREMENT `transfermarkt_player_player`
 --
 ALTER TABLE `transfermarkt_player_player`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=474;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 --
 -- 使用表AUTO_INCREMENT `transfermarkt_round`
 --
 ALTER TABLE `transfermarkt_round`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=39;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
 --
 -- 使用表AUTO_INCREMENT `transfermarkt_round_round`
 --
 ALTER TABLE `transfermarkt_round_round`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=39;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
 --
 -- 使用表AUTO_INCREMENT `transfermarkt_season`
 --
 ALTER TABLE `transfermarkt_season`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 --
 -- 使用表AUTO_INCREMENT `transfermarkt_season_season`
 --
 ALTER TABLE `transfermarkt_season_season`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
 --
 -- 使用表AUTO_INCREMENT `transfermarkt_team_team`
 --
 ALTER TABLE `transfermarkt_team_team`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=904;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
 --
 -- 使用表AUTO_INCREMENT `transfermarkt_transfer_transfer`
 --
 ALTER TABLE `transfermarkt_transfer_transfer`
-  MODIFY `id` mediumint(7) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3034;
+  MODIFY `id` mediumint(7) UNSIGNED NOT NULL AUTO_INCREMENT;
 --
 -- 使用表AUTO_INCREMENT `user`
 --
@@ -2016,7 +2016,7 @@ ALTER TABLE `user`
 -- 使用表AUTO_INCREMENT `whoscored_event`
 --
 ALTER TABLE `whoscored_event`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6107;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
 --
 -- 使用表AUTO_INCREMENT `whoscored_event_event`
 --
@@ -2031,7 +2031,7 @@ ALTER TABLE `whoscored_goals`
 -- 使用表AUTO_INCREMENT `whoscored_match_event`
 --
 ALTER TABLE `whoscored_match_event`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2147352994;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
 --
 -- 使用表AUTO_INCREMENT `whoscored_match_event_match_event`
 --
@@ -2041,7 +2041,7 @@ ALTER TABLE `whoscored_match_event_match_event`
 -- 使用表AUTO_INCREMENT `whoscored_match_event_type_relation`
 --
 ALTER TABLE `whoscored_match_event_type_relation`
-  MODIFY `id` smallint(5) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=40;
+  MODIFY `id` smallint(5) UNSIGNED NOT NULL AUTO_INCREMENT;
 --
 -- 使用表AUTO_INCREMENT `whoscored_match_match`
 --
@@ -2051,7 +2051,7 @@ ALTER TABLE `whoscored_match_match`
 -- 使用表AUTO_INCREMENT `whoscored_match_player_statistics`
 --
 ALTER TABLE `whoscored_match_player_statistics`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=870;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
 --
 -- 使用表AUTO_INCREMENT `whoscored_match_player_statistics_relation`
 --
@@ -2061,17 +2061,17 @@ ALTER TABLE `whoscored_match_player_statistics_relation`
 -- 使用表AUTO_INCREMENT `whoscored_match_registration`
 --
 ALTER TABLE `whoscored_match_registration`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=828;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
 --
 -- 使用表AUTO_INCREMENT `whoscored_player_player`
 --
 ALTER TABLE `whoscored_player_player`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
 --
 -- 使用表AUTO_INCREMENT `whoscored_season`
 --
 ALTER TABLE `whoscored_season`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
 --
 -- 使用表AUTO_INCREMENT `whoscored_season_season`
 --
