@@ -24,18 +24,21 @@ crawler = require('./crawler');
 crawler.maxConcurrency = 1;
 crawler.interval = 600;
 crawler.discoverResources = false;
-crawler.userAgent = 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.101 Safari/537.36';
+crawler.userAgent = 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.86 Safari/537.36';
 crawler.customHeaders = {
+    Accept:'*/*',
     Host:'www.whoscored.com',
-    Referer:'http://www.whoscored.com/LiveScores',
-    'X-Requested-With':'XMLHttpRequest',
-    Cookie:'__gads=ID=e55debe14f69eef7:T=1436164463:S=ALNI_MZAB7Ks2P8iIOL4gPYkTxl-n37DtQ; OX_plg=swf|shk|pm; _ga=GA1.2.1737364748.1436164463'
+    Connection:'keep-alive',
+    //Referer:'http://www.whoscored.com/LiveScores',
+    //'Model-Last-Mode':'rtvLwmHHtjc0UWZFHsvUPj9CiPCOYDe0avasPgC4LZk=',
+    //'X-Requested-With':'XMLHttpRequest',
+    Cookie:'__gads=ID=e6d429450af06734:T=1446188587:S=ALNI_MZv5V1joNt7YMrhMW5F9CoXZO7AaA; OX_plg=swf|shk|pm; userid=9F284EBF-05D0-F7F3-D5F3-E8216E4EC4A1; GED_PLAYLIST_ACTIVITY=W3sidSI6IkxPRjUiLCJ0IjoxNDQ4NjIwNDQzLCJlZCI6eyJpIjp7InciOnsidHQiOjE5OTI2LCJwZCI6MTk5MjYsImJzIjoxMH19LCJhIjpbeyJrdiI6e319LHsia3YiOnt9fSx7Imt2Ijp7fX0seyJrdiI6e319LHsia3YiOnt9fSx7Imt2Ijp7fX1dfSwibnYiOjAsInBsIjoxOTkyNn1d; position=1; td_cookie=1060302508; _ga=GA1.2.1778490128.1446198399'
 };
 crawler.listenerTTL = 100000;
 crawler.timeout = 30000;
-crawler.useProxy = true;
+/*crawler.useProxy = true;
 crawler.proxyHostname = "127.0.0.1";
-crawler.proxyPort="11080";
+crawler.proxyPort="11080";*/
 crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
     console.log("Completed fetching resource:", queueItem.path);
     //console.log(queueItem.status.redirected)
@@ -125,21 +128,24 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 }).on('fetchtimeout',function(queueItem, response){
     //crawler.queueURL(host + queueItem.path);
     fetchtimeout.push(queueItem.path)
-    console.log('fetchtimeout:' + queueItem.path)
+    //console.log('fetchtimeout:' + queueItem.path)
 }).on('fetchclienterror',function(queueItem, errorData){
     console.log('fetchclienterror')
     console.log(queueItem.path);
     //crawler.queueURL(host + queueItem.path);
-}).on('fetchredirect',function(queueItem, parsedURL, errorData){
-    console.log('fetchredirect');
+}).on('fetchredirect',function(queueItem, parsedURL, response){
+    //console.log('fetchredirect');
+    //console.log(parsedURL);
+    //console.log(response);
     /*if(/\/MatchesFeed\/\d+\/MatchCentre/.test(queueItem.path)){
       crawler.queueURL(host + '/MatchesFeed\/\d+\/MatchCentre2')
       crawler.queueURL(host + '/Matches/969706/Live')
     }*/
-    console.log(queueItem.path);
+    //console.log(queueItem.path);
     //return false;
     //crawler.queueURL(host + queueItem.path);
 }).addFetchCondition(function(parsedURL) {
+    //console.log(parsedURL.uriPath)
     if(parsedURL.uriPath != '/Error.html' && parsedURL.uriPath != '/404.html'){
         return true;
     }

@@ -1,72 +1,49 @@
-var url = require('url'),
+/**
+ * @author nttdocomo
+ */
+var http = require("http"),
 excute = require('../../promiseExcute'),
-mysql = require('mysql'),
 StringDecoder = require('string_decoder').StringDecoder,
+mysql = require('mysql'),
+moment = require('moment-timezone'),
+migrate_match = require('./migrate_match'),
+migrate_match_player_statistics = require('./migrate_match_player_statistics'),
+//migrate = require('../../migrate/whoscored/migrate').migrate,
 _ = require('underscore'),
-Player = require('../../model/whoscored/player').model,
-getMatchCentrePlayerStatistics = function(queueItem,content){
-    var unknow_columns = [],
-	query = url.parse(queueItem.url,true).query,
-	matchId = query.matchId,
-	teamId = query.teamIds,
-	matchCentrePlayerStatistics = JSON.parse(content),
-	playerTableStats = matchCentrePlayerStatistics.playerTableStats;
-	return excute('SHOW COLUMNS FROM whoscored_match_player_statistics').then(function(result){
-		console.log('get columns of whoscored_match_player_statistics')
-		var columns = _.map(result,function(column){
-			return column.Field;
-		})
-		return playerTableStats.reduce(function(sequence,playerTableStat){
-			console.log('loop playerTableStats')
-			var alter_sql = [];
-    		//首先将值为null或者undefined的删除，因为无法判断值为数字还是字符串，如果表字段没有这个键，则无法创建列。
-    		_.each(playerTableStat, function(value,key){
-    			if (value === null || value === undefined || value === '' || value === 0 || typeof(value) === 'object') {
-					// test[i] === undefined is probably not very useful here
-					delete playerTableStat[key];
-				} else {
-					if(columns.indexOf(key) < 0){
-						unknow_columns.push(key)
-					}
-				}
+teamId = process.argv[2],
+matchId = process.argv[3],
+host = 'http://www.whoscored.com',
+crawler = require('./matchesfeedconfig');
+var date = [],
+condition = 0,
+now = moment.utc(),
+clone = now.clone();
+migrate_match().then(migrate_match_player_statistics).then(function(){
+	return excute('SELECT * FROM `whoscored_match` WHERE id IN (SELECT whoscored_match_id FROM `whoscored_match_match` WHERE whoscored_match_id NOT IN (SELECT matchId FROM `whoscored_match_player_statistics`))')
+}).then(function(row){
+	//crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=passing&statsAccumulationType=0&teamIds=24&matchId=959591');
+    if(teamId && matchId){
+        crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=summary&subcategory=all&statsAccumulationType=0&isCurrent=true&teamIds='+teamId+'&matchId='+matchId);
+        crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=passing&subcategory=all&statsAccumulationType=0&teamIds='+teamId+'&matchId='+matchId);
+        crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=defensive&subcategory=all&statsAccumulationType=0&isCurrent=true&teamIds='+teamId+'&matchId='+matchId);
+        crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=offensive&subcategory=all&statsAccumulationType=0&isCurrent=true&teamIds='+teamId+'&matchId='+matchId);
+    } else {
+    	if(row.length){
+    		row.forEach(function(item){
+    			crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=summary&subcategory=all&statsAccumulationType=0&isCurrent=true&teamIds='+item.team1_id+'&matchId='+item.id);
+		        crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=passing&subcategory=all&statsAccumulationType=0&teamIds='+item.team1_id+'&matchId='+item.id);
+		        crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=defensive&subcategory=all&statsAccumulationType=0&isCurrent=true&teamIds='+item.team1_id+'&matchId='+item.id);
+		        crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=offensive&subcategory=all&statsAccumulationType=0&isCurrent=true&teamIds='+item.team1_id+'&matchId='+item.id);
+    			crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=summary&subcategory=all&statsAccumulationType=0&isCurrent=true&teamIds='+item.team2_id+'&matchId='+item.id);
+		        crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=passing&subcategory=all&statsAccumulationType=0&teamIds='+item.team2_id+'&matchId='+item.id);
+		        crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=defensive&subcategory=all&statsAccumulationType=0&isCurrent=true&teamIds='+item.team2_id+'&matchId='+item.id);
+		        crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=offensive&subcategory=all&statsAccumulationType=0&isCurrent=true&teamIds='+item.team2_id+'&matchId='+item.id);
     		})
-	    	var playerId = playerTableStat.playerId;
-	    	if(!playerTableStat.teamId){
-	    		playerTableStat.teamId = teamId
-	    	}
-	    	if(!playerTableStat.matchId){
-	    		playerTableStat.matchId = matchId
-	    	}
-			return sequence.then(function(){
-				var player = new Player({
-	                id:playerTableStat.playerId,
-	                name:playerTableStat.name,
-	            });
-	            return player.save();
-			}).then(function(){
-    			return unknow_columns.reduce(function(sequence,column){
-    				return sequence.then(function(){
-    					if(typeof(playerTableStat[column]) == 'string'){
-							return excute('ALTER TABLE whoscored_match_player_statistics ADD '+column+' varchar(30) DEFAULT NULL')
-						}
-						if(typeof(playerTableStat[column]) == 'number'){
-							return excute('ALTER TABLE whoscored_match_player_statistics ADD '+column+' smallint UNSIGNED DEFAULT 0')
-						}
-						if(typeof(playerTableStat[column]) == 'boolean'){
-							return excute('ALTER TABLE whoscored_match_player_statistics ADD '+column+' boolean DEFAULT 0')
-						}
-    				})
-    			},Promise.resolve())
-    		}).then(function(){
-		    	return excute(mysql.format('SELECT playerId,teamId,matchId FROM whoscored_match_player_statistics WHERE playerId = ? AND teamId = ? AND matchId = ?',[item.playerId,item.teamId,item.matchId])).then(function(statistic){
-		    		if(statistic){
-			    		return excute(mysql.format('UPDATE whoscored_match_player_statistics SET ? WHERE teamId = ? AND playerId = ? AND matchId = ?',[playerTableStat,teamId,playerId,matchId]))
-			    	} else {
-			    		return excute(mysql.format('INSERT INTO whoscored_match_player_statistics SET ?',playerTableStat))
-			    	}
-		    	})
-    		})
-		},Promise.resolve())
-	})
-};
-module.exports = getMatchCentrePlayerStatistics;
+    	}
+    }
+    return Promise.resolve();
+}).then(function(){
+    crawler.start();
+}).catch(function(err){
+    console.log(err)
+})
