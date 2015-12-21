@@ -24,20 +24,11 @@ migrate_match().then(migrate_match_player_statistics).then(function(){
 	//crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=passing&statsAccumulationType=0&teamIds=24&matchId=959591');
     if(teamId && matchId){
         crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=summary&subcategory=all&statsAccumulationType=0&isCurrent=true&teamIds='+teamId+'&matchId='+matchId);
-        crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=passing&subcategory=all&statsAccumulationType=0&teamIds='+teamId+'&matchId='+matchId);
-        crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=defensive&subcategory=all&statsAccumulationType=0&isCurrent=true&teamIds='+teamId+'&matchId='+matchId);
-        crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=offensive&subcategory=all&statsAccumulationType=0&isCurrent=true&teamIds='+teamId+'&matchId='+matchId);
     } else {
     	if(row.length){
     		row.forEach(function(item){
     			crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=summary&subcategory=all&statsAccumulationType=0&isCurrent=true&teamIds='+item.team1_id+'&matchId='+item.id);
-		        crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=passing&subcategory=all&statsAccumulationType=0&teamIds='+item.team1_id+'&matchId='+item.id);
-		        crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=defensive&subcategory=all&statsAccumulationType=0&isCurrent=true&teamIds='+item.team1_id+'&matchId='+item.id);
-		        crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=offensive&subcategory=all&statsAccumulationType=0&isCurrent=true&teamIds='+item.team1_id+'&matchId='+item.id);
     			crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=summary&subcategory=all&statsAccumulationType=0&isCurrent=true&teamIds='+item.team2_id+'&matchId='+item.id);
-		        crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=passing&subcategory=all&statsAccumulationType=0&teamIds='+item.team2_id+'&matchId='+item.id);
-		        crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=defensive&subcategory=all&statsAccumulationType=0&isCurrent=true&teamIds='+item.team2_id+'&matchId='+item.id);
-		        crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=offensive&subcategory=all&statsAccumulationType=0&isCurrent=true&teamIds='+item.team2_id+'&matchId='+item.id);
     		})
     	}
     }
