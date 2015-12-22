@@ -85,7 +85,7 @@ module.exports = function(queueItem, matchesfeed, response, crawler){
                         crawler.queueURL(host + '/MatchesFeed/'+match_id+'/MatchCentre2');
                     }
                     return Promise.resolve()
-                })/*.then(function(){
+                }).then(function(){
                     return excute(mysql.format('SELECT * FROM `whoscored_match_player_statistics` WHERE matchId = ? AND teamId = ? LIMIT 1',[match_id,match[4]]))
                 }).then(function(row){
                     if(!row.length){
@@ -99,7 +99,7 @@ module.exports = function(queueItem, matchesfeed, response, crawler){
                         crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=summary&subcategory=all&statsAccumulationType=0&isCurrent=true&teamIds='+match[8]+'&matchId='+match_id);
                     }
                     return Promise.resolve()
-                })*/;
+                });
             }
             return promise.catch(function(err){
                 console.log(i)

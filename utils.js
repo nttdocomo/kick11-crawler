@@ -7,7 +7,9 @@ moment = require('moment'),
 path = require('path'),
 connection = require("./db"),
 mysql = require('mysql'),
-_ = require('underscore');
+_ = require('underscore'),
+maxInterval = 20000,
+minInterval = 2000;
 trim = function(text){
 	return text.replace(/^\s+(.*?)\s+$/,'$1');
 },
@@ -29,3 +31,12 @@ difference = function(template, override) {
 };
 module.exports.trim = trim;
 module.exports.difference = difference;
+module.exports.randomIntrvl = function(min, max) {
+    var minInterval = min ? min : 2000,
+    maxInterval = max ? max : 20000,
+    interval = Math.floor(Math.random()*maxInterval);
+    if(interval < minInterval){
+        interval = minInterval;
+    }
+    return interval;
+};

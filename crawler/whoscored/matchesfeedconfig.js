@@ -5,6 +5,8 @@ StringDecoder = require('string_decoder').StringDecoder,
 mysql = require('mysql'),
 moment = require('moment-timezone'),
 Crawler = require("simplecrawler"),
+utils = require('../../utils'),
+randomIntrvl = utils.randomIntrvl,
 get_registration = require('./registration').get_registration,
 whoscored_registration = require('./whoscored_registration'),
 get_goals = require('./goals').get_goals,
@@ -19,10 +21,12 @@ getStatisticsFeed = require('./getStatisticsFeed'),
 //migrate = require('../../migrate/whoscored/migrate').migrate,
 _ = require('underscore'),
 host = 'http://www.whoscored.com',
-fetchtimeout = [];
+fetchtimeout = [],
+maxInterval = 20000,
+minInterval = 2000,
 crawler = require('./crawler');
 crawler.maxConcurrency = 1;
-crawler.interval = 600;
+crawler.interval = randomIntrvl();//set a random interval
 crawler.discoverResources = false;
 crawler.acceptCookies = true;
 crawler.userAgent = 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.101 Safari/537.36';
@@ -40,10 +44,16 @@ crawler.proxyHostname = "127.0.0.1";
 crawler.proxyPort="11080";*/
 crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
     console.log("Completed fetching resource:", queueItem.path);
+    crawler.interval = randomIntrvl();//everytime fetch complete, 
+    console.log(crawler.interval)
     //console.log(queueItem.status.redirected)
     var next, decoder = new StringDecoder('utf8'),content = decoder.write(responseBuffer),matchesfeed,matchCentre2;
     //console.log(decoder.write(responseBuffer));
     if(content && content !== null && content != 'null'){
+        if(/^\/LiveScores$/.test(queueItem.path)){//获取首页的Model-Last-Mode
+            content = content.replace(/(.*[\n|\r])+?.+?Model\-Last\-Mode.+'(\S+?)'.+?[\n|\r](.*[\n|\r])+/,'$2')
+            crawler.customHeaders['Model-Last-Mode'] = content;
+        }
         if(/^\/matchesfeed\/\?d\=\d{8}$/.test(queueItem.path)){
             next = this.wait();
             content = eval(content);
@@ -151,4 +161,6 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
     }
     return false;
 });
+//以首页作为起始页，获取页面里的Model-Last-Mode作为请求参数，否则会被重定向404
+crawler.queueURL(host + '/LiveScores')
 module.exports = crawler;
