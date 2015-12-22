@@ -1,11 +1,10 @@
-var page = require('webpage').create();
-page.onResourceReceived = function(response) {
-  console.log('Response (#' + response.id + ', stage "' + response.stage + '"): ' + JSON.stringify(response));
-};
-page.open('http://www.whoscored.com/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=summary&subcategory=all&statsAccumulationType=0&isCurrent=true&teamIds=23&matchId=959560', function(status) {
-  console.log("Status: " + status);
-  if(status === "success") {
-    page.render('example.png');
+var excute = require('../../promiseExcute'),
+mysql = require('mysql');
+return excute(mysql.format('SELECT date_of_birth FROM `whoscored_player` WHERE id = ? LIMIT 1',[6292])).then(function(row){
+  if(row.length){
+    if(row[0].date_of_birth === null){
+    	console.log('null')
+    }
   }
-  phantom.exit();
+  return Promise.resolve();
 });

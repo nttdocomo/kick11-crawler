@@ -8,6 +8,8 @@ INSERT INTO `whoscored_player_player` (whoscored_player_id,player_id) SELECT who
 
 SELECT whoscored_player.id,whoscored_player.name,player.name,transfermarkt_player_player.player_id,transfermarkt_player_player.transfermarkt_player_id FROM `whoscored_player` JOIN `player` ON player.name = whoscored_player.name JOIN `transfermarkt_player_player` ON transfermarkt_player_player.player_id = player.id WHERE whoscored_player.id NOT IN (SELECT whoscored_player_id FROM `whoscored_player_player`) AND transfermarkt_player_player.transfermarkt_player_id != 214906
 
+SELECT whoscored_player.id,whoscored_player.name,player.name,transfermarkt_player_player.player_id,transfermarkt_player_player.transfermarkt_player_id FROM `whoscored_player` JOIN `player` ON player.name = whoscored_player.name AND player.date_of_birth = whoscored_player.date_of_birth JOIN `transfermarkt_player_player` ON transfermarkt_player_player.player_id = player.id WHERE whoscored_player.id NOT IN (SELECT whoscored_player_id FROM `whoscored_player_player`) AND transfermarkt_player_player.transfermarkt_player_id != 214906
+
 //根据event_team里有的球队，在whoscored_team里找出名字一样的队伍
 SELECT whoscored_team.name,whoscored_team.id,team.id,team.name FROM `whoscored_team` JOIN `team` ON team.name = whoscored_team.name JOIN `event_team` ON event_team.team_id = team.id WHERE team.id NOT IN (SELECT team_id FROM `whoscored_team_team`)
 

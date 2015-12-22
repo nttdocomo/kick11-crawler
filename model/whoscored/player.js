@@ -60,11 +60,15 @@ Player.get_player_from_matchcenter = function(matchCentre2){
         };
         //person = new Player(data);
         return sequence.then(function(){
-            return excute(mysql.format('SELECT 1 FROM `whoscored_player` WHERE id = ? LIMIT 1',[player.playerId]));
+            return excute(mysql.format('SELECT date_of_birth FROM `whoscored_player` WHERE id = ? LIMIT 1',[player.playerId]));
         }).then(function(row){
           if(!row.length){
             crawler.queueURL(host + '/Players/'+player.playerId);
             return excute(mysql.format('INSERT INTO `whoscored_player` SET ?',data));
+          } else {
+            if(row[0].date_of_birth === null){
+              crawler.queueURL(host + '/Players/'+player.playerId);
+            }
           }
           return Promise.resolve();
         })
