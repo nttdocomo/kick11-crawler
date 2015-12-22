@@ -57,8 +57,8 @@ Player.get_player_from_matchcenter = function(matchCentre2){
             name:player.name,
             height:player.height,
             weight:player.weight
-        },
-        person = new Player(data);
+        };
+        //person = new Player(data);
         return sequence.then(function(){
             return excute(mysql.format('SELECT 1 FROM `whoscored_player` WHERE id = ? LIMIT 1',[player.playerId]));
         }).then(function(row){
