@@ -24,18 +24,20 @@ crawler = require('./crawler');
 crawler.maxConcurrency = 1;
 crawler.interval = 600;
 crawler.discoverResources = false;
+crawler.acceptCookies = true;
 crawler.userAgent = 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.101 Safari/537.36';
 crawler.customHeaders = {
     Host:'www.whoscored.com',
     Referer:'http://www.whoscored.com/LiveScores',
+    'Model-Last-Mode': 'dtdiAqCDgZQwn6UC4SOodRuDtVq9NKp4OgktOmRwWRo',
     'X-Requested-With':'XMLHttpRequest',
-    Cookie:'__gads=ID=e55debe14f69eef7:T=1436164463:S=ALNI_MZAB7Ks2P8iIOL4gPYkTxl-n37DtQ; OX_plg=swf|shk|pm; _ga=GA1.2.1737364748.1436164463'
+    Cookie:'__gads=ID=fabb88cc2b527586:T=1447593413:S=ALNI_MbhDC_wix56JPiYFTF-dHtc9XYRMA; OX_plg=swf|shk|pm; userid=B015E18A-9322-3E4F-2880-627A7B2C4BA9; jwplayer.volume=1; jwplayer.mute=true; __qca=P0-1695388366-1449292007430; GED_PLAYLIST_ACTIVITY=W3sidSI6ImVwbVMiLCJ0IjoxNDQ5OTA5MzIwLCJlZCI6eyJpIjp7InciOnsidHQiOjMxNDAwLCJwZCI6MzE0MDAsImJzIjoxMH19LCJhIjpbeyJrdiI6e319LHsia3YiOnt9fSx7Imt2Ijp7fX0seyJrdiI6e319LHsia3YiOnt9fSx7Imt2Ijp7fX1dfSwibnYiOjAsInBsIjozMTQwMH1d; _ga=GA1.2.1923670642.1447593414; _gat=1'
 };
 crawler.listenerTTL = 100000;
 crawler.timeout = 30000;
-crawler.useProxy = true;
+/*crawler.useProxy = true;
 crawler.proxyHostname = "127.0.0.1";
-crawler.proxyPort="11080";
+crawler.proxyPort="11080";*/
 crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
     console.log("Completed fetching resource:", queueItem.path);
     //console.log(queueItem.status.redirected)
@@ -130,8 +132,9 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
     console.log('fetchclienterror')
     console.log(queueItem.path);
     //crawler.queueURL(host + queueItem.path);
-}).on('fetchredirect',function(queueItem, parsedURL, errorData){
+}).on('fetchredirect',function(queueItem, parsedURL, response){
     console.log('fetchredirect');
+    //console.log(response)
     /*if(/\/MatchesFeed\/\d+\/MatchCentre/.test(queueItem.path)){
       crawler.queueURL(host + '/MatchesFeed\/\d+\/MatchCentre2')
       crawler.queueURL(host + '/Matches/969706/Live')
@@ -140,6 +143,9 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
     //return false;
     //crawler.queueURL(host + queueItem.path);
 }).addFetchCondition(function(parsedURL) {
+  if(parsedURL.uriPath == '/404.html'){
+    console.log(parsedURL.uriPath)
+  }
     if(parsedURL.uriPath != '/Error.html' && parsedURL.uriPath != '/404.html'){
         return true;
     }

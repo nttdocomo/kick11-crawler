@@ -14,16 +14,13 @@ teamId = process.argv[2],
 matchId = process.argv[3],
 host = 'http://www.whoscored.com',
 crawler = require('./matchesfeedconfig');
-var date = [],
-condition = 0,
-now = moment.utc(),
-clone = now.clone();
 migrate_match().then(migrate_match_player_statistics).then(function(){
 	return excute('SELECT id,team1_id,team2_id FROM `whoscored_match` WHERE id IN (SELECT whoscored_match_id FROM `whoscored_match_match`)')
 }).then(function(row){
 	return row.reduce(function(sequence, match,i){
 		return excute(mysql.format('SELECT 1 FROM `whoscored_match_player_statistics` WHERE teamId = ? AND matchId = ? LIMIT 1',[match.team1_id,match.id])).then(function(stats){
     		if(!stats.length){
+					console.log(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=summary&subcategory=all&statsAccumulationType=0&isCurrent=true&teamIds='+match.team1_id+'&matchId='+match.id)
     			crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=summary&subcategory=all&statsAccumulationType=0&isCurrent=true&teamIds='+match.team1_id+'&matchId='+match.id);
     		}
     		return Promise.resolve();
@@ -55,7 +52,10 @@ migrate_match().then(migrate_match_player_statistics).then(function(){
     		return Promise.resolve();
     	})
     }
-}).then(function(){
+})
+/*.then(function(){
+	crawler.queueURL('http://www.whoscored.com/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=summary&subcategory=&statsAccumulationType=0&isCurrent=true&playerId=&teamIds=23&matchId=959649&stageId=&tournamentOptions=&sortBy=&sortAscending=&age=&ageComparisonType=&appearances=&appearancesComparisonType=&field=&nationality=&positionOptions=&timeOfTheGameEnd=&timeOfTheGameStart=&isMinApp=&page=&includeZeroValues=&numberOfPlayersToPick=');
+})*/.then(function(){
     crawler.start();
 }).catch(function(err){
     console.log(err)
