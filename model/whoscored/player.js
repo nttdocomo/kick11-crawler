@@ -75,34 +75,73 @@ Player.get_player_from_matchcenter = function(matchCentre2){
     },Promise.resolve())
 }
 Player.get_player_info = function($,id){
-    var date_of_birth = $("dt:contains('Age:')").next().find('i').text();
+    var date_of_birth = $("dt:contains('Age:')").next().find('i').text(),
+    name = $("dt:contains('Name:')").next().text(),
+    height = $("dt:contains('Height:')").next().text(),
+    weight = $("dt:contains('Weight:')").next().text(),
+    data={};
     if(date_of_birth){
       date_of_birth = date_of_birth.replace(/(\d{2})\-(\d{2})\-(\d{4})/,'$3-$2-$1');
-      console.log(date_of_birth)
-      return excute(mysql.format('UPDATE `whoscored_player` SET ? WHERE id = ?',[{
-        date_of_birth:date_of_birth
-      },id])).then(function(){
-        return excute(mysql.format('SELECT name FROM `whoscored_player` WHERE id = ? LIMIT 1',[id]))
-      }).then(function(row){
-        return excute(mysql.format('SELECT id FROM `player` WHERE name = ? AND date_of_birth = ? LIMIT 1',[row[0].name,date_of_birth]))
-      }).then(function(player){
-        if(player.length){
-          return excute(mysql.format('SELECT 1 FROM `whoscored_player_player` WHERE whoscored_player_id = ? AND player_id = ? LIMIT 1',[id,player[0].id])).then(function(row){
-            if(!row.length){
-              return excute(mysql.format('INSERT INTO `whoscored_player_player` SET ?',{
-                whoscored_player_id:id,
-                player_id:player[0].id
-              }))
-            }
-            return Promise.resolve();
-          })
-        }
-        return Promise.resolve();
-      }).catch(function(err){
-        console.log(err)
-        return Promise.resolve();
-      })
+      data.date_of_birth = date_of_birth
     }
-    return Promise.resolve();
+    if(name){
+      data.name = name
+    }
+    if(height){
+      data.height = height.replace('cm','')
+    }
+    if(weight){
+      data.weight = weight.replace('kg','')
+    }
+    return excute(mysql.format('SELECT 1 FROM `whoscored_player` WHERE id = ? LIMIT 1',[id])).then(function(row){
+      if(row.length){
+        return excute(mysql.format('UPDATE `whoscored_player` SET ? WHERE id = ?',[data,id]))
+      } else {
+        data.id = id;
+        return excute(mysql.format('INSERT INTO `whoscored_player` SET ?',data))
+      }
+    }).then(function(row){
+      return excute(mysql.format('SELECT id FROM `player` WHERE name = ? AND date_of_birth = ? LIMIT 1',[name,date_of_birth]))
+    }).then(function(player){
+      if(player.length){
+        return excute(mysql.format('SELECT 1 FROM `whoscored_player_player` WHERE whoscored_player_id = ? AND player_id = ? LIMIT 1',[id,player[0].id])).then(function(row){
+          if(!row.length){
+            return excute(mysql.format('INSERT INTO `whoscored_player_player` SET ?',{
+              whoscored_player_id:id,
+              player_id:player[0].id
+            }))
+          }
+          return Promise.resolve();
+        })
+      }
+      return Promise.resolve();
+    }).catch(function(err){
+      console.log(err)
+      return Promise.resolve();
+    })
+    /*return excute(mysql.format('UPDATE `whoscored_player` SET ? WHERE id = ?',[{
+      date_of_birth:date_of_birth
+    },id])).then(function(){
+      return excute(mysql.format('SELECT name FROM `whoscored_player` WHERE id = ? LIMIT 1',[id]))
+    }).then(function(row){
+      return excute(mysql.format('SELECT id FROM `player` WHERE name = ? AND date_of_birth = ? LIMIT 1',[row[0].name,date_of_birth]))
+    }).then(function(player){
+      if(player.length){
+        return excute(mysql.format('SELECT 1 FROM `whoscored_player_player` WHERE whoscored_player_id = ? AND player_id = ? LIMIT 1',[id,player[0].id])).then(function(row){
+          if(!row.length){
+            return excute(mysql.format('INSERT INTO `whoscored_player_player` SET ?',{
+              whoscored_player_id:id,
+              player_id:player[0].id
+            }))
+          }
+          return Promise.resolve();
+        })
+      }
+      return Promise.resolve();
+    }).catch(function(err){
+      console.log(err)
+      return Promise.resolve();
+    })
+    return Promise.resolve();*/
 }
 module.exports = Player;
