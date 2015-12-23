@@ -30,7 +30,7 @@ migrate_match().then(migrate_match_player_statistics).then(function(){
                     return excute(mysql.format('SELECT 1 FROM `whoscored_match_player_statistics` WHERE teamId = ? AND matchId = ? LIMIT 1',[match.team2_id,match.id]))
                 }).then(function(stats){
                     if(!stats.length){
-                        crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=summary&subcategory=all&statsAccumulationType=0&isCurrent=true&teamIds='+row[0].team2_id+'&matchId='+row[0].id);
+                        crawler.queueURL(host + '/StatisticsFeed/1/GetMatchCentrePlayerStatistics?category=summary&subcategory=all&statsAccumulationType=0&isCurrent=true&teamIds='+match.team2_id+'&matchId='+match.id);
                     }
                     return Promise.resolve();
                 })
