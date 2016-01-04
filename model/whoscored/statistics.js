@@ -122,8 +122,12 @@ var getMatchCentrePlayerStatistics = function(queueItem,content){
                             playerTableStat.id = result.insertId;
                             return playerTableStat;
                         })
+                    } else {
+                        return excute(mysql.format('UPDATE `whoscored_match_player_statistics` SET ? WHERE playerId = ? AND teamId = ? AND matchId = ?',[playerTableStat,playerTableStat.playerId,playerTableStat.teamId,playerTableStat.matchId])).then(function(){
+                            playerTableStat.id = row[0].id;
+                            return playerTableStat;
+                        })
                     }
-                    return row[0]
                 }).then(MatchPlayerStatistic.getMatchCentrePlayerStatistics);
             }).catch(function(err){
                 console.log(err)

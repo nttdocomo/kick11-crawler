@@ -40,13 +40,16 @@ Model.getMatchCentrePlayerStatistics = function(whoscored_match_player_statistic
         player_id = whoscored_match_player_statistic.playerId = row[0].player_id;
         return excute(mysql.format('SELECT id FROM `match_player_statistics` WHERE playerId = ? AND teamId = ? AND matchId = ? LIMIT 1',[player_id,team_id,match_id]))
     }).then(function(row){
+        whoscored_match_player_statistic.teamId = team_id;
         if(!row.length){
-            whoscored_match_player_statistic.teamId = team_id;
             return excute(mysql.format('INSERT INTO `match_player_statistics` SET ?',whoscored_match_player_statistic)).then(function(result){
                 return result.insertId
             })
+        } else {
+            return excute(mysql.format('UPDATE `match_player_statistics` SET ? WHERE playerId = ? AND teamId = ? AND matchId = ?',[whoscored_match_player_statistic,player_id,team_id,match_id])).then(function(){
+                return row[0].id
+            })
         }
-        return row[0].id
     }).then(function(match_player_statistics_id){
         return excute(mysql.format('SELECT 1 FROM `whoscored_match_player_statistics_relation` WHERE whoscored_match_player_statistics_id = ? LIMIT 1',[whoscored_match_player_statistics_id])).then(function(row){
             if(!row.length){
