@@ -44,7 +44,6 @@ crawler.proxyHostname = "127.0.0.1";
 crawler.proxyPort="11080";*/
 crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
     console.log("Completed fetching resource:", queueItem.path);
-    crawler.interval = randomIntrvl();//everytime fetch complete, 
     console.log(crawler.interval)
     //console.log(queueItem.status.redirected)
     var next, decoder = new StringDecoder('utf8'),content = decoder.write(responseBuffer),matchesfeed,matchCentre2;
@@ -131,6 +130,8 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
     });
     console.log('complete')
     process.exit()
+}).on('fetchstart',function(queueItem, requestOptions){
+    crawler.interval = randomIntrvl();//everytime fetch complete, 
 }).on('fetcherror',function(queueItem, response){
     console.log(queueItem.stateData.code);
     console.log(queueItem.path)
