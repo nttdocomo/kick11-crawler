@@ -19,7 +19,7 @@ excute('SELECT id FROM `event`').then(function(events){
 				return event_team.reduce(function(sequence,item){
 					return excute(mysql.format('SELECT 1 FROM `event_standing_entries` WHERE event_id = ? AND team_id = ? LIMIT 1',[event.id,item.team_id])).then(function(row){
 						if(!row.length){
-							
+							return excute()
 						}
 					})
 				},Promise.resolve())
