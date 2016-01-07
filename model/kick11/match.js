@@ -44,7 +44,27 @@ Match.save_from_whoscored = function(data){
 			score2:data.score2
 		})
 		return match.save();
-	}).catch(function(err){
+	}).then(function(){
+		return excute(mysql.format('SELECT event_id FROM `event_team` WHERE team_id = ? LIMIT 1',[team1_id])).then(function(event_team){
+			if(event_team.length){
+				return excute(mysql.format('SELECT id FROM `event_standings` WHERE event_id = ? LIMIT 1',[event_team[0].event_id])).then(function(event_standings){
+					if(!event_standings.length){
+						return excute(mysql.format('INSERT INTO `event_standings` SET ?',{
+							event_id:event.id
+						})).then(function(result){
+							return result.insertId
+						})
+					}
+					return event_standings[0].id
+				}).then(function(event_standing_id){
+					return excute(mysql.format('SELECT 1 FROM `event_standing_entries` WHERE event_standing_id = ? AND team_id = ? LIMIT 1',[event_standing_id,team1_id]))
+				}).then(function(){
+					if()
+				})
+			}
+		})
+	}).then(function(row){
+	})catch(function(err){
 		console.log(err);
 		return Promise.resolve()
 	});
