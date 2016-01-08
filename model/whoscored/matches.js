@@ -49,11 +49,16 @@ Match.update_match = function(whoscored_match,match){
     if(!_.isEmpty(data)){
         return excute(mysql.format('UPDATE `match` SET ? WHERE id = ?',[data,match[0].id])).then(function(){
             return Match.get_whoscored_match_match(whoscored_match.id,match[0].id)
+        }).then(function(){
+            return Match.event_standing(match[0].team1_id)
+        }).then(function(){
+            return Match.event_standing(match[0].team2_id)
         })
     }
     return Promise.resolve()
 }
 Match.insert_match = function(match){
+    var team1_id,team2_id;
     return excute(mysql.format('SELECT team_id FROM `whoscored_team_team` WHERE whoscored_team_id = ? LIMIT 1',[match.team1_id])).then(function(row){
         team1_id = row[0].team_id;
         return excute(mysql.format('SELECT team_id FROM `whoscored_team_team` WHERE whoscored_team_id = ? LIMIT 1',[match.team2_id]))
@@ -72,6 +77,10 @@ Match.insert_match = function(match){
             })
         }
         return Match.update_match(match,row)
+    }).then(function(){
+        return Match.event_standing(team1_id)
+    }).then(function(){
+        return Match.event_standing(team2_id)
     })
 }
 Match.get_match = function(match){
@@ -96,6 +105,87 @@ Match.get_match = function(match){
         })
     });
 };
+Match.event_standing = function(team_id){
+    console.log(team_id)
+    return excute(mysql.format('SELECT event_id FROM `event_team` WHERE team_id = ? LIMIT 1',[team_id])).then(function(event_team){
+        console.log(event_team.length)
+        if(event_team.length){
+            var event_id = event_team[0].event_id;
+            return excute(mysql.format('SELECT id FROM `event_standings` WHERE event_id = ? LIMIT 1',[event_id])).then(function(event_standings){
+                if(!event_standings.length){
+                    return excute(mysql.format('INSERT INTO `event_standings` SET ?',{
+                        event_id:event.id
+                    })).then(function(result){
+                        return result.insertId
+                    })
+                }
+                return event_standings[0].id
+            }).then(function(event_standing_id){
+                return excute(mysql.format('SELECT id FROM `event_standing_entries` WHERE event_standing_id = ? AND team_id = ? LIMIT 1',[event_standing_id,team_id])).then(function(event_standing_entries){
+                    var pts = played = won = lost = drawn = goals_for = goals_against = 0;
+                    return excute(mysql.format('SELECT * FROM `match` WHERE round_id IN (SELECT id FROM `round` WHERE event_id = ?) AND (team1_id = ? OR team2_id = ?) AND score1 IS NOT NULL AND score2 IS NOT NULL',[event_id,team_id,team_id])).then(function(matches){
+                        return matches.reduce(function(sequence,match){
+                            played += 1;
+                            if(match.score1 == match.score2){
+                                pts += 1;
+                                drawn += 1;
+                            } else {
+                                console.log([match.score1,match.score2].join(':'))
+                                if(match.team1_id == team_id){
+                                    goals_for += match.score1;
+                                    goals_against += match.score2;
+                                    if(match.score1 > match.score2){
+                                        pts += 3;
+                                        won += 1;
+                                    }
+                                    if(match.score1 < match.score2){
+                                        lost += 1;
+                                    }
+                                }
+                                if(match.team2_id == team_id){
+                                    goals_for += match.score2;
+                                    goals_against += match.score1;
+                                    if(match.score1 > match.score2){
+                                        lost += 1;
+                                    }
+                                    if(match.score1 < match.score2){
+                                        pts += 3;
+                                        won += 1;
+                                    }
+                                }
+                            }
+                            return sequence;
+                        },Promise.resolve())
+                    }).then(function(){
+                        if(event_standing_entries.length){
+                            return excute(mysql.format('UPDATE `event_standing_entries` SET ? WHERE id = ?',[{
+                                "team_id":team_id,
+                                "pts":pts,
+                                "played":played,
+                                "won":won,
+                                "lost":lost,
+                                "drawn":drawn,
+                                "goals_for":goals_for,
+                                "goals_against":goals_against
+                            },event_standing_entries[0].id]))
+                        } else {
+                            return excute(mysql.format('INSERT INTO `event_standing_entries` SET ?',{
+                                "event_standing_id":event_standing_id,
+                                "team_id":team_id,
+                                "pts":pts,
+                                "played":played,
+                                "won":won,
+                                "lost":lost,
+                                "drawn":drawn,
+                                "goals_for":goals_for,
+                            }))
+                        }
+                    })
+                })
+            })
+        }
+    })
+}
 Match.get_uncomplete_matches = function(){
     return excute('SELECT id,play_at AS play_date FROM whoscored_match WHERE score1 IS NULL AND score2 IS NULL ORDER BY play_at ASC');
 };

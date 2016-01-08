@@ -80,7 +80,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
                 next();
             })
         }
-        if(/^\/MatchesFeed\/(\d{1,})\/MatchCentre2$/.test(queueItem.path)){
+        /*if(/^\/MatchesFeed\/(\d{1,})\/MatchCentre2$/.test(queueItem.path)){
             next = this.wait();
             getMatchCentre2(queueItem, content, response).then(function(){
                 console.log('getMatchCentre2')
@@ -107,15 +107,13 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
             })
         }
         if(/^\/Matches\/\d+\/Live$/.test(queueItem.path)){
-            /*console.log('asdasdasdads')
-            console.log(content.replace(/(.*[\n|\r])+?.+?(matchCentreData).+?(\{.+\})\;[\n|\r](.*[\n|\r])+/,'$3'))*/
             content = content.replace(/(.*[\n|\r])+?.+?(matchCentreData).+?(\{.+\})\;[\n|\r](.*[\n|\r])+/,'$3')
             next = this.wait();
             getMatchCentre2(queueItem, content, response).then(function(){
                 console.log('getMatchCentre2')
                 next();
             })
-        }
+        }*/
     }
 }).on('complete',function(){
   	console.log('complete:'+crawler.queue.complete());
@@ -154,9 +152,9 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
     //return false;
     //crawler.queueURL(host + queueItem.path);
 }).addFetchCondition(function(parsedURL) {
-  if(parsedURL.uriPath == '/404.html'){
-    console.log(parsedURL.uriPath)
-  }
+    if(parsedURL.uriPath == '/404.html'){
+        console.log(parsedURL.uriPath)
+    }
     if(parsedURL.uriPath != '/Error.html' && parsedURL.uriPath != '/404.html'){
         return true;
     }
