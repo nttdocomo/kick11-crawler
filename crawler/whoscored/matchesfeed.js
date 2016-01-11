@@ -3,7 +3,6 @@
  */
 var http = require("http"),
 excute = require('../../promiseExcute'),
-StringDecoder = require('string_decoder').StringDecoder,
 mysql = require('mysql'),
 moment = require('moment-timezone'),
 migrate_match = require('./migrate_match'),

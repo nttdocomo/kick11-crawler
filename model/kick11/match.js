@@ -124,7 +124,7 @@ Match.save_from_whoscored = function(data){
 			}
 		})
 	}).then(function(row){
-	})catch(function(err){
+	}).catch(function(err){
 		console.log(err);
 		return Promise.resolve()
 	});

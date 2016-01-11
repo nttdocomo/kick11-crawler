@@ -114,7 +114,7 @@ Match.event_standing = function(team_id){
             return excute(mysql.format('SELECT id FROM `event_standings` WHERE event_id = ? LIMIT 1',[event_id])).then(function(event_standings){
                 if(!event_standings.length){
                     return excute(mysql.format('INSERT INTO `event_standings` SET ?',{
-                        event_id:event.id
+                        event_id:event_id
                     })).then(function(result){
                         return result.insertId
                     })
@@ -129,6 +129,14 @@ Match.event_standing = function(team_id){
                             if(match.score1 == match.score2){
                                 pts += 1;
                                 drawn += 1;
+                                if(match.team1_id == team_id){
+                                    goals_for += match.score1;
+                                    goals_against += match.score2;
+                                }
+                                if(match.team2_id == team_id){
+                                    goals_for += match.score2;
+                                    goals_against += match.score1;
+                                }
                             } else {
                                 console.log([match.score1,match.score2].join(':'))
                                 if(match.team1_id == team_id){
@@ -181,9 +189,42 @@ Match.event_standing = function(team_id){
                             }))
                         }
                     })
+                }).then(function(){
+                    return excute(mysql.format('SELECT * FROM `event_standing_entries` WHERE event_standing_id = ?',[event_standing_id]))
+                }).then(function(event_standing_entries){
+                    if(event_standing_entries.length){
+                        event_standing_entries.sort(function(a, b) {
+                            if(a.pts < b.pts){
+                                return 1;
+                            }
+                            if(a.pts == b.pts){
+                                if(a.goals_for - a.goals_against < b.goals_for - b.goals_against){
+                                    return 1;
+                                }
+                                if(a.goals_for - a.goals_against == b.goals_for - b.goals_against){
+                                    if(a.goals_for > b.goals_for){
+                                        return 1;
+                                    }
+                                    return -1;
+                                }
+                                return -1;
+                            }
+                            return -1;
+                        });
+                        return event_standing_entries.reduce(function(sequence,event_standing_entry,i){
+                            var pos = i+1;
+                            return sequence.then(function(){
+                                return excute(mysql.format('UPDATE `event_standing_entries` SET ? WHERE id = ?',[{
+                                    pos:pos
+                                },event_standing_entry.id]))
+                            })
+                        },Promise.resolve())
+                    }
+                    return Promise.resolve()
                 })
             })
         }
+        return Promise.resolve()
     })
 }
 Match.get_uncomplete_matches = function(){

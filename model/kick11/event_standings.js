@@ -30,6 +30,14 @@ add_or_update_event_standings = function(){
 									if(match.score1 == match.score2){
 										pts += 1;
 										drawn += 1;
+										if(match.team1_id == team_id){
+		                                    goals_for += match.score1;
+		                                    goals_against += match.score2;
+		                                }
+		                                if(match.team2_id == team_id){
+		                                    goals_for += match.score2;
+		                                    goals_against += match.score1;
+		                                }
 									} else {
 										console.log([match.score1,match.score2].join(':'))
 										if(match.team1_id == item.team_id){
