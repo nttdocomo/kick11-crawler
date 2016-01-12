@@ -13,10 +13,7 @@ module.exports = Class.extend({
 		data = this.attributes;
 		return this.is_exist().then(function(row){
     		if(row.length){
-    			var diff = me.needToUpdate(data,row[0]);
-    			if(!_.isEmpty(diff)){
-    				return me.update(diff)
-    			}
+    			return me.update(data)
     		} else {
     			//console.log(me.get('id') + ' is not in the databse')
     			return me.insert(data)
