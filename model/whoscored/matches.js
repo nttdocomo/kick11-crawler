@@ -7,6 +7,7 @@ _ = require('underscore'),
 moment = require('moment'),
 moment_tz = require('moment-timezone'),
 difference = require('../../crawler/transfermarkt.co.uk/utils').difference,
+update_event_standings = require('../kick11/event_standings').update_event_standings,
 Model = require('../../model'),
 Match = Model.extend({
 	table:'whoscored_match',
@@ -85,7 +86,6 @@ Match.insert_match = function(match){
 }
 Match.get_match = function(match){
     return excute(mysql.format('SELECT 1 FROM `whoscored_match` WHERE id = ? LIMIT 1',[match.id])).then(function(row){
-    	var team1_id,team2_id;
     	if(!row.length){
     		return Match.insert_match(match).then(function(){
                 return Match.insert_whoscored_match(match)
@@ -189,38 +189,6 @@ Match.event_standing = function(team_id){
                             }))
                         }
                     })
-                }).then(function(){
-                    return excute(mysql.format('SELECT * FROM `event_standing_entries` WHERE event_standing_id = ?',[event_standing_id]))
-                }).then(function(event_standing_entries){
-                    if(event_standing_entries.length){
-                        event_standing_entries.sort(function(a, b) {
-                            if(a.pts < b.pts){
-                                return 1;
-                            }
-                            if(a.pts == b.pts){
-                                if(a.goals_for - a.goals_against < b.goals_for - b.goals_against){
-                                    return 1;
-                                }
-                                if(a.goals_for - a.goals_against == b.goals_for - b.goals_against){
-                                    if(a.goals_for > b.goals_for){
-                                        return 1;
-                                    }
-                                    return -1;
-                                }
-                                return -1;
-                            }
-                            return -1;
-                        });
-                        return event_standing_entries.reduce(function(sequence,event_standing_entry,i){
-                            var pos = i+1;
-                            return sequence.then(function(){
-                                return excute(mysql.format('UPDATE `event_standing_entries` SET ? WHERE id = ?',[{
-                                    pos:pos
-                                },event_standing_entry.id]))
-                            })
-                        },Promise.resolve())
-                    }
-                    return Promise.resolve()
                 })
             })
         }

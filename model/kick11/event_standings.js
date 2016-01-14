@@ -3,6 +3,39 @@
  */
 var excute = require('../../promiseExcute'),
 mysql = require('mysql'),
+update_event_standings = function(){
+	return excute(mysql.format('SELECT * FROM `event_standing_entries` WHERE event_standing_id = ?',[event_standing_id])).then(function(event_standing_entries){
+        if(event_standing_entries.length){
+            event_standing_entries.sort(function(a, b) {
+                if(a.pts < b.pts){
+                    return 1;
+                }
+                if(a.pts == b.pts){
+                    if(a.goals_for - a.goals_against < b.goals_for - b.goals_against){
+                        return 1;
+                    }
+                    if(a.goals_for - a.goals_against == b.goals_for - b.goals_against){
+                        if(a.goals_for > b.goals_for){
+                            return 1;
+                        }
+                        return -1;
+                    }
+                    return -1;
+                }
+                return -1;
+            });
+            return event_standing_entries.reduce(function(sequence,event_standing_entry,i){
+                var pos = i+1;
+                return sequence.then(function(){
+                    return excute(mysql.format('UPDATE `event_standing_entries` SET ? WHERE id = ?',[{
+                        pos:pos
+                    },event_standing_entry.id]))
+                })
+            },Promise.resolve())
+        }
+        return Promise.resolve()
+    })
+}
 add_or_update_event_standings = function(){
 	return excute('SELECT id FROM `event`').then(function(events){
 		return events.reduce(function(sequence,event){
@@ -122,4 +155,4 @@ add_or_update_event_standings = function(){
 	})
 };
 module.exports.add_or_update_event_standings = add_or_update_event_standings
-add_or_update_event_standings()
+module.exports.update_event_standings = update_event_standings
