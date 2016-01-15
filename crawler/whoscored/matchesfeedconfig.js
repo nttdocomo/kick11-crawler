@@ -80,7 +80,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
                 next();
             })
         }
-        /*if(/^\/MatchesFeed\/(\d{1,})\/MatchCentre2$/.test(queueItem.path)){
+        if(/^\/MatchesFeed\/(\d{1,})\/MatchCentre2$/.test(queueItem.path)){
             next = this.wait();
             getMatchCentre2(queueItem, content, response).then(function(){
                 console.log('getMatchCentre2')
@@ -113,7 +113,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
                 console.log('getMatchCentre2')
                 next();
             })
-        }*/
+        }
     }
 }).on('complete',function(){
   	console.log('complete:'+crawler.queue.complete());
