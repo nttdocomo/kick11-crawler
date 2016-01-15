@@ -63,12 +63,8 @@ module.exports = function(queueItem, matchesfeed, response, crawler){
             }
             var promise = sequence.then(function(){
                 return Match.get_match(values)
-                //return Promise.resolve();
-                //return whoscoredMatch.save();
-                //return get_match(match,queueItem.path.replace(/^\/matchesfeed\/\?d\=(\d{4})(\d{2})(\d{2})$/,"$1-$2-$3"))
-            })/*.then(function(){
-                return Match.save_from_whoscored(values);
-            })*/.then(function(){
+            }).then(function(){
+                console.log('complete match')
                 return team1.save()
             }).then(function(){
                 return team2.save();

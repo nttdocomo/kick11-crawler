@@ -39,24 +39,23 @@ Match.insert_whoscored_match = function(data){
     return excute(mysql.format('INSERT INTO `whoscored_match` SET ?',data))
 }
 Match.update_match = function(whoscored_match,match){
-    var data = {};
+    var data = {},sequence = Promise.resolve();
     if(match[0].score1+'' != data.score1+''){
         data.score1 = whoscored_match.score1
     }
     if(match[0].score2+'' != data.score2 + ''){
         data.score2 = whoscored_match.score2
     }
-    
     if(!_.isEmpty(data)){
-        return excute(mysql.format('UPDATE `match` SET ? WHERE id = ?',[data,match[0].id])).then(function(){
+        sequence = excute(mysql.format('UPDATE `match` SET ? WHERE id = ?',[data,match[0].id])).then(function(){
             return Match.get_whoscored_match_match(whoscored_match.id,match[0].id)
-        }).then(function(){
-            return Match.event_standing(match[0].team1_id)
-        }).then(function(){
-            return Match.event_standing(match[0].team2_id)
         })
     }
-    return Promise.resolve()
+    return sequence.then(function(){
+        return Match.event_standing(match[0].team1_id)
+    }).then(function(){
+        return Match.event_standing(match[0].team2_id)
+    })
 }
 Match.insert_match = function(match){
     var team1_id,team2_id;
@@ -82,6 +81,8 @@ Match.insert_match = function(match){
         return Match.event_standing(team1_id)
     }).then(function(){
         return Match.event_standing(team2_id)
+    }).catch(function(err){
+        console.log(err)
     })
 }
 Match.get_match = function(match){
@@ -106,9 +107,8 @@ Match.get_match = function(match){
     });
 };
 Match.event_standing = function(team_id){
-    console.log(team_id)
     return excute(mysql.format('SELECT event_id FROM `event_team` WHERE team_id = ? LIMIT 1',[team_id])).then(function(event_team){
-        console.log(event_team.length)
+        console.log(event_team.length+'121212')
         if(event_team.length){
             var event_id = event_team[0].event_id;
             return excute(mysql.format('SELECT id FROM `event_standings` WHERE event_id = ? LIMIT 1',[event_id])).then(function(event_standings){
@@ -165,6 +165,7 @@ Match.event_standing = function(team_id){
                             return sequence;
                         },Promise.resolve())
                     }).then(function(){
+                        console.log('event_standing_entries')
                         if(event_standing_entries.length){
                             return excute(mysql.format('UPDATE `event_standing_entries` SET ? WHERE id = ?',[{
                                 "team_id":team_id,
@@ -189,6 +190,8 @@ Match.event_standing = function(team_id){
                             }))
                         }
                     })
+                }).then(function(){
+                    return update_event_standings(event_standing_id)
                 })
             })
         }
