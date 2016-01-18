@@ -68,6 +68,7 @@ Match.migrate_match = function(match){
     }).then(function(row){
         var data = {};
         if(!row.length){
+            console.log(match.id)
             data = _.extend(_.pick(match,'play_at','score1','score2'),{
                 team1_id:team1_id,
                 team2_id:team2_id
