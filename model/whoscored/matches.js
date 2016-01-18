@@ -39,7 +39,6 @@ Match.insert_whoscored_match = function(data){
     return excute(mysql.format('INSERT INTO `whoscored_match` SET ?',data))
 }
 Match.update_match = function(whoscored_match,match){
-    console.log('update_match')
     var data = {
         'score1' : whoscored_match.score1,
         'score2' : whoscored_match.score2
@@ -121,12 +120,10 @@ Match.get_match = function(match){
     	}
         return excute(mysql.format('SELECT match_id FROM `whoscored_match_match` WHERE whoscored_match_id = ? LIMIT 1',[match.id])).then(function(row){
             if(!row.length){
-                console.log('insert match:'+match.id)
                 return Match.insert_match(match).catch(function(){
                     return Promise.resolve()
                 })
             }
-            console.log('update match:'+match.id)
             return excute(mysql.format('SELECT * FROM `match` WHERE id = ? LIMIT 1',[row[0].match_id])).then(function(row){
                 return Match.update_match(match,row)
             })
@@ -135,7 +132,6 @@ Match.get_match = function(match){
 };
 Match.event_standing = function(team_id){
     return excute(mysql.format('SELECT event_id FROM `event_team` WHERE team_id = ? LIMIT 1',[team_id])).then(function(event_team){
-        console.log(event_team.length+'121212')
         if(event_team.length){
             var event_id = event_team[0].event_id;
             return excute(mysql.format('SELECT id FROM `event_standings` WHERE event_id = ? LIMIT 1',[event_id])).then(function(event_standings){
