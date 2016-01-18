@@ -91,6 +91,7 @@ Match.get_match = function(match){
     	}
         return excute(mysql.format('SELECT match_id FROM `whoscored_match_match` WHERE whoscored_match_id = ? LIMIT 1',[match.id])).then(function(row){
             if(!row.length){
+                console.log('insert match:'+match.id)
                 return Match.insert_match(match).catch(function(){
                     return Promise.resolve()
                 })
