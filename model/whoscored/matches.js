@@ -57,6 +57,34 @@ Match.update_match = function(whoscored_match,match){
         return Match.event_standing(match[0].team2_id)
     })
 }
+Match.migrate_match = function(match){
+    var team1_id,team2_id;
+    return excute(mysql.format('SELECT team_id FROM `whoscored_team_team` WHERE whoscored_team_id = ? LIMIT 1',[match.team1_id])).then(function(row){
+        team1_id = row[0].team_id;
+        return excute(mysql.format('SELECT team_id FROM `whoscored_team_team` WHERE whoscored_team_id = ? LIMIT 1',[match.team2_id]))
+    }).then(function(row){
+        team2_id = row[0].team_id;
+        return excute(mysql.format('SELECT * FROM `match` WHERE team1_id = ? AND team2_id = ? AND play_at = ? LIMIT 1',[team1_id,team2_id,match.play_at]))
+    }).then(function(row){
+        var data = {};
+        if(!row.length){
+            data = _.extend(_.pick(match,'play_at','score1','score2'),{
+                team1_id:team1_id,
+                team2_id:team2_id
+            })
+            return excute(mysql.format('INSERT INTO `match` SET ?',data)).then(function(result){
+                return Match.get_whoscored_match_match(match.id,result.insertId)
+            })
+        }
+        return Match.update_match(match,row)
+    }).then(function(){
+        return Match.event_standing(team1_id)
+    }).then(function(){
+        return Match.event_standing(team2_id)
+    }).catch(function(err){
+        console.log(err)
+    })
+},
 Match.insert_match = function(match){
     var team1_id,team2_id;
     return excute(mysql.format('SELECT team_id FROM `whoscored_team_team` WHERE whoscored_team_id = ? LIMIT 1',[match.team1_id])).then(function(row){
@@ -71,7 +99,7 @@ Match.insert_match = function(match){
         return excute(mysql.format('INSERT INTO `match` SET ?',data)).then(function(result){
             return Match.get_whoscored_match_match(match.id,result.insertId)
         })
-        //return excute(mysql.format('SELECT * FROM `match` WHERE team1_id = ? AND team2_id = ? AND play_at = ? LIMIT 1',[team1_id,team2_id,match.play_at]))
+        return excute(mysql.format('SELECT * FROM `match` WHERE team1_id = ? AND team2_id = ? AND play_at = ? LIMIT 1',[team1_id,team2_id,match.play_at]))
     })/*.then(function(){
         return Match.event_standing(team1_id)
     }).then(function(){

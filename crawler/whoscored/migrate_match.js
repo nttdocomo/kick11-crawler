@@ -5,7 +5,7 @@ module.exports = function(){
         if(whoscored_matches.length){
             return whoscored_matches.reduce(function(sequence,match,i){
                 return sequence.then(function(){
-                    return Match.insert_match(match).catch(function(err){
+                    return Match.migrate_match(match).catch(function(err){
                         console.log(err)
                         return Promise.resolve()
                     })
