@@ -64,7 +64,6 @@ module.exports = function(queueItem, matchesfeed, response, crawler){
             var promise = sequence.then(function(){
                 return Match.get_match(values)
             }).then(function(){
-                console.log('complete match')
                 return team1.save()
             }).then(function(){
                 return team2.save();

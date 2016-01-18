@@ -4,9 +4,7 @@
 var excute = require('../../promiseExcute'),
 mysql = require('mysql'),
 update_event_standings = function(event_standing_id){
-	console.log('update_event_standings')
 	return excute(mysql.format('SELECT * FROM `event_standing_entries` WHERE event_standing_id = ?',[event_standing_id])).then(function(event_standing_entries){
-		console.log('sequence')
         if(event_standing_entries.length){
             event_standing_entries.sort(function(a, b) {
                 if(a.pts < b.pts){
