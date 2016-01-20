@@ -21,6 +21,47 @@ Transfer = Model.extend({
 	}
 })
 Transfer.table = 'transfer';
+Transfer.insert = function(season,transfer_date,player_id,releasing_team_id,taking_team_id){
+	return excute(mysql.format('SELECT player_id FROM transfermarkt_player_player WHERE transfermarkt_player_id = ? LIMIT 1',[player_id])).then(function(row){
+		player_id = row[0].player_id;
+    	return excute(mysql.format('SELECT team_id FROM transfermarkt_team_team WHERE transfermarkt_team_id = ? LIMIT 1',[releasing_team_id]))
+    }).then(function(row){
+	    releasing_team_id = row[0].team_id;
+	   	return excute(mysql.format('SELECT team_id FROM transfermarkt_team_team WHERE transfermarkt_team_id = ? LIMIT 1',[taking_team_id]))
+    }).then(function(row){
+	    taking_team_id = row[0].team_id;
+    	return excute(mysql.format('SELECT transfer_id FROM transfermarkt_transfer_transfer WHERE transfermarkt_transfer_id = ? LIMIT 1',[id]))
+    }).then(function(row){
+    	if(!row.length){
+    		return excute(mysql.format('INSERT INTO `transfer` SET ?',{
+    			'season':season,
+				'transfer_date':transfer_date.format('YYYY-MM-DD'),
+				'player_id':player_id,
+	    		'releasing_team_id':releasing_team_id,
+	    		'taking_team_id':taking_team_id
+    		})).then(function(result){
+    			return excute(mysql.format('INSERT INTO `transfermarkt_transfer_transfer` SET ?',{
+    				transfermarkt_transfer_id:id,
+    				transfer_id:result.insertId
+    			}))
+    		})
+    	} else {
+    		return excute(mysql.format('UPDATE `transfer` SET ? WHERE id = ?',[{
+    			'season':season,
+				'transfer_date':transfer_date.format('YYYY-MM-DD'),
+				//'transfer_sum':transfer_sum,
+				'player_id':player_id,
+	    		//'loan':loan,
+	    		'releasing_team_id':releasing_team_id,
+	    		'taking_team_id':taking_team_id
+    		},row[0].transfer_id]))
+    	}
+    }).catch(function(err){
+    	console.log(err)
+		console.log($el.children().eq(1).text())
+    	return Promise.resolve()
+    })
+}
 Transfer.get_trasfer_from_korrektur = function($){
 	var transfer_table = $('#transfers'),transfer_tbody = transfer_table.find('>tbody'),transfers_id = [];
 	transfer_tbody.find(' > input[id$="trans_id"]').each(function(i,tr){

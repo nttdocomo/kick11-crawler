@@ -91,8 +91,8 @@ Transfer.get_trasfer_from_transfers = function($){
 			'season':season,
 			'transfer_date':transfer_date.format('YYYY-MM-DD'),
 			'player_id':player_id,
-  		'releasing_team_id':releasing_team_id,
-  		'taking_team_id':taking_team_id
+	  		'releasing_team_id':releasing_team_id,
+	  		'taking_team_id':taking_team_id
 		});
 	    return sequence.then(function(){
 	    	return transfer.save();
@@ -115,8 +115,8 @@ Transfer.get_trasfer_from_transfers = function($){
 	    	if(!row.length){
 	    		return excute(mysql.format('INSERT INTO `transfer` SET ?',{
 	    			'season':season,
-						'transfer_date':transfer_date.format('YYYY-MM-DD'),
-						'player_id':player_id,
+					'transfer_date':transfer_date.format('YYYY-MM-DD'),
+					'player_id':player_id,
 		    		'releasing_team_id':releasing_team_id,
 		    		'taking_team_id':taking_team_id
 	    		})).then(function(result){
@@ -128,9 +128,9 @@ Transfer.get_trasfer_from_transfers = function($){
 	    	} else {
 	    		return excute(mysql.format('UPDATE `transfer` SET ? WHERE id = ?',[{
 	    			'season':season,
-						'transfer_date':transfer_date.format('YYYY-MM-DD'),
-						//'transfer_sum':transfer_sum,
-						'player_id':player_id,
+					'transfer_date':transfer_date.format('YYYY-MM-DD'),
+					//'transfer_sum':transfer_sum,
+					'player_id':player_id,
 		    		//'loan':loan,
 		    		'releasing_team_id':releasing_team_id,
 		    		'taking_team_id':taking_team_id
