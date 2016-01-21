@@ -10,9 +10,12 @@ Nation = require('../../model/transfermarkt.co.uk/nation'),
 Match = require('../../model/transfermarkt.co.uk/match'),
 Competition = require('../../model/transfermarkt.co.uk/competition'),
 Transfer = require('../../model/transfermarkt.co.uk/transfer'),
-difference = require('./utils').difference,
+utils = require('../../utils'),
+randomIntrvl = utils.randomIntrvl,
 host = 'http://www.transfermarkt.co.uk',
 fetchedUrls = [],
+maxInterval = 20000,
+minInterval = 2000,
 input_competition = process.argv[2],
 crawler = new Crawler("www.transfermarkt.co.uk", "/");
 crawler.discoverResources = false;
@@ -20,7 +23,7 @@ crawler.discoverResources = false;
 crawler.proxyHostname = '127.0.0.1';
 crawler.proxyPort = '11080';*/
 crawler.maxConcurrency = 5;
-crawler.interval = 600;
+crawler.interval = randomIntrvl();
 crawler.listenerTTL = 100000;
 //crawler.timeout = 30000;
 crawler.userAgent = 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.124 Safari/537.36';
@@ -42,6 +45,7 @@ crawler/*.on('fetchstart',function(queueItem, requestOptions){
 	console.log("gziperror fetching resource:", queueItem.path);
 })*/.on("fetchcomplete",function(queueItem, responseBuffer, response){
 	console.log("Completed fetching resource:", queueItem.path);
+  console.log(crawler.interval)
   var decoder = new StringDecoder('utf8'),$,
   next;
   if(/^\/\S+?\/startseite\/verein\/\d+?\/\S*$/i.test(queueItem.path)){//competition
@@ -118,6 +122,8 @@ crawler/*.on('fetchstart',function(queueItem, requestOptions){
 	console.log('complete:'+crawler.queue.complete());
   console.log('errors:'+crawler.queue.errors());
 	process.exit();
+}).on('fetchstart',function(queueItem, requestOptions){
+    crawler.interval = randomIntrvl();//everytime fetch complete, 
 }).on('fetcherror',function(queueItem, response){
 	console.log('fetcherror ' + queueItem.path)
 	//crawler.queueURL(host + queueItem.path);
@@ -147,7 +153,8 @@ crawler/*.on('fetchstart',function(queueItem, requestOptions){
 if(input_competition){
   crawler.queueURL(host + '/premier-league/startseite/wettbewerb/'+input_competition);
 } else {
-  crawler.queueURL(host + '/premier-league/startseite/wettbewerb/GB1');
+  //crawler.queueURL(host + '/premier-league/startseite/wettbewerb/GB1');
+  crawler.queueURL(host + '/joel-castro-pereira/profil/spieler/192611');
 }
 //crawler.queueURL(host + '/premier-league/gesamtspielplan/wettbewerb/GB1');
 crawler.start();

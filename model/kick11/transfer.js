@@ -7,6 +7,7 @@ moment = require('moment'),
 _ = require('underscore'),
 mysql = require('mysql'),
 difference = require('../../crawler/transfermarkt.co.uk/utils').difference,
+TeamPlayer = require('./team_player');
 Transfer = Model.extend({
 	table:'transfer',
 	needToUpdate:function(data,row){
@@ -21,7 +22,7 @@ Transfer = Model.extend({
 	}
 })
 Transfer.table = 'transfer';
-Transfer.insert = function(season,transfer_date,player_id,releasing_team_id,taking_team_id){
+Transfer.insert = function(id,season,transfer_date,player_id,releasing_team_id,taking_team_id){
 	return excute(mysql.format('SELECT player_id FROM transfermarkt_player_player WHERE transfermarkt_player_id = ? LIMIT 1',[player_id])).then(function(row){
 		player_id = row[0].player_id;
     	return excute(mysql.format('SELECT team_id FROM transfermarkt_team_team WHERE transfermarkt_team_id = ? LIMIT 1',[releasing_team_id]))
@@ -56,9 +57,10 @@ Transfer.insert = function(season,transfer_date,player_id,releasing_team_id,taki
 	    		'taking_team_id':taking_team_id
     		},row[0].transfer_id]))
     	}
+    }).then(function(){
+    	//根据球员最新的转会更新teamplayer表
+    	return TeamPlayer.update_team_player_by_player_id(player_id)
     }).catch(function(err){
-    	console.log(err)
-		console.log($el.children().eq(1).text())
     	return Promise.resolve()
     })
 }
