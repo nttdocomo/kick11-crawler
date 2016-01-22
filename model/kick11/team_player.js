@@ -2,9 +2,6 @@
  * @author nttdocomo
  */
 var excute = require('../../promiseExcute'),
-Model = require('../../model'),
-moment = require('moment'),
-_ = require('underscore'),
 mysql = require('mysql'),
 realtime_team_player = function(){
 	//查询所有球员的id
@@ -17,7 +14,7 @@ realtime_team_player = function(){
 	})
 };
 update_team_player_by_player_id = function(player_id){
-	var player_id = player_id,team_id
+	var player_id = player_id,team_id;
 	return excute(mysql.format('SELECT taking_team_id FROM `transfer` WHERE player_id = ? AND transfer_date < CURRENT_DATE() ORDER BY transfer_date DESC LIMIT 1',[player_id])).then(function(transfer){
 		team_id = transfer[0].taking_team_id;
 		console.log('team_id|player_id\n'+[team_id,player_id].join('|'))
@@ -41,4 +38,4 @@ update_team_player_by_player_id = function(player_id){
 	})
 }
 module.exports.realtime_team_player = realtime_team_player;
-realtime_team_player()
+module.exports.update_team_player_by_player_id = update_team_player_by_player_id;

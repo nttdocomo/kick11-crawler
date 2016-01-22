@@ -38,35 +38,32 @@ Transfer.get_trasfer_from_korrektur = function($){
 		contract_period = [$el.next().next().children().eq(0).find('input').eq(2).val(),$el.next().next().children().eq(0).find('input').eq(1).val(),$el.next().next().children().eq(0).find('input').eq(0).val()].join('-'),
 		//transfer_date = /\d{2}\.\d{2}\.\d{4}/.test(transfer_date) ? transfer_date.replace(/(\d{2})\.(\d{2})\.(\d{4})/,'$3-$2-$1') : moment(month + ' 1,' + season).format('YYYY-MM-DD'),
 		contract_period = /\d{4}\-\d{2}\-\d{2}/.test(contract_period) ? contract_period : undefined,
+		transfer;
+		transfer_sum = /\d/.test(transfer_sum) ? transfer_sum.replace(/\./g,'') : 0;
 		transfer = new Transfer({
 			'id':id,
-			'contract_period':contract_period
+			'contract_period':contract_period,
+			'transfer_sum':transfer_sum,
+			'loan':loan
 		})
-		transfer_sum = /\d/.test(transfer_sum) ? transfer_sum.replace(/\./g,'') : 0;
 		//console.log('transfer_date:'+transfer_date)
     return sequence.then(function(){
     	return transfer.save()
     }).then(function(){
-    	return excute(mysql.format('SELECT player_id FROM transfermarkt_player_player WHERE transfermarkt_player_id = ? LIMIT 1',[player_id]))
-    }).then(function(row){
-    	player_id = row[0].player_id;
-    	return excute(mysql.format('SELECT team_id FROM transfermarkt_team_team WHERE transfermarkt_team_id = ? LIMIT 1',[releasing_team_id]))
-    }).then(function(row){
-    	releasing_team_id = row[0].team_id;
-    	return excute(mysql.format('SELECT team_id FROM transfermarkt_team_team WHERE transfermarkt_team_id = ? LIMIT 1',[taking_team_id]))
-    }).then(function(row){
-    	taking_team_id = row[0].team_id;
-    	return excute(mysql.format('SELECT id,contract_period FROM transfer WHERE season = ? AND player_id = ? AND releasing_team_id = ? AND taking_team_id = ? LIMIT 1',[season,player_id,releasing_team_id,taking_team_id]))
+    	return excute(mysql.format('SELECT transfer_id FROM `transfermarkt_transfer_transfer` WHERE transfermarkt_transfer_id = ? LIMIT 1',[id]))
     }).then(function(row){
     	if(row.length){
     		if(contract_period && contract_period != row[0].contract_period){
     			return excute(mysql.format('UPDATE `transfer` SET ? WHERE id = ?',[{
-    				'contract_period':contract_period
-    			},row[0].id]))
+    				'contract_period':contract_period,
+    				'transfer_sum':transfer_sum,
+    				'loan':loan
+    			},row[0].transfer_id]))
     		}
     	}
     	return Promise.resolve()
-    }).catch(function(){
+    }).catch(function(err){
+    	console.log(err)
     	return Promise.resolve()
     });
 	},Promise.resolve())
