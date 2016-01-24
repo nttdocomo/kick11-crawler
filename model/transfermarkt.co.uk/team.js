@@ -23,12 +23,12 @@ Team = Model.extend({
 Team.table = 'transfermarkt_team';
 Team.get_team = function($){
 	var is_club = $('#wettbewerb_select_breadcrumb').val() ? 1:0,
-    team_name = trim($('.spielername-profil').text().replace(/^\s+(.+?)\s+$/,'$1')),
-    club_url = $('#submenue > li').eq(1).find('a').attr('href').replace(/(^\/\S+?\/startseite\/verein\/\d+?)(\/saison_id\/\d{4})?$/,'$1'),
+  team_name = trim($('.spielername-profil').text().replace(/^\s+(.+?)\s+$/,'$1')),
+  club_url = $('#submenue > li').eq(1).find('a').attr('href').replace(/(^\/\S+?\/startseite\/verein\/\d+?)(\/saison_id\/\d{4})?$/,'$1'),
 	transfermarkt_team_id = club_url.replace(/^\/\S+?\/startseite\/verein\/(\d+?)(\/\S+)?$/,'$1'),
-    nation_id = $('[data-placeholder="Country"]').val(),
-    club_id = $('#verknupftevereine > img').attr('src') && $('#verknupftevereine > img').attr('src').replace(/^\S+?\/(\d{1,6})\w{0,1}\.png/,'$1'),
-    foundation = $("th:contains('Foundation:')").next().text(),
+  nation_id = $('[data-placeholder="Country"]').val(),
+  club_id = $('#verknupftevereine > img').attr('src') && $('#verknupftevereine > img').attr('src').replace(/^\S+?\/(\d+?)\.png.*/,'$1'),
+  foundation = $("th:contains('Foundation:')").next().text(),
 	streetAddress = $('[itemprop="streetAddress"]').text(),
 	postalCode = $('[itemprop="postalCode"]').text(),
 	addressLocality = $('[itemprop="addressLocality"]').text(),
