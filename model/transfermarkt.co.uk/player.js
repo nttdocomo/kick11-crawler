@@ -34,7 +34,7 @@ Player.get_player = function($){
 	profile_uri = url,
 	nation_id = $("th:contains('Nationality:')").next().find('img'),
 	nationality = _.map($(".auflistung th:contains('Nationality:')" ).next().find('img'),function(img,i){
-		return $(img).attr('src').replace(/\S+\/(\d+)\.png/,'$1')
+		return $(img).attr('src').replace(/\S+\/(\d+)\.png.*/,'$1')
 	}),
 	nation_name;
 	date_of_birth = moment.utc(date_of_birth,'MMM D, YYYY').format('YYYY-MM-DD');
