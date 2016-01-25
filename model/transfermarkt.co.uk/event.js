@@ -26,14 +26,17 @@ Event.table = 'transfermarkt_event';
 Event.all = function(){
     return excute('SELECT * FROM '+this.table+' ORDER BY play_at ASC');
 };
-Event.get_event = function(season,competition){
+Event.get_event = function(title,competition){
 	var transfermarkt_competition_id = competition.transfermarkt_competition_id,
 	competition_id = competition.competition_id,
-	transfermarkt_season_id = season.transfermarkt_season_id,
-	season_id = season.season_id,
+	transfermarkt_season_id,
+	season_id,
 	transfermarkt_event_id,
 	event_id;
-	return excute(mysql.format('SELECT id FROM transfermarkt_event WHERE competition_id = ? AND season_id = ? LIMIT 1',[transfermarkt_competition_id,transfermarkt_season_id])).then(function(row){
+	return excute(mysql.format('SELECT * FROM `transfermarkt_season` WHERE title = ? LIMIT 1',[title])).then(function(transfermarkt_season){
+		transfermarkt_season_id = transfermarkt_season[0].id;
+		return excute(mysql.format('SELECT id FROM transfermarkt_event WHERE competition_id = ? AND season_id = ? LIMIT 1',[transfermarkt_competition_id,transfermarkt_season_id]))
+	}).then(function(row){
 		if(!row.length){
 			return excute(mysql.format('INSERT INTO `transfermarkt_event` SET ?',{
 				competition_id : transfermarkt_competition_id,
@@ -41,10 +44,13 @@ Event.get_event = function(season,competition){
 			})).then(function(result){
 				transfermarkt_event_id = result.insertId;
 				if(competition_id){
-    				return excute(mysql.format('INSERT INTO `event` SET ?',{
-	    				competition_id:competition_id,
-	    				season_id:season_id
-	    			})).then(function(season){
+    				return excute(mysql.format('SELECT * FROM `seanson` WHERE title = ? LIMIT 1;',[title])).then(function(season){
+    					season_id = season[0].id
+    					return excute(mysql.format('INSERT INTO `event` SET ?',{
+		    				competition_id:competition_id,
+		    				season_id:season_id
+		    			}))
+    				}).then(function(season){
 						event_id = season.insertId;
 						return excute(mysql.format('INSERT INTO `transfermarkt_event_event` SET ?',{
 							transfermarkt_event_id:transfermarkt_event_id,

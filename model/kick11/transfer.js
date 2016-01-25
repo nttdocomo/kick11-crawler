@@ -64,7 +64,7 @@ Transfer.insert = function(id,season,transfer_date,player_id,releasing_team_id,t
     	//根据球员最新的转会更新teamplayer表
     	return TeamPlayer.update_team_player_by_player_id(player_id)
     })*/.catch(function(err){
-    	console.log('error')
+    	console.log(err)
     	return Promise.resolve()
     })
 }

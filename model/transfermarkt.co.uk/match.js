@@ -63,7 +63,6 @@ Match.save_from_whoscored = function(data){
 };
 Match.insert_match_by_competition = function($){
 	var tables = $('#main .six.columns:not(.mobile-four)'),
-	year = $("select[name='saison_id']").find("option:selected").val(),
 	name = $("select[name='wettbewerb_select_breadcrumb']").find("option:selected").text(),
 	nation_id = $("select[name='land_select_breadcrumb']").find("option:selected").val(),
 	year = $("select[name='saison_id']").find("option:selected").val(),
@@ -125,8 +124,8 @@ Match.insert_match_by_competition = function($){
 		}
 	}).then(function(row){
 		return Season.get_season($)
-	}).then(function(season){
-		return Event.get_event(season,{
+	}).then(function(){
+		return Event.get_event(title,{
 			transfermarkt_competition_id:transfermarkt_competition_id,
 			competition_id:competition_id
 		});

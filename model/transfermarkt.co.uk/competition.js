@@ -27,6 +27,8 @@ Model.get_competition = function($){
 	var name = $("select[name='wettbewerb_select_breadcrumb']").find("option:selected").text(),
 	code = $("select[name='wettbewerb_select_breadcrumb']").find("option:selected").val(),
 	nation_id = $("select[name='land_select_breadcrumb']").find("option:selected").val(),
+	year = $("select[name='saison_id']").find("option:selected").val(),
+	title = $("select[name='saison_id']").find("option:selected").text(),
 	transfermarkt_competition_id,
 	competition_id;
 	return excute(mysql.format('SELECT id FROM `transfermarkt_competition` WHERE code = ? LIMIT 1',[code])).then(function(row){
@@ -63,8 +65,8 @@ Model.get_competition = function($){
 		}
 	}).then(function(){
 		return Season.get_season($)
-	}).then(function(season){
-		return Event.get_event(season,{
+	}).then(function(){
+		return Event.get_event(title,{
 			transfermarkt_competition_id:transfermarkt_competition_id,
 			competition_id:competition_id
 		})

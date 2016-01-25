@@ -61,12 +61,7 @@ Season.get_season = function($){
 						return transfermarkt_season_season
 					})
 				} else {
-					return excute(mysql.format('SELECT * FROM `transfermarkt_season_season` WHERE transfermarkt_season_id = ? LIMIT 1',[row[0].id])).then(function(row){
-						return {
-							transfermarkt_season_id : row[0].transfermarkt_season_id,
-							season_id : row[0].season_id
-						}
-					})
+					return excute(mysql.format('SELECT * FROM `transfermarkt_season_season` WHERE transfermarkt_season_id = ? LIMIT 1',[row[0].id]))
 				}
 			})
 		})
