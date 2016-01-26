@@ -30,7 +30,7 @@ Event.get_event = function(title,competition){
 	var transfermarkt_competition_id = competition.transfermarkt_competition_id,
 	competition_id = competition.competition_id,
 	transfermarkt_season_id,
-	season_id,
+	season,
 	transfermarkt_event_id,
 	event_id;
 	return excute(mysql.format('SELECT * FROM `transfermarkt_season` WHERE title = ? LIMIT 1',[title])).then(function(transfermarkt_season){
@@ -44,8 +44,8 @@ Event.get_event = function(title,competition){
 			})).then(function(result){
 				transfermarkt_event_id = result.insertId;
 				if(competition_id){
-    				return excute(mysql.format('SELECT * FROM `seanson` WHERE title = ? LIMIT 1;',[title])).then(function(season){
-    					season_id = season[0].id
+    				return excute(mysql.format('SELECT * FROM `season` WHERE title = ? LIMIT 1;',[title])).then(function(season){
+    					var season_id = season[0].id
     					return excute(mysql.format('INSERT INTO `event` SET ?',{
 		    				competition_id:competition_id,
 		    				season_id:season_id
@@ -68,10 +68,13 @@ Event.get_event = function(title,competition){
 					event_id = row[0].event_id;
 				} else {
     				if(competition_id){
-	    				return excute(mysql.format('INSERT INTO `event` SET ?',{
-		    				competition_id:competition_id,
-		    				season_id:season.season_id
-		    			})).then(function(event){
+	    				return excute(mysql.format('SELECT * FROM `season` WHERE title = ? LIMIT 1;',[title])).then(function(season){
+	    					var season_id = season[0].id
+	    					return excute(mysql.format('INSERT INTO `event` SET ?',{
+			    				competition_id:competition_id,
+			    				season_id:season_id
+			    			}))
+	    				}).then(function(event){
 							event_id = event.insertId;
 							return excute(mysql.format('INSERT INTO `transfermarkt_event_event` SET ?',{
 								transfermarkt_event_id:transfermarkt_event_id,
