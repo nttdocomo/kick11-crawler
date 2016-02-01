@@ -101,6 +101,9 @@ Player.get_player = function($){
   	return Promise.resolve();
   })
 };
+Player.get_player_by_team = function($){
+  var table = $('#yw1 > table > tbody > tr > td:eq(0)'),
+};
 Player.get_team_by_id = function(id){
     return excute(mysql.format('SELECT * FROM ?? WHERE id = ?',[this.table,id]));
 };

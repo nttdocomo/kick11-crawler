@@ -62,6 +62,8 @@ crawler/*.on('fetchstart',function(queueItem, requestOptions){
       Nation.get_nation_by_team($).then(function(){
           return Team.get_team($)
       }).then(function(){
+          return Player.get_player_by_team($)
+      }).then(function(){
           next();
       })
   };
