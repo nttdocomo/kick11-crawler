@@ -101,8 +101,63 @@ Player.get_player = function($){
   	return Promise.resolve();
   })
 };
-Player.get_player_by_team = function($){
-  var table = $('#yw1 > table > tbody > tr > td:eq(0)'),
+Player.get_player_by_team = function($,team_id){
+  var season = $("select[name='saison_id']").find("option:selected").text(),
+  competition_code = $("select[name='wettbewerb_select_breadcrumb']").find("option:selected").val(),
+  playerCells = $('#yw1 > table > tbody > tr > td:nth-child(2) > table > tbody > tr:first-child > td:last-child > div > .hide-for-small > a'),
+  players = [],
+  events,
+  season_id,
+  team_id,
+  event_id,
+  playerCells.each(function(i,el){
+    var $el = $(el);
+    players.push({
+      id:$el.attr('id'),
+      name:$el.text()
+    })
+  })
+  return excute(mysql.format('SELECT id FROM `transfermarkt_season` WHERE title = ? LIMIT 1',[season])).then(function(seasons){
+    if(!seasons.length){
+      return Promise.resolve();
+    }
+    return excute(mysql.format('SELECT season_id FROM `transfermarkt_season_season` WHERE transfermarkt_season_id = ? LIMIT 1',[seasons[0].id]))
+  }).then(function(row){
+    if(!row.length){
+      return Promise.resolve();
+    }
+    season_id = row[0].season_id;
+    return excute(mysql.format('SELECT team_id FROM `transfermarkt_team_team` WHERE transfermarkt_team_id = ? LIMIT 1',[team_id]))
+  }).then(function(row){
+    if(!rows.length){
+      return Promise.resolve();
+    }
+    team_id = row[0].team_id;
+    return excute(mysql.format('SELECT id FROM `transfermarkt_competition` WHERE code = ? LIMIT 1',[competition_code]))
+  }).then(function(row){
+    return excute(mysql.format('SELECT competition_id FROM `transfermarkt_competition_competition` WHERE transfermarkt_competition_id = ? LIMIT 1',[row[0].id]));
+  }).then(function(row){
+    return excute(mysql.format('SELECT id FROM `event` WHERE competition_id = ? AND season_id = ? LIMIT 1',[row[0].competition_id]));
+  }).then(function(rows){
+    if(!rows.length){
+      return Promise.resolve();
+    }
+    event_id = rows[0].id;
+    return players.reduce(function(sequence, player){
+      return sequence.then(function(){
+        return excute(mysql.format('SELECT player_id FROM `transfermarkt_player_player` WHERE transfermarkt_player_id = ? LIMIT 1',[player.id]))
+      }).then(function(row){
+        if(!row.length){
+          return Promise.resolve()
+        }
+        return excute(mysql.format('SELECT event_id FROM `teamplayer` WHERE event_id = ? AND team_id = ? AND player_id = ? LIMIT 1',[event_id,team_id,player_id]))
+      }).then(function(row){
+        if(row.length){
+          return Promise.resolve()
+        }
+      })
+    },Promise.resolve())
+  })
 };
 Player.get_team_by_id = function(id){
     return excute(mysql.format('SELECT * FROM ?? WHERE id = ?',[this.table,id]));
