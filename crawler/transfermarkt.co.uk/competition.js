@@ -53,10 +53,10 @@ crawler/*.on('fetchstart',function(queueItem, requestOptions){
   console.log(crawler.interval)
   var decoder = new StringDecoder('utf8'),$,
   next;
-  if(/^\/\S+?\/startseite\/verein\/\d+?\/\S*$/i.test(queueItem.path)){//competition
+  if(/^\/\S+?\/startseite\/verein\/\d+?(\/\S*)*$/i.test(queueItem.path)){//competition
       next = this.wait();
       $ = cheerio.load(decoder.write(responseBuffer));
-      $('a.spielprofil_tooltip').each(function(i,el){
+      $('.hide-for-small > a.spielprofil_tooltip').each(function(i,el){
           crawler.queueURL(host + $(el).attr('href'));
       })
       Nation.get_nation_by_team($).then(function(){
@@ -65,6 +65,9 @@ crawler/*.on('fetchstart',function(queueItem, requestOptions){
           return Player.get_player_by_team($,queueItem.path.replace(/^\/\S+?\/startseite\/verein\/(\d+?)(\/\S+)?$/,'$1'))
       }).then(function(){
           next();
+      }).catch(function(err){
+        console.oog(err)
+        next();
       })
   };
   if(/^\/\S+\/profil\/spieler\/\d{1,9}$/.test(queueItem.path)){//competition
@@ -151,7 +154,7 @@ crawler/*.on('fetchstart',function(queueItem, requestOptions){
 	console.log(errorData)
 	//crawler.queueURL(host + queueItem.path);
 }).addFetchCondition(function(parsedURL) {
-	if((/^\/\S+?\/startseite\/verein\/\d+?\/\S*$/i.test(parsedURL.path) ||
+	if((/^\/\S+?\/startseite\/verein\/\d+?(\/\S*)*$/i.test(parsedURL.path) ||
 	/^\/\S+\/profil\/spieler\/\d{1,9}$/.test(parsedURL.path) ||
 	/^\/\S+\/korrektur\/spieler\/\d{1,6}$/.test(parsedURL.path) ||
 	/^\/\S+\/gesamtspielplan\/wettbewerb\/[\w|\d]+?(\/saison_id\/\d{4})*$/.test(parsedURL.path) ||
@@ -169,7 +172,9 @@ crawler/*.on('fetchstart',function(queueItem, requestOptions){
 if(input_competition){
   crawler.queueURL(host + '/premier-league/startseite/wettbewerb/'+input_competition);
 } else {
-  crawler.queueURL(host + '/premier-league/startseite/wettbewerb/CSL');
+  var competions = ['GB1','CSL','GB1','CSL','GB1','CSL','GB1'];
+  //crawler.queueURL(host + '/yanbian-funde/startseite/verein/8539');
+  crawler.queueURL(host + '/premier-league/startseite/wettbewerb/'+competions[(new Date).getDate()]);
   //crawler.queueURL(host + '/joel-castro-pereira/profil/spieler/192611');
   //crawler.queueURL(host + '/alexis-sanchez/profil/spieler/40433');
 }
