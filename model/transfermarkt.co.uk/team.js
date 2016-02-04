@@ -103,6 +103,9 @@ Team.get_team = function($){
         return Promise.resolve();
     });
 };
+Team.get_team_by_competition = function($){
+    
+}
 Team.get_team_by_transfers = function($){
     var teams = _.map($('table:not([class]) > tbody > tr:not(:first-child) > td:nth-child(6) > a[title],table:not([class]) > tbody > tr:not(:first-child) > td:nth-child(10) > a[title]'),function(team,i){
         return team
