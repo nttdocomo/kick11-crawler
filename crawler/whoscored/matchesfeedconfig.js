@@ -20,19 +20,23 @@ getMatchCentre2 = require('./getmatchcentre2'),
 getStatisticsFeed = require('./getStatisticsFeed'),
 //migrate = require('../../migrate/whoscored/migrate').migrate,
 _ = require('underscore'),
-host = 'http://www.whoscored.com',
+protocol = 'https',
+domain = 'www.whoscored.com',
+host = protocol + '://' + domain,
 fetchtimeout = [],
 maxInterval = 20000,
 minInterval = 2000,
 crawler = require('./crawler');
 crawler.maxConcurrency = 1;
+crawler.initialProtocol = protocol;
+crawler.host = domain;
 crawler.interval = randomIntrvl();//set a random interval
 crawler.discoverResources = false;
 crawler.acceptCookies = true;
 crawler.userAgent = 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.101 Safari/537.36';
 crawler.customHeaders = {
     Host:'www.whoscored.com',
-    Referer:'http://www.whoscored.com/LiveScores',
+    Referer:'https://www.whoscored.com/LiveScores',
     'Model-Last-Mode': 'A4t869pEUu/svTQfQNYI1r0nf0RiLYyu9iFUqnUvUT4=',
     'X-Requested-With':'XMLHttpRequest',
     Cookie:'__gads=ID=fabb88cc2b527586:T=1447593413:S=ALNI_MbhDC_wix56JPiYFTF-dHtc9XYRMA; OX_plg=swf|shk|pm; userid=B015E18A-9322-3E4F-2880-627A7B2C4BA9; jwplayer.volume=1; jwplayer.mute=true; __qca=P0-1695388366-1449292007430; GED_PLAYLIST_ACTIVITY=W3sidSI6ImVwbVMiLCJ0IjoxNDQ5OTA5MzIwLCJlZCI6eyJpIjp7InciOnsidHQiOjMxNDAwLCJwZCI6MzE0MDAsImJzIjoxMH19LCJhIjpbeyJrdiI6e319LHsia3YiOnt9fSx7Imt2Ijp7fX0seyJrdiI6e319LHsia3YiOnt9fSx7Imt2Ijp7fX1dfSwibnYiOjAsInBsIjozMTQwMH1d; _ga=GA1.2.1923670642.1447593414; _gat=1'
@@ -82,7 +86,10 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
         }
         if(/^\/MatchesFeed\/(\d{1,})\/MatchCentre2$/.test(queueItem.path)){
             next = this.wait();
-            getMatchCentre2(queueItem, content, response).then(function(){
+            Player.get_player_from_matchcenter(JSON.parse(content),crawler).then(function(){
+                console.log('get player complete!')
+                return getMatchCentre2(queueItem, content, response)
+            }).then(function(){
                 console.log('getMatchCentre2')
                 next();
             })
@@ -129,7 +136,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
     console.log('complete')
     process.exit()
 }).on('fetchstart',function(queueItem, requestOptions){
-    crawler.interval = randomIntrvl();//everytime fetch complete, 
+    crawler.interval = randomIntrvl();//everytime fetch complete,
 }).on('fetcherror',function(queueItem, response){
     console.log(queueItem.stateData.code);
     console.log(queueItem.path)
@@ -149,6 +156,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
       crawler.queueURL(host + '/Matches/969706/Live')
     }*/
     console.log(queueItem.path);
+    console.log(queueItem);
     //return false;
     //crawler.queueURL(host + queueItem.path);
 }).addFetchCondition(function(parsedURL) {

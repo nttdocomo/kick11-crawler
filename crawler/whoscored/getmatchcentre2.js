@@ -10,10 +10,7 @@ module.exports = function(queueItem, content, response){
     match_id = queueItem.path.replace(/^\/MatchesFeed\/(\d{1,})\/MatchCentre2$/,"$1");
     console.log('MatchesFeed started');
 
-    return Player.get_player_from_matchcenter(content).then(function(){
-        console.log('get player complete!')
-        return get_registration(content, match_id)
-    })/*.then(function(){
+    return get_registration(content, match_id)/*.then(function(){
         return get_goals(content, match_id)
     })*/.then(function(){
         return get_events(content, match_id)

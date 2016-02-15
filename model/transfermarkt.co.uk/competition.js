@@ -8,6 +8,8 @@ _ = require('underscore'),
 Season = require('./season'),
 Event = require('./event'),
 Competition = require('../kick11/competition'),
+Event_Standing = require('../kick11/event_standings'),
+Team = require('../kick11/team'),
 mysql = require('mysql'),
 difference = require('../../crawler/transfermarkt.co.uk/utils').difference,
 Model = BaseModel.extend({
@@ -71,28 +73,54 @@ Model.get_competition = function($){
 			competition_id:competition_id
 		})
 	}).then(function(event){
-        var teams = _.map($('#yw1 td:first-child > [href*="startseite/verein"]'),function(el,i){
-        	return $(el).attr('href').replace(/^\/\S+?\/startseite\/verein\/(\d+?)(\/\S+)?$/,'$1');
+        var teams = _.map($('#yw1 .hide-for-small > a.vereinprofil_tooltip'),function(el,i){
+        	return {
+        		id:$(el).attr('id'),
+        		team_name:$(el).text()
+        	};
         })
         return teams.reduce(function(sequence,team){
         	var team_id,event_id;
         	return sequence.then(function(){
-        		return excute(mysql.format('SELECT event_id,team_id FROM `transfermarkt_event_team` WHERE event_id = ? AND team_id = ? LIMIT 1',[event.transfermarkt_event_id,team]))
+        		return excute(mysql.format('SELECT 1 FROM `transfermarkt_team` WHERE id = ? LIMIT 1',[team.id]));
         	}).then(function(row){
         		if(!row.length){
-        			return excute(mysql.format('INSERT INTO `transfermarkt_event_team` SET ?',{
-        				event_id:event.transfermarkt_event_id,
-        				team_id:team
-        			}))
+        			return excute(mysql.format('INSERT INTO `transfermarkt_team` SET ?',team))
         		}
-        		return row[0]
+        		return Promise.resolve();
         	}).then(function(){
+        		return excute(mysql.format('SELECT team_id FROM `transfermarkt_team_team` WHERE transfermarkt_team_id = ? LIMIT 1',[team.id])).then(function(row){
+        			if(!row.length){
+				        return Team.save(team).then(function(id){
+		    				team_id = id;
+		    				return excute(mysql.format('INSERT INTO `transfermarkt_team_team` SET ?',{
+		    					transfermarkt_team_id:team.id,
+		    					team_id:team_id
+		    				}))
+				        })
+			        }
+			        team_id = row[0].team_id
+			        return Promise.resolve();
+    			});
+        	}).then(function(){
+        		console.log(team)
+        		console.log(team_id)
+        		return excute(mysql.format('SELECT event_id,team_id FROM `transfermarkt_event_team` WHERE event_id = ? AND team_id = ? LIMIT 1',[event.transfermarkt_event_id,team.id])).then(function(row){
+	        		if(!row.length){
+	        			return excute(mysql.format('INSERT INTO `transfermarkt_event_team` SET ?',{
+	        				event_id:event.transfermarkt_event_id,
+	        				team_id:team.id
+	        			}))
+	        		}
+	        		return Promise.resolve();
+	        	})
+        	})/*.then(function(){
         		return excute(mysql.format('SELECT team_id FROM `transfermarkt_team_team` WHERE transfermarkt_team_id = ? LIMIT 1',[team]))
-        	}).then(function(row){
-        		team_id = row[0].team_id;
+        	})*/.then(function(){
         		return excute(mysql.format('SELECT event_id FROM `transfermarkt_event_event` WHERE transfermarkt_event_id = ? LIMIT 1',[event.transfermarkt_event_id]))
         	}).then(function(row){
         		event_id = row[0].event_id;
+        		console.log(event_id)
         		return excute(mysql.format('SELECT 1 FROM `event_team` WHERE event_id = ? AND team_id = ? LIMIT 1',[event_id,team_id]))
         	}).then(function(row){
         		if(row.length){
@@ -102,6 +130,8 @@ Model.get_competition = function($){
         			event_id:event_id,
         			team_id:team_id
         		}))
+        	}).then(function(){
+        		return Event_Standing.add_event_standings(event_id,team_id)
         	}).catch(function(err){
         		console.log(err)
         		return Promise.resolve();

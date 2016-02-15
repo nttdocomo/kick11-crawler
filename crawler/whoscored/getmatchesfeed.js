@@ -3,16 +3,17 @@ decoder = new StringDecoder('utf8'),
 mysql = require('mysql'),
 excute = require('../../promiseExcute'),
 moment = require('moment-timezone'),
-host = 'http://www.whoscored.com',
 get_stages = require('../../model/whoscored/stage').get_stages,
 get_regions = require('../../model/whoscored/region').get_regions,
 get_seasons = require('../../model/whoscored/season').get_seasons,
 get_tournaments = require('../../model/whoscored/tournament').get_tournaments,
 Match = require('../../model/whoscored/matches'),
 Team = require('../../model/whoscored/team'),
-Event = require('../../model/whoscored/event');
+Event = require('../../model/whoscored/event'),
+//crawler = require('./matchesfeedconfig');
 //Match = require('../../model/kick11/match').model;
-module.exports = function(queueItem, matchesfeed, response, crawler){
+module.exports = function(queueItem, matchesfeed, response,crawler){
+    var host = crawler.initialProtocol + '://' + crawler.host;
     console.log('matchesfeed')
     //将teams里没有的team放到teams;
     return get_stages(matchesfeed[1]).then(function(){

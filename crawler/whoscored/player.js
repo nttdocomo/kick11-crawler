@@ -1,5 +1,5 @@
 var excute = require('../../promiseExcute'),
-host = 'http://www.whoscored.com',
+host = 'https://www.whoscored.com',
 crawler = require('./matchesfeedconfig'),
 method = process.argv[2],
 player = {

@@ -178,5 +178,5 @@ if(input_competition){
   //crawler.queueURL(host + '/joel-castro-pereira/profil/spieler/192611');
   //crawler.queueURL(host + '/alexis-sanchez/profil/spieler/40433');
 }
-//crawler.queueURL(host + '/premier-league/gesamtspielplan/wettbewerb/GB1');
+//crawler.queueURL(host + '/gorka-iraizoz/profil/spieler/7874');
 crawler.start();

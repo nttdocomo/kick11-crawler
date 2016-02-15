@@ -36,6 +36,30 @@ update_event_standings = function(event_standing_id){
         return Promise.resolve()
     })
 }
+add_event_standings = function(event_id,team_id){
+	return excute(mysql.format('SELECT id FROM `event_standings` WHERE event_id = ? LIMIT 1',[event_id])).then(function(row){
+		if(row.length){
+			return row[0].id
+		}
+		return excute(mysql.format('INSERT INTO `event_standings` SET ?',{
+			event_id:event_id
+		})).then(function(result){
+			return result.insertId
+		})
+	}).then(function(event_standing_id){
+		return excute(mysql.format('SELECT id FROM `event_standing_entries` WHERE event_standing_id = ? AND team_id = ? LIMIT 1',[event_standing_id,team_id])).then(function(row){
+			if(!row.length){
+				console.log(event_standing_id)
+				console.log(team_id)
+				return excute(mysql.format('INSERT INTO `event_standing_entries` SET ?',{
+					event_standing_id:event_standing_id,
+					team_id:team_id
+				}))
+			}
+			return Promise.resolve();
+		});
+	})
+}
 add_or_update_event_standings = function(){
 	return excute('SELECT id FROM `event`').then(function(events){
 		return events.reduce(function(sequence,event){
@@ -156,3 +180,4 @@ add_or_update_event_standings = function(){
 };
 module.exports.add_or_update_event_standings = add_or_update_event_standings
 module.exports.update_event_standings = update_event_standings
+module.exports.add_event_standings = add_event_standings

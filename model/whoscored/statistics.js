@@ -96,9 +96,24 @@ var getMatchCentrePlayerStatistics = function(queueItem,content){
                     }
                 })*/
             }).then(function(){
-                return unknow_columns.reduce(function(sequence,column){
+                var unknow_columns_sql = [];
+                unknow_columns.forEach(function(column){
+                    if(typeof(playerTableStat[column]) == 'string'){
+                        unknow_columns_sql.push('ADD COLUMN `'+column+'` varchar(30) DEFAULT NULL')
+                    }
+                    if(typeof(playerTableStat[column]) == 'number'){
+                        unknow_columns_sql.push('ADD COLUMN `'+column+'` tinyint UNSIGNED DEFAULT 0')
+                    }
+                    if(typeof(playerTableStat[column]) == 'boolean'){
+                        unknow_columns_sql.push('ADD COLUMN `'+column+'` boolean DEFAULT 0')
+                    }
+                })
+                //console.log(unknow_columns_sql)
+                return unknow_columns_sql;
+                /*return unknow_columns.reduce(function(sequence,column){
                     return sequence.then(function(){
                         if(typeof(playerTableStat[column]) == 'string'){
+                            'ADD COLUMN `'+column+'` varchar(30) DEFAULT NULL'
                             return excute('ALTER TABLE whoscored_match_player_statistics ADD '+column+' varchar(30) DEFAULT NULL').then(function(){
                                 excute('ALTER TABLE match_player_statistics ADD '+column+' varchar(30) DEFAULT NULL')
                             })
@@ -114,8 +129,17 @@ var getMatchCentrePlayerStatistics = function(queueItem,content){
                             })
                         }
                     })
-                },Promise.resolve())
+                },Promise.resolve())*/
+            }).then(function(unknow_columns_sql){
+                if(unknow_columns_sql.length){
+                    unknow_columns_sql = unknow_columns_sql.join(',');
+                    return excute('ALTER TABLE whoscored_match_player_statistics ' + unknow_columns_sql).then(function(){
+                        return excute('ALTER TABLE match_player_statistics ADD ' + unknow_columns_sql)
+                    });
+                }
+                return Promise.resolve();
             }).then(function(){
+                //console.log(playerTableStat)
                 return excute(mysql.format('SELECT * FROM `whoscored_match_player_statistics` WHERE playerId = ? AND teamId = ? AND matchId = ? LIMIT 1',[playerTableStat.playerId,playerTableStat.teamId,playerTableStat.matchId])).then(function(row){
                     if(!row.length){
                         return excute(mysql.format('INSERT INTO `whoscored_match_player_statistics` SET ?',playerTableStat)).then(function(result){
