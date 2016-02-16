@@ -180,4 +180,5 @@ if(input_competition){
 }
 //crawler.queueURL(host + '/gorka-iraizoz/profil/spieler/7874');
 //crawler.queueURL(host + '/premier-league/gesamtspielplan/wettbewerb/ES1');
+//crawler.queueURL(host + '/heiko-westermann/profil/spieler/1726');
 crawler.start();
