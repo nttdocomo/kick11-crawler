@@ -98,7 +98,6 @@ module.exports = function(queueItem, matchesfeed, response,crawler){
                 });
             }
             return promise.catch(function(err){
-                console.log(i)
                 console.log(err)
                 return Promise.resolve()
             });

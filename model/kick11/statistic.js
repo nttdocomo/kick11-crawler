@@ -61,6 +61,7 @@ Model.getMatchCentrePlayerStatistics = function(whoscored_match_player_statistic
             return Promise.resolve();
         }) 
     }).catch(function(err){
+        console.log(err)
     	return Promise.resolve();
     })
 };

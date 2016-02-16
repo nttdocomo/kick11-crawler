@@ -24,7 +24,8 @@ Player.table = 'transfermarkt_player';
 Player.get_player = function($){
 	var url = $('#submenue > li').eq(1).find('> a').attr('href'),
 	id = url.replace(/\S+?\/(\d{1,9})$/,'$1'),
-	full_name = $('.dataName > span').eq(1).text().replace(/^\s+(.+?)\s+$/,'$1').replace(/[\n\t]/,''),
+  dataName = $('.dataName > span'),
+	full_name,
 	name_in_native_country = $( "th:contains('Name in home country:')" ).next().text()||'',
 	date_of_birth = $(".auflistung th:contains('Date of birth:')" ).next().text().replace(/^\s+(.+?)\s+$/,'$1').replace(/^(\w{3}\s{1}\d{1,2},\s{1}\d{4})\s{1}.+/,'$1'),
 	height = $(".auflistung th:contains('Height:')" ).next().text().replace(/(\d{1})\,(\d{2})\s+m$/,'$1$2') || undefined,
@@ -37,6 +38,11 @@ Player.get_player = function($){
 		return $(img).attr('src').replace(/\S+\/(\d+)\.png.*$/,'$1')
 	}),
 	nation_name;
+  if(dataName.length = 1){
+    full_name = dataName.eq(0).text().replace(/^\s+(.+?)\s+$/,'$1').replace(/[\n\t]/,'');
+  } else {
+    full_name = dataName.eq(1).text().replace(/^\s+(.+?)\s+$/,'$1').replace(/[\n\t]/,'')
+  }
 	date_of_birth = moment.utc(date_of_birth,'MMM D, YYYY').format('YYYY-MM-DD');
 	if(nation_id.length){
 		nation_id = nation_id.attr('src').replace(/^\S+?\/(\d+?)(\/\S+)?\.png.*$/,'$1');
@@ -96,7 +102,6 @@ Player.get_player = function($){
   		},row[0].player_id]))
   	}
   }).catch(function(err){
-    console.log('player')
   	console.log(err);
   	return Promise.resolve();
   })

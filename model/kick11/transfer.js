@@ -25,40 +25,49 @@ Transfer.table = 'transfer';
 Transfer.insert = function(id,season,transfer_date,player_id,releasing_team_id,taking_team_id){
 	var season_id;
 	return excute(mysql.format('SELECT player_id FROM transfermarkt_player_player WHERE transfermarkt_player_id = ? LIMIT 1',[player_id])).then(function(row){
-		player_id = row[0].player_id;
-    	return excute(mysql.format('SELECT team_id FROM transfermarkt_team_team WHERE transfermarkt_team_id = ? LIMIT 1',[releasing_team_id]))
-    }).then(function(row){
-	    releasing_team_id = row[0].team_id;
-	   	return excute(mysql.format('SELECT team_id FROM transfermarkt_team_team WHERE transfermarkt_team_id = ? LIMIT 1',[taking_team_id]))
-    }).then(function(row){
-	    taking_team_id = row[0].team_id;
-	    return excute(mysql.format('SELECT id FROM `season` WHERE title = ? LIMIT 1',[season]))
-    }).then(function(row){
-    	if(row.length){
-    		season_id = row[0].id;
-    	}
-    	return excute(mysql.format('SELECT transfer_id FROM transfermarkt_transfer_transfer WHERE transfermarkt_transfer_id = ? LIMIT 1',[id]))
-    }).then(function(row){
-    	var data = {
-			'season':season,
-			'transfer_date':transfer_date.format('YYYY-MM-DD'),
-			'player_id':player_id,
-    		'releasing_team_id':releasing_team_id,
-    		'taking_team_id':taking_team_id
+		if(row.length){
+			player_id = row[0].player_id;
+	    	return excute(mysql.format('SELECT team_id FROM transfermarkt_team_team WHERE transfermarkt_team_id = ? LIMIT 1',[releasing_team_id])).then(function(row){
+	    		if(row.length){
+				    releasing_team_id = row[0].team_id;
+				   	return excute(mysql.format('SELECT team_id FROM transfermarkt_team_team WHERE transfermarkt_team_id = ? LIMIT 1',[taking_team_id])).then(function(row){
+				   		if(row.length){
+						    taking_team_id = row[0].team_id;
+						    return excute(mysql.format('SELECT id FROM `season` WHERE title = ? LIMIT 1',[season])).then(function(row){
+						    	if(row.length){
+						    		season_id = row[0].id;
+						    	}
+						    	return excute(mysql.format('SELECT transfer_id FROM transfermarkt_transfer_transfer WHERE transfermarkt_transfer_id = ? LIMIT 1',[id]))
+						    }).then(function(row){
+						    	var data = {
+									'season':season,
+									'transfer_date':transfer_date.format('YYYY-MM-DD'),
+									'player_id':player_id,
+						    		'releasing_team_id':releasing_team_id,
+						    		'taking_team_id':taking_team_id
+								}
+								if(season_id){
+									data.season_id = season_id;
+								}
+						    	if(!row.length){
+						    		return excute(mysql.format('INSERT INTO `transfer` SET ?',data)).then(function(result){
+						    			return excute(mysql.format('INSERT INTO `transfermarkt_transfer_transfer` SET ?',{
+						    				transfermarkt_transfer_id:id,
+						    				transfer_id:result.insertId
+						    			}))
+						    		})
+						    	} else {
+						    		return excute(mysql.format('UPDATE `transfer` SET ? WHERE id = ?',[data,row[0].transfer_id]))
+						    	}
+						    })
+				   		}
+						return Promise.resolve();
+				    })
+	    		}
+				return Promise.resolve();
+		    })
 		}
-		if(season_id){
-			data.season_id = season_id;
-		}
-    	if(!row.length){
-    		return excute(mysql.format('INSERT INTO `transfer` SET ?',data)).then(function(result){
-    			return excute(mysql.format('INSERT INTO `transfermarkt_transfer_transfer` SET ?',{
-    				transfermarkt_transfer_id:id,
-    				transfer_id:result.insertId
-    			}))
-    		})
-    	} else {
-    		return excute(mysql.format('UPDATE `transfer` SET ? WHERE id = ?',[data,row[0].transfer_id]))
-    	}
+		return Promise.resolve();
     })/*.then(function(){
     	console.log('update_team_player_by_player_id')
     	//根据球员最新的转会更新teamplayer表

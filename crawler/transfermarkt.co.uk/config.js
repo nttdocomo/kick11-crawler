@@ -56,6 +56,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
           next();
       }).catch(function(err){
           console.log(err);
+          next();
       })
   };
   //合同

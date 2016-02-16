@@ -86,12 +86,12 @@ crawler/*.on('fetchstart',function(queueItem, requestOptions){
           return Transfer.get_trasfer_from_transfers($)
       }).then(function(){
           return excute(mysql.format('SELECT player_id FROM `transfermarkt_player_player` WHERE transfermarkt_player_id = ? LIMIT 1;',[player_id]))
-      }).then(function(row){
+      })/*.then(function(row){
           if(row.length){
             return TeamPlayer.update_team_player_by_player_id(row[0].player_id)
           }
           return Promise.resolve();
-      }).then(function(){
+      })*/.then(function(){
           next();
       }).catch(function(err){
           console.log(err);
@@ -180,5 +180,5 @@ if(input_competition){
 }
 //crawler.queueURL(host + '/gorka-iraizoz/profil/spieler/7874');
 //crawler.queueURL(host + '/premier-league/gesamtspielplan/wettbewerb/ES1');
-//crawler.queueURL(host + '/heiko-westermann/profil/spieler/1726');
+//crawler.queueURL(host + '/rafael-van-der-vaart/profil/spieler/4192');
 crawler.start();

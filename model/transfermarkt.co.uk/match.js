@@ -93,6 +93,7 @@ Match.insert_match_by_competition = function($){
 						competition_id:competition_id
 					}))
 				}).catch(function(err){
+					console.log(err)
 					return Promise.resolve();
 				})
 			})
@@ -260,7 +261,6 @@ Match.insert_match_by_competition = function($){
 								})
 							} else {
 								return excute(mysql.format('UPDATE `transfermarkt_match` SET ? WHERE id = ?',[{
-									round_id:transfermarkt_round_id,
 									team1_id:transfermarkt_team1_id,
 									team2_id:transfermarkt_team2_id,
 									score1 : score1,
@@ -288,12 +288,14 @@ Match.insert_match_by_competition = function($){
 							}
 						})//match.save()
 					}).catch(function(err) {
+						console.log(err)
 						return Promise.resolve()
 					})
 				},Promise.resolve())
 			});
 		},Promise.resolve());
 	}).catch(function(err){
+		console.log(err)
 		return Promise.resolve()
 	})
 };
