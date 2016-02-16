@@ -1,0 +1,1 @@
+\n+?\t*?\S*?console.log(.*) //查找console.log

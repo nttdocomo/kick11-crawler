@@ -30,7 +30,6 @@ Match = Model.extend({
 Match.excute = excute;
 Match.table = 'transfermarkt_match';
 Match.all = function(){
-	console.log(this.table)
     return excute('SELECT * FROM '+this.table+' ORDER BY play_at ASC');
 };
 Match.save_from_whoscored = function(data){
@@ -45,9 +44,7 @@ Match.save_from_whoscored = function(data){
 	}).then(function(result){
 		if(result && result.length){
 			team2_id = result[0].team_id
-			//console.log([team1_id,team2_id,play_at].join('--'))
 			if(team1_id && team2_id){
-				//console.log([team1_id,team2_id,play_at].join('--'))
 				var match = new Match({
 					team1_id:team1_id,
 					team2_id:team2_id,
@@ -96,7 +93,6 @@ Match.insert_match_by_competition = function($){
 						competition_id:competition_id
 					}))
 				}).catch(function(err){
-					console.log(err);
 					return Promise.resolve();
 				})
 			})
@@ -144,10 +140,23 @@ Match.insert_match_by_competition = function($){
 			pos = index+1,
 			transfermarkt_round_id,
 			round_id,
-			table = $el.find('> table'),
-			tr = table.find('> tbody > tr:not(.bg_blau_20)');
+			tr = $el.find('table > tbody > tr:not(.bg_blau_20)');
 			return sequence.then(function(){
-				return excute(mysql.format('SELECT id FROM `transfermarkt_round` WHERE event_id = ? AND round = ? LIMIT 1',[transfermarkt_event_id,pos])).then(function(round){
+				return excute(mysql.format('SELECT id FROM `round` WHERE event_id = ? AND round = ? LIMIT 1',[event_id,pos])).then(function(row){
+					if(row.length){
+						round_id = row[0].id;
+						return Promise.resolve();
+					}
+					return excute(mysql.format('INSERT INTO `round` SET ?',{
+						event_id:event_id,
+						name:matchday,
+						round:pos
+					})).then(function(round){
+						round_id = round.insertId;
+						return Promise.resolve();
+					})
+				})
+				/*return excute(mysql.format('SELECT id FROM `transfermarkt_round` WHERE event_id = ? AND round = ? LIMIT 1',[transfermarkt_event_id,pos])).then(function(round){
 					if(round.length){
 						transfermarkt_round_id = round[0].id;
 						return excute(mysql.format('SELECT * FROM `transfermarkt_round_round` WHERE transfermarkt_round_id = ?',[round[0].id])).then(function(row){
@@ -189,7 +198,7 @@ Match.insert_match_by_competition = function($){
 							}
 						})
 					}
-				})
+				})*/
 			}).then(function(){
 				var trows = [],
 				date,
@@ -212,22 +221,17 @@ Match.insert_match_by_competition = function($){
 					score2;
 					date = td.eq(0).find('a').attr('href').replace(/\S+(\d{4}\-\d{2}\-\d{2})/,'$1') || date;
 					time = trim(td.eq(1).text()) == "" ? time : trim(td.eq(1).text());
-					//play_at = moment([date,time].join(' ')).format('YYYY-MM-DD HH:mm:ss');
-					//console.log('-----'+(trim(td.eq(1).text()) == "")+'||||||'+[date,time,moment.tz([date,time].join(' '), "YYYY-MM-DD h:mm A", "Europe/London").utc().format('YYYY-MM-DD HH:mm')].join(' '))
 					var play_at = moment.tz([date,time].join(' '), "YYYY-MM-DD h:mm A", "Europe/London").utc().format('YYYY-MM-DD HH:mm');
-					//console.log([date,time,moment.tz([date,time].join(' '), "YYYY-MM-DD h:mm A", "Europe/London").utc().format('YYYY-MM-DD HH:mm')].join(' '))
 					if(/\d{1,2}\:\d{1,2}/.test(result)){
 						result = result.split(':');
 						score1 = result[0];
 						score2 = result[1];
-						//console.log([round_id,play_at,transfermarkt_team1_id,team1_name,score1,score2,team2_name,transfermarkt_team2_id].join('<<<>>>'));
 					};
 					return sequence.then(function(){
 						return excute(mysql.format('SELECT * FROM `transfermarkt_match_match` WHERE transfermarkt_match_id = ? LIMIT 1',[transfermarkt_match_id])).then(function(match){
 							if(!match.length){
 								return excute(mysql.format('INSERT INTO `transfermarkt_match` SET ?',{
 									id:transfermarkt_match_id,
-									round_id:transfermarkt_round_id,
 									team1_id:transfermarkt_team1_id,
 									team2_id:transfermarkt_team2_id,
 									score1 : score1,
@@ -236,13 +240,9 @@ Match.insert_match_by_competition = function($){
 								})).then(function(){
 									return excute(mysql.format('SELECT team_id FROM `transfermarkt_team_team` WHERE transfermarkt_team_id = ? LIMIT 1',[transfermarkt_team1_id]))
 								}).then(function(team){
-									//console.log('team1_id')
-									//console.log(team[0])
 									team1_id=team[0].team_id;
 									return excute(mysql.format('SELECT team_id FROM `transfermarkt_team_team` WHERE transfermarkt_team_id = ? LIMIT 1',[transfermarkt_team2_id]))
 								}).then(function(team){
-									//console.log('team2_id')
-									//console.log(team[0])
 									team2_id=team[0].team_id;
 									return excute(mysql.format('INSERT INTO `match` SET ?',{
 										round_id:round_id,
@@ -268,13 +268,9 @@ Match.insert_match_by_competition = function($){
 									play_at:play_at
 								},transfermarkt_match_id])).then(function(){
 									return excute(mysql.format('SELECT team_id FROM `transfermarkt_team_team` WHERE transfermarkt_team_id = ? LIMIT 1',[transfermarkt_team1_id])).then(function(team){
-										//console.log('update team1_id')
-										//console.log(team[0])
 										team1_id=team[0].team_id;
 										return excute(mysql.format('SELECT team_id FROM `transfermarkt_team_team` WHERE transfermarkt_team_id = ? LIMIT 1',[transfermarkt_team2_id]))
 									}).then(function(team){
-										//console.log('update team2_id')
-										//console.log(team[0])
 										team2_id=team[0].team_id;
 										return excute(mysql.format('UPDATE `match` SET ? WHERE id = ?',[{
 											round_id:round_id,
@@ -285,7 +281,6 @@ Match.insert_match_by_competition = function($){
 											play_at:play_at
 										},match[0].match_id]))
 									}).catch(function(err) {
-										console.log(err)
 										return Promise.resolve()
 									})
 								})
@@ -293,14 +288,12 @@ Match.insert_match_by_competition = function($){
 							}
 						})//match.save()
 					}).catch(function(err) {
-						console.log(err)
 						return Promise.resolve()
 					})
 				},Promise.resolve())
 			});
 		},Promise.resolve());
 	}).catch(function(err){
-		console.log(err);
 		return Promise.resolve()
 	})
 };

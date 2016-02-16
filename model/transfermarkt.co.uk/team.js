@@ -103,9 +103,6 @@ Team.get_team = function($){
         return Promise.resolve();
     });
 };
-Team.get_team_by_competition = function($){
-    
-}
 Team.get_team_by_transfers = function($){
     /*console.log($('.responsive-table > table > tbody > tr.zeile-transfer > td.hide-for-small > a.vereinprofil_tooltip').length)
     process.exit();*/

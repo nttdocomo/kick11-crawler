@@ -111,7 +111,7 @@ crawler/*.on('fetchstart',function(queueItem, requestOptions){
       Nation.get_nation_by_competition($).then(function(){
           return Team.get_team_by_match_plan($)
       }).then(function(){
-          //console.log('team ok')
+          console.log('team ok')
           return Match.insert_match_by_competition($)
       }).then(function(){
           next()
@@ -179,4 +179,5 @@ if(input_competition){
   //crawler.queueURL(host + '/alexis-sanchez/profil/spieler/40433');
 }
 //crawler.queueURL(host + '/gorka-iraizoz/profil/spieler/7874');
+//crawler.queueURL(host + '/premier-league/gesamtspielplan/wettbewerb/ES1');
 crawler.start();
