@@ -56,7 +56,7 @@ Match.migrate_match = function(match){
                     team2_id:team2_id
                 });
                 if(!row.length){
-                    return Match.insert_match.then(function(result){
+                    return Match.insert_match(data).then(function(result){
                         return Match.get_whoscored_match_match(match.id,result.insertId)
                     })
                 }
