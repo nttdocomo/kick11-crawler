@@ -91,12 +91,12 @@ Nation.get_nation_by_player_transfer = function($){
 		return img;
 	});
 	flaggenrahmen = _.uniq(flaggenrahmen, function(item, key, a) { 
-	    return $(item).attr('src').replace(/\S+\/(\d+)\.png/,'$1');
+	    return $(item).attr('src').replace(/\S+\/(\d+)\.png.*$/,'$1');
 	});
 	return flaggenrahmen.reduce(function(sequence, img){
 		var img = $(img),
 		src = img.attr('src'),
-        transfermarkt_nation_id = src.replace(/\S+\/(\d+)\.png/,'$1'),
+        transfermarkt_nation_id = src.replace(/\S+\/(\d+)\.png.*$/,'$1'),
         name = img.attr('title'),
         nation_id;
         return sequence.then(function(){
