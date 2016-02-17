@@ -43,9 +43,6 @@ Team.get_team = function($){
     if(foundation){
 		foundation = moment(foundation, "MMM D, YYYY").format('YYYY-MM-DD');
 	}
-    console.log(is_club)
-    console.log(national)
-    process.exit();
     var team = new Team({
     	team_name:team_name,
     	club:is_club,
