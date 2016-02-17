@@ -169,5 +169,5 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
     return false;
 });
 //以首页作为起始页，获取页面里的Model-Last-Mode作为请求参数，否则会被重定向404
-crawler.queueURL(host + '/LiveScores')
+crawler.queueURL(host + '/LiveScores');
 module.exports = crawler;

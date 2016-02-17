@@ -34,10 +34,43 @@ Match.get_whoscored_match_match = function(whoscored_match_id,match_id){
         }
         return Promise.resolve();
     })
-}
+};
 Match.insert_whoscored_match = function(data){
     return excute(mysql.format('INSERT INTO `whoscored_match` SET ?',data))
-}
+};
+Match.migrate_match = function(match){
+    var team1_id,team2_id;
+    return excute(mysql.format('SELECT team_id FROM `whoscored_team_team` WHERE whoscored_team_id = ? LIMIT 1',[match.team1_id])).then(function(row){
+        if(!row.length){
+            return Promise.resolve();
+        }
+        team1_id = row[0].team_id;
+        return excute(mysql.format('SELECT team_id FROM `whoscored_team_team` WHERE whoscored_team_id = ? LIMIT 1',[match.team2_id])).then(function(row){
+            if(!row.length){
+                return Promise.resolve();
+            }
+            team2_id = row[0].team_id;
+            return excute(mysql.format('SELECT * FROM `match` WHERE team1_id = ? AND team2_id = ? AND play_at = ? LIMIT 1',[team1_id,team2_id,match.play_at])).then(function(row){
+                var data = _.extend(_.pick(match,'play_at','score1','score2'),{
+                    team1_id:team1_id,
+                    team2_id:team2_id
+                });
+                if(!row.length){
+                    return Match.insert_match.then(function(result){
+                        return Match.get_whoscored_match_match(match.id,result.insertId)
+                    })
+                }
+                return Match.update_match(match,row)
+            }).then(function(){
+                return Match.event_standing(team1_id)
+            }).then(function(){
+                return Match.event_standing(team2_id)
+            })
+        })
+    }).catch(function(err){
+        console.log(err)
+    })
+};
 Match.update_match = function(whoscored_match,match){
     var data = {
         'score1' : whoscored_match.score1,
@@ -56,67 +89,14 @@ Match.update_match = function(whoscored_match,match){
     }).then(function(){
         return Match.event_standing(match[0].team2_id)
     })
-}
-Match.migrate_match = function(match){
-    var team1_id,team2_id;
-    return excute(mysql.format('SELECT team_id FROM `whoscored_team_team` WHERE whoscored_team_id = ? LIMIT 1',[match.team1_id])).then(function(row){
-        team1_id = row[0].team_id;
-        return excute(mysql.format('SELECT team_id FROM `whoscored_team_team` WHERE whoscored_team_id = ? LIMIT 1',[match.team2_id]))
-    }).then(function(row){
-        team2_id = row[0].team_id;
-        return excute(mysql.format('SELECT * FROM `match` WHERE team1_id = ? AND team2_id = ? AND play_at = ? LIMIT 1',[team1_id,team2_id,match.play_at]))
-    }).then(function(row){
-        var data = _.extend(_.pick(match,'play_at','score1','score2'),{
-            team1_id:team1_id,
-            team2_id:team2_id
-        });
-        if(!row.length){
-            console.log(match.id)
-            return excute(mysql.format('INSERT INTO `match` SET ?',data)).then(function(result){
-                return Match.get_whoscored_match_match(match.id,result.insertId)
-            })
-        }
-        return Match.update_match(match,row)
-    }).then(function(){
-        return Match.event_standing(team1_id)
-    }).then(function(){
-        return Match.event_standing(team2_id)
-    }).catch(function(err){
-        console.log(err)
-    })
-},
+};
 Match.insert_match = function(match){
-    var team1_id,team2_id;
-    return excute(mysql.format('SELECT team_id FROM `whoscored_team_team` WHERE whoscored_team_id = ? LIMIT 1',[match.team1_id])).then(function(row){
-        team1_id = row[0].team_id;
-        return excute(mysql.format('SELECT team_id FROM `whoscored_team_team` WHERE whoscored_team_id = ? LIMIT 1',[match.team2_id]))
-    }).then(function(row){
-        team2_id = row[0].team_id;
-        return excute(mysql.format('SELECT * FROM `match` WHERE team1_id = ? AND team2_id = ? AND play_at = ? LIMIT 1',[team1_id,team2_id,match.play_at]))
-    }).then(function(row){
-        var data = _.extend(_.pick(match,'play_at','score1','score2'),{
-            team1_id:team1_id,
-            team2_id:team2_id
-        });
-        if(!row.length){
-            return excute(mysql.format('INSERT INTO `match` SET ?',data)).then(function(result){
-                return Match.get_whoscored_match_match(match.id,result.insertId)
-            })
-        }
-        return Match.update_match(match,row)
-    })/*.then(function(){
-        return Match.event_standing(team1_id)
-    }).then(function(){
-        return Match.event_standing(team2_id)
-    })*/.catch(function(err){
-        console.log(err)
-        return Promise.resolve();
-    })
+    return excute(mysql.format('INSERT INTO `match` SET ?',match))
 }
 Match.get_match = function(match){
     return excute(mysql.format('SELECT 1 FROM `whoscored_match` WHERE id = ? LIMIT 1',[match.id])).then(function(row){
     	if(!row.length){
-    		return Match.insert_match(match).then(function(){
+    		return Match.migrate_match(match).then(function(){
                 return Match.insert_whoscored_match(match)
             }).catch(function(){
                 return Match.insert_whoscored_match(match)
@@ -124,7 +104,7 @@ Match.get_match = function(match){
     	}
         return Promise.resolve();
     }).then(function(){
-        return Match.insert_match(match);
+        return Match.migrate_match(match);
         /*return excute(mysql.format('SELECT match_id FROM `whoscored_match_match` WHERE whoscored_match_id = ? LIMIT 1',[match.id])).then(function(row){
             if(!row.length){
                 return Match.insert_match(match).catch(function(){

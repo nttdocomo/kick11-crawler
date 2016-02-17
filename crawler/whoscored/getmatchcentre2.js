@@ -8,8 +8,6 @@ get_registration = require('../../model/whoscored/registration').get_registratio
 module.exports = function(queueItem, content, response){
     var content = JSON.parse(content),
     match_id = queueItem.path.replace(/^\/MatchesFeed\/(\d{1,})\/MatchCentre2$/,"$1");
-    console.log('MatchesFeed started');
-
     return get_registration(content, match_id)/*.then(function(){
         return get_goals(content, match_id)
     })*/.then(function(){
