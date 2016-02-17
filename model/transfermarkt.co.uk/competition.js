@@ -103,8 +103,6 @@ Model.get_competition = function($){
 			        return Promise.resolve();
     			});
         	}).then(function(){
-        		console.log(team)
-        		console.log(team_id)
         		return excute(mysql.format('SELECT event_id,team_id FROM `transfermarkt_event_team` WHERE event_id = ? AND team_id = ? LIMIT 1',[event.transfermarkt_event_id,team.id])).then(function(row){
 	        		if(!row.length){
 	        			return excute(mysql.format('INSERT INTO `transfermarkt_event_team` SET ?',{
