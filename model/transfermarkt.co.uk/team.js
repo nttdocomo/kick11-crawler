@@ -22,8 +22,7 @@ Team = Model.extend({
 })
 Team.table = 'transfermarkt_team';
 Team.get_team = function($){
-	var is_club = $('#wettbewerb_select_breadcrumb').val() ? 1:0,
-    team_name = trim($('.spielername-profil').text().replace(/^\s+(.+?)\s+$/,'$1')),
+    var team_name = trim($('.spielername-profil').text().replace(/^\s+(.+?)\s+$/,'$1')),
     club_url = $('#submenue > li').eq(1).find('a').attr('href').replace(/(^\/\S+?\/startseite\/verein\/\d+?)(\/saison_id\/\d{4})?$/,'$1'),
 	transfermarkt_team_id = club_url.replace(/^\/\S+?\/startseite\/verein\/(\d+?)(\/\S+)?$/,'$1'),
   nation_id = $('[data-placeholder="Country"]').val(),
@@ -32,9 +31,10 @@ Team.get_team = function($){
 	streetAddress = $('[itemprop="streetAddress"]').text(),
 	postalCode = $('[itemprop="postalCode"]').text(),
 	addressLocality = $('[itemprop="addressLocality"]').text(),
-	wettbewerb_select_breadcrumb = $("select[name='wettbewerb_select_breadcrumb']").find("option:selected").val(),
-	verein_select_breadcrumb = $("select[name='verein_select_breadcrumb']").find("option:selected").val(),
-	national = !wettbewerb_select_breadcrumb && verein_select_breadcrumb ? 1 : 0,
+	verein_select_breadcrumb = $("#verein_select_breadcrumb").find("option:selected").val(),
+    verein_select_breadcrumb_option = $("#verein_select_breadcrumb").find("option").length,
+    is_club = verein_select_breadcrumb && verein_select_breadcrumb_option ? 1 : 0,//如果俱乐部下拉框有选择并且下拉框不为空，则就是俱乐部
+	national = !is_club ? 1:0,//如果是俱乐部，就肯定不是国家队
     team_id,
 	address = '';
 	if(streetAddress && postalCode && addressLocality){
@@ -43,6 +43,9 @@ Team.get_team = function($){
     if(foundation){
 		foundation = moment(foundation, "MMM D, YYYY").format('YYYY-MM-DD');
 	}
+    console.log(is_club)
+    console.log(national)
+    process.exit();
     var team = new Team({
     	team_name:team_name,
     	club:is_club,
