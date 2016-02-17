@@ -118,7 +118,6 @@ Model.get_competition = function($){
         		return excute(mysql.format('SELECT event_id FROM `transfermarkt_event_event` WHERE transfermarkt_event_id = ? LIMIT 1',[event.transfermarkt_event_id]))
         	}).then(function(row){
         		event_id = row[0].event_id;
-        		console.log(event_id)
         		return excute(mysql.format('SELECT 1 FROM `event_team` WHERE event_id = ? AND team_id = ? LIMIT 1',[event_id,team_id]))
         	}).then(function(row){
         		if(row.length){
