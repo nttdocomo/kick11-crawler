@@ -38,7 +38,7 @@ Player.get_player = function($){
 		return $(img).attr('src').replace(/\S+\/(\d+)\.png.*$/,'$1')
 	}),
 	nation_name;
-  if(dataName.length = 1){
+  if(dataName.length == 1){
     full_name = dataName.eq(0).text().replace(/^\s+(.+?)\s+$/,'$1').replace(/[\n\t]/,'');
   } else {
     full_name = dataName.eq(1).text().replace(/^\s+(.+?)\s+$/,'$1').replace(/[\n\t]/,'')
