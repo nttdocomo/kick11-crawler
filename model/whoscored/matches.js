@@ -84,11 +84,11 @@ Match.update_match = function(whoscored_match,match){
         }).then(function(round){
 
         })
-    })*/.then(function(){
+    }).then(function(){
         return Match.event_standing(match[0].team1_id)
     }).then(function(){
         return Match.event_standing(match[0].team2_id)
-    })
+    })*/
 };
 Match.insert_match = function(match){
     return excute(mysql.format('INSERT INTO `match` SET ?',match))
