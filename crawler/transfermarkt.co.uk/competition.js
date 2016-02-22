@@ -172,13 +172,12 @@ crawler/*.on('fetchstart',function(queueItem, requestOptions){
 if(input_competition){
   crawler.queueURL(host + '/premier-league/startseite/wettbewerb/'+input_competition);
 } else {
-  var competions = ['GB1','CSL','GB1','CSL','GB1','CSL','GB1'];
-  //crawler.queueURL(host + '/yanbian-funde/startseite/verein/8539');
-  console.log((new Date).getDate())
+  var competions = ['GB1','CSL'];
   crawler.queueURL(host + '/premier-league/startseite/wettbewerb/'+competions[(new Date).getDay()%2]);
   //crawler.queueURL(host + '/joel-castro-pereira/profil/spieler/192611');
   //crawler.queueURL(host + '/alexis-sanchez/profil/spieler/40433');
 }
+//crawler.queueURL(host + '/yanbian-funde/startseite/verein/8539');
 //crawler.queueURL(host + '/gorka-iraizoz/profil/spieler/7874');
 //crawler.queueURL(host + '/premier-league/gesamtspielplan/wettbewerb/ES1');
 //crawler.queueURL(host + '/mohamed-elneny/profil/spieler/160438');
