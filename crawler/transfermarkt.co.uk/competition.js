@@ -142,7 +142,7 @@ crawler/*.on('fetchstart',function(queueItem, requestOptions){
   console.log('errors:'+crawler.queue.errors());
 	process.exit();
 }).on('fetchstart',function(queueItem, requestOptions){
-    crawler.interval = randomIntrvl();//everytime fetch complete, 
+    crawler.interval = randomIntrvl();//everytime fetch complete,
 }).on('fetcherror',function(queueItem, response){
 	console.log('fetcherror ' + queueItem.path)
 	//crawler.queueURL(host + queueItem.path);
@@ -173,7 +173,7 @@ if(input_competition){
   crawler.queueURL(host + '/premier-league/startseite/wettbewerb/'+input_competition);
 } else {
   var competions = ['GB1','CSL'];
-  crawler.queueURL(host + '/premier-league/startseite/wettbewerb/GB1';
+  crawler.queueURL(host + '/premier-league/startseite/wettbewerb/GB1');
   //crawler.queueURL(host + '/premier-league/startseite/wettbewerb/'+competions[(new Date).getDay()%2]);
   //crawler.queueURL(host + '/joel-castro-pereira/profil/spieler/192611');
   //crawler.queueURL(host + '/alexis-sanchez/profil/spieler/40433');
