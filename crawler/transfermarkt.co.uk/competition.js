@@ -173,7 +173,8 @@ if(input_competition){
   crawler.queueURL(host + '/premier-league/startseite/wettbewerb/'+input_competition);
 } else {
   var competions = ['GB1','CSL'];
-  crawler.queueURL(host + '/premier-league/startseite/wettbewerb/'+competions[(new Date).getDay()%2]);
+  crawler.queueURL(host + '/premier-league/startseite/wettbewerb/GB1';
+  //crawler.queueURL(host + '/premier-league/startseite/wettbewerb/'+competions[(new Date).getDay()%2]);
   //crawler.queueURL(host + '/joel-castro-pereira/profil/spieler/192611');
   //crawler.queueURL(host + '/alexis-sanchez/profil/spieler/40433');
 }
