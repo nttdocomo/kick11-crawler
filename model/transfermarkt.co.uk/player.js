@@ -183,7 +183,7 @@ Player.get_player_by_team = function($,team_id){
       },Promise.resolve())
     })
   }
-  
+
 };
 Player.get_team_by_id = function(id){
     return excute(mysql.format('SELECT * FROM ?? WHERE id = ?',[this.table,id]));
