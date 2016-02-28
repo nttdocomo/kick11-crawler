@@ -211,9 +211,9 @@ Match.insert_match_by_competition = function($){
 					var td = $(row).children(),
 					transfermarkt_team1_id = td.eq(2).find('a').attr('href').replace(/\S+?\/(\d{1,})\/\S+?$/,'$1'),
 					transfermarkt_team2_id = td.eq(6).find('a').attr('href').replace(/\S+?\/(\d{1,})\/\S+?$/,'$1'),
-					team1_name = td.eq(3).find('img').attr('title'),
+					team1_name = td.eq(3).find('img').attr('alt'),
 					transfermarkt_match_id = td.eq(4).find('a').attr('href').replace(/\S+?(\d{1,})$/,'$1'),
-					team2_name = td.eq(5).find('img').attr('title'),
+					team2_name = td.eq(5).find('img').attr('alt'),
 					team2_id,
 					team1_id,
 					result = td.eq(4).find('a'),
@@ -221,6 +221,9 @@ Match.insert_match_by_competition = function($){
 					score1,
 					score2;
 					date = td.eq(0).find('a').attr('href').replace(/\S+(\d{4}\-\d{2}\-\d{2})/,'$1') || date;
+					if(date == '0000-00-00'){
+						return sequence;
+					}
 					time = trim(td.eq(1).text()) == "" ? time : trim(td.eq(1).text());
 					var play_at = moment.tz([date,time].join(' '), "YYYY-MM-DD h:mm A", "Europe/London").utc().format('YYYY-MM-DD HH:mm');
 					if(/\d{1,2}\:\d{1,2}/.test(result)){
