@@ -43,6 +43,7 @@ Team.get_team = function($){
     if(foundation){
 		foundation = moment(foundation, "MMM D, YYYY").format('YYYY-MM-DD');
 	}
+	console.log('owner_id' + club_id)
     var team = new Team({
     	team_name:team_name,
     	club:is_club,
@@ -51,7 +52,7 @@ Team.get_team = function($){
     	owner_id:is_club ? club_id:0,
     	country_id:nation_id,
     	profile_uri:club_url,
-    	foundation:foundation,
+    	foundation:foundation ? foundation : undefined,
     	address:address
     });
     return team.save().then(function(){
