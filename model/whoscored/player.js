@@ -75,10 +75,11 @@ Player.get_player_from_matchcenter = function(matchCentre2,crawler){
 }
 Player.get_player_info = function($,id){
     var date_of_birth = $("dt:contains('Age:')").next().find('i').text(),
-    name = $("dt:contains('Name:')").next().text(),
+    name = $("dt:contains('Name:')").eq(0).next().text(),
     height = $("dt:contains('Height:')").next().text(),
     weight = $("dt:contains('Weight:')").next().text(),
     data={};
+    console.log(name)
     if(date_of_birth){
       date_of_birth = date_of_birth.replace(/(\d{2})\-(\d{2})\-(\d{4})/,'$3-$2-$1');
       data.date_of_birth = date_of_birth
