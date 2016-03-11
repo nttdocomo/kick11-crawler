@@ -169,19 +169,17 @@ crawler/*.on('fetchstart',function(queueItem, requestOptions){
 	return false;
 	///unknown/startseite/verein/75
 });
-if(input_competition){
+/*if(input_competition){
   crawler.queueURL(host + '/premier-league/startseite/wettbewerb/'+input_competition);
 } else {
   var competions = ['GB1','CSL'];
-  //crawler.queueURL(host + '/hebei-china-fortune/startseite/verein/36630');
-  //crawler.queueURL(host + '/premier-league/gesamtspielplan/wettbewerb/GB1');
-  //crawler.queueURL(host + '/premier-league/startseite/wettbewerb/GB1');
   crawler.queueURL(host + '/premier-league/startseite/wettbewerb/'+competions[(new Date).getDay()%2]);
-  //crawler.queueURL(host + '/joel-castro-pereira/profil/spieler/192611');
-  //crawler.queueURL(host + '/alexis-sanchez/profil/spieler/40433');
 }
-//crawler.queueURL(host + '/yanbian-funde/startseite/verein/8539');
-//crawler.queueURL(host + '/gorka-iraizoz/profil/spieler/7874');
-//crawler.queueURL(host + '/premier-league/gesamtspielplan/wettbewerb/ES1');
-//crawler.queueURL(host + '/mohamed-elneny/profil/spieler/160438');
-crawler.start();
+crawler.start();*/
+excute('SELECT 0, MIN(b.id) - 1 AS end\
+    FROM `match_player_statistics` AS a, `match_player_statistics` AS b\
+    WHERE a.id < b.id\
+    GROUP BY a.id\
+    HAVING start < MIN(b.id)').then(function(){
+      
+    })
