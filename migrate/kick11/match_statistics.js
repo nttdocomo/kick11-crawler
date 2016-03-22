@@ -40,12 +40,9 @@ get_missing_ids = function(table){
                 })
             })
         },Promise.resolve())
-    }).then(function(){
-    	process.exit();
     }).catch(function(err){
     	console.log(err)
-    	process.exit();
+        return Promise.resolve();
     })
 };
-get_missing_ids('match_player_statistics');
 module.exports = get_missing_ids;
