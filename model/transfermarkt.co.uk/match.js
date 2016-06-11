@@ -59,7 +59,7 @@ Match.save_from_whoscored = function(data){
 	});
 };
 Match.insert_match_by_competition = function($){
-	var tables = $('#main .six.columns:not(.mobile-four)'),
+	var tables = $('#main .large-6.columns:not(#schnellsuche-platz)'),
 	name = $("select[name='wettbewerb_select_breadcrumb']").find("option:selected").text(),
 	nation_id = $("select[name='land_select_breadcrumb']").find("option:selected").val(),
 	year = $("select[name='saison_id']").find("option:selected").val(),

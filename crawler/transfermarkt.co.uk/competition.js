@@ -142,6 +142,7 @@ crawler/*.on('fetchstart',function(queueItem, requestOptions){
   console.log('errors:'+crawler.queue.errors());
 	process.exit();
 }).on('fetchstart',function(queueItem, requestOptions){
+    console.log('fetchstart:'+queueItem.path);
     crawler.interval = randomIntrvl();//everytime fetch complete,
 }).on('fetcherror',function(queueItem, response){
 	console.log('fetcherror ' + queueItem.path)
@@ -169,17 +170,11 @@ crawler/*.on('fetchstart',function(queueItem, requestOptions){
 	return false;
 	///unknown/startseite/verein/75
 });
-/*if(input_competition){
+if(input_competition){
   crawler.queueURL(host + '/premier-league/startseite/wettbewerb/'+input_competition);
 } else {
   var competions = ['GB1','CSL'];
   crawler.queueURL(host + '/premier-league/startseite/wettbewerb/'+competions[(new Date).getDay()%2]);
 }
-crawler.start();*/
-excute('SELECT 0, MIN(b.id) - 1 AS end\
-    FROM `match_player_statistics` AS a, `match_player_statistics` AS b\
-    WHERE a.id < b.id\
-    GROUP BY a.id\
-    HAVING start < MIN(b.id)').then(function(){
-      
-    })
+//crawler.queueURL(host + '/tomas-kalas/profil/spieler/148657');
+crawler.start();

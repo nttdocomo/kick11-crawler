@@ -15,9 +15,9 @@ host = 'http://www.transfermarkt.co.uk',
 fetchedUrls = [],
 crawler = new Crawler("www.transfermarkt.co.uk", "/");
 //crawler.discoverResources = false;
-crawler.useProxy = true;
+/*crawler.useProxy = true;
 crawler.proxyHostname = '127.0.0.1';
-crawler.proxyPort = '11080';
+crawler.proxyPort = '11080';*/
 crawler.maxConcurrency = 1;
 crawler.interval = 600;
 crawler.listenerTTL = 100000;
@@ -98,11 +98,11 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 	console.log(errorData)
 	crawler.queueURL(host + queueItem.path);
 }).addFetchCondition(function(parsedURL) {
-	if((/^\/\S+?\/startseite\/verein\/\d+?$/i.test(parsedURL.path) || 
-	/^\/\S+\/profil\/spieler\/\d{1,9}$/.test(parsedURL.path) || 
-	/^\/\S+\/korrektur\/spieler\/\d{1,6}$/.test(parsedURL.path) || 
-	/^\/\S+\/gesamtspielplan\/wettbewerb\/[\w|\d]+?(\/saison_id\/\d{4})?$/.test(parsedURL.path) || 
-	/^\/\S+\/startseite\/wettbewerb\/[\w|\d]+?(\/saison_id\/\d{4})?$/i.test(parsedURL.path)/* || 
+	if((/^\/\S+?\/startseite\/verein\/\d+?$/i.test(parsedURL.path) ||
+	/^\/\S+\/profil\/spieler\/\d{1,9}$/.test(parsedURL.path) ||
+	/^\/\S+\/korrektur\/spieler\/\d{1,6}$/.test(parsedURL.path) ||
+	/^\/\S+\/gesamtspielplan\/wettbewerb\/[\w|\d]+?(\/saison_id\/\d{4})?$/.test(parsedURL.path) ||
+	/^\/\S+\/startseite\/wettbewerb\/[\w|\d]+?(\/saison_id\/\d{4})?$/i.test(parsedURL.path)/* ||
 	/^\/\S+\/transfers\/spieler\/\d{1,6}$/.test(parsedURL.path)*/) && !/^\/end\-of\-career\/startseite\/verein\/\d+?$/.test(parsedURL.path) && !/^\/(unattached|unknown|\-tm)\/startseite\/verein\/\d+?$/.test(parsedURL.path)){
 		if(fetchedUrls.indexOf(parsedURL.path) == -1){//if url not in fetchedUrl
 			fetchedUrls.push(parsedURL.path)//push it into to avoid fetch twice

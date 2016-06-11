@@ -24,7 +24,7 @@ Player.table = 'transfermarkt_player';
 Player.get_player = function($){
 	var url = $('#submenue > li').eq(1).find('> a').attr('href'),
 	id = url.replace(/\S+?\/(\d{1,9})$/,'$1'),
-  dataName = $('.dataName > span'),
+  dataName = $('.dataName > h1'),
 	full_name,
 	name_in_native_country = $( "th:contains('Name in home country:')" ).next().text()||'',
 	date_of_birth = $(".auflistung th:contains('Date of birth:')" ).next().text().replace(/^\s+(.+?)\s+$/,'$1').replace(/^(\w{3}\s{1}\d{1,2},\s{1}\d{4})\s{1}.+/,'$1'),
