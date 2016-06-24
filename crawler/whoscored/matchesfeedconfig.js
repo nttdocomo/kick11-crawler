@@ -33,13 +33,13 @@ crawler.host = domain;
 crawler.interval = randomIntrvl();//set a random interval
 crawler.discoverResources = false;
 crawler.acceptCookies = true;
-crawler.userAgent = 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.101 Safari/537.36';
+crawler.userAgent = 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.87 Safari/537.36';
 crawler.customHeaders = {
     Host:'www.whoscored.com',
     Referer:'https://www.whoscored.com/LiveScores',
-    'Model-Last-Mode': 'A4t869pEUu/svTQfQNYI1r0nf0RiLYyu9iFUqnUvUT4=',
+    //'model-last-mode': 'A4t869pEUu/svTQfQNYI1r0nf0RiLYyu9iFUqnUvUT4=',
     'X-Requested-With':'XMLHttpRequest',
-    Cookie:'__gads=ID=fabb88cc2b527586:T=1447593413:S=ALNI_MbhDC_wix56JPiYFTF-dHtc9XYRMA; OX_plg=swf|shk|pm; userid=B015E18A-9322-3E4F-2880-627A7B2C4BA9; jwplayer.volume=1; jwplayer.mute=true; __qca=P0-1695388366-1449292007430; GED_PLAYLIST_ACTIVITY=W3sidSI6ImVwbVMiLCJ0IjoxNDQ5OTA5MzIwLCJlZCI6eyJpIjp7InciOnsidHQiOjMxNDAwLCJwZCI6MzE0MDAsImJzIjoxMH19LCJhIjpbeyJrdiI6e319LHsia3YiOnt9fSx7Imt2Ijp7fX0seyJrdiI6e319LHsia3YiOnt9fSx7Imt2Ijp7fX1dfSwibnYiOjAsInBsIjozMTQwMH1d; _ga=GA1.2.1923670642.1447593414; _gat=1'
+    Cookie:'visid_incap_774904=gNC/G0SiR+im+cKakecp4ntFbVcAAAAAQUIPAAAAAACOuTCwMm95vCyKMUYQ+z10; incap_ses_199_774904=kmXuCbeOqzf/d9Owrv3CAgtGbVcAAAAAe5zojb7eet62Qw01qPT+MA==; __gads=ID=2c90b344c567287d:T=1466779198:S=ALNI_MYy8s--t7tgwIweLUtNL-bvVgv06w; OX_plg=swf|shk|pm; _ga=GA1.2.1246760017.1466779220; _gat=1; crtg_rta='
 };
 crawler.listenerTTL = 100000;
 crawler.timeout = 30000;
@@ -55,6 +55,7 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
     if(content && content !== null && content != 'null'){
         if(/^\/LiveScores$/.test(queueItem.path)){//获取首页的Model-Last-Mode
             content = content.replace(/(.*[\n|\r])+?.+?Model\-Last\-Mode.+'(\S+?)'.+?[\n|\r](.*[\n|\r])+/,'$2')
+            console.log('Model-Last-Mode:' + content)
             crawler.customHeaders['Model-Last-Mode'] = content;
         }
         if(/^\/matchesfeed\/\?d\=\d{8}$/.test(queueItem.path)){
