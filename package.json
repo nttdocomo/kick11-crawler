@@ -16,7 +16,17 @@
     "underscore": "*",
     "moment-timezone": "*"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "mysql": "*",
+    "rsvp": "*",
+    "cheerio": "*",
+    "simplecrawler": "*",
+    "iconv-lite": "*",
+    "moment": "*",
+    "underscore": "*",
+    "moment-timezone": "*",
+    "request": "*"
+  },
   "scripts": {
     "test": "test",
     "start": "node server.js"
