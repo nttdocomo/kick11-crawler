@@ -20,9 +20,10 @@ now = moment.utc(),
 decoder = new StringDecoder('utf8'),
 clone = now.clone();
 fs.readFile('./cookie.txt', function(err, data){
-    //if (err) throw err;
-    console.log(decoder.write(data));
-    crawler.customHeaders.Cookie = decoder.write(data);
+    if (err){
+        console.log(decoder.write(data));
+        crawler.customHeaders.Cookie = decoder.write(data);
+    }
     crawler.queueURL(host + '/LiveScores');
     crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
         console.log("Completed fetching resource:", queueItem.path);
