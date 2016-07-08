@@ -35,7 +35,8 @@ crawler.host = domain;
 crawler.interval = randomIntrvl(minInterval,maxInterval);//set a random interval
 crawler.discoverResources = false;
 crawler.acceptCookies = true;
-crawler.userAgent = 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.87 Safari/537.36';
+//crawler.userAgent = 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.87 Safari/537.36';
+crawler.userAgent = 'Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1';
 crawler.customHeaders = {
     Host:'www.whoscored.com',
     Referer:'https://www.whoscored.com/LiveScores',

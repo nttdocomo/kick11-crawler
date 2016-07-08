@@ -20,7 +20,7 @@ now = moment.utc(),
 decoder = new StringDecoder('utf8'),
 clone = now.clone();
 fs.readFile('./cookie.txt', function(err, data){
-    if (err){
+    if (!err){
         console.log(decoder.write(data));
         crawler.customHeaders.Cookie = decoder.write(data);
     }
@@ -35,8 +35,8 @@ fs.readFile('./cookie.txt', function(err, data){
             if(/^\/LiveScores$/.test(queueItem.path) || /^\/$/.test(queueItem.path)){//获取首页的Model-Last-Mode
                 //crawler.queueURL(host + '/matchesfeed/?d=20160101');
                 next = this.wait();
-                content = content.replace(/(.*[\n|\r])+?.+?Model\-Last\-Mode.+'(\S+?)'.+?[\n|\r](.*[\n|\r])+/,'$2')
-                //console.log(content)
+                content = content.replace(/(.*[\n|\r])+?.+?Model\-Last\-Mode.+'(\S+?)'.+?[\n|\r](.*[\n|\r])+/,'$2');
+                console.log(content)
                 //console.log(/^[a-zA-Z0-9\+\/]([a-zA-Z0-9\+\/])+[a-zA-Z0-9=]$/.test(content))
                 if(/^[a-zA-Z0-9\+\/]([a-zA-Z0-9\+\/])+[a-zA-Z0-9=]$/.test(content)){
                     modelLastMode = content;
