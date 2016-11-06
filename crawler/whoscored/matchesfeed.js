@@ -26,7 +26,6 @@ fs.readFile('./cookie.txt', function(err, data){
     }
     crawler.queueURL(host + '/LiveScores');
     crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
-        console.log("Completed fetching resource:", queueItem.path);
         console.log(crawler.interval)
         //console.log(queueItem.status.redirected)
         var next, decoder = new StringDecoder('utf8'),content = decoder.write(responseBuffer);
