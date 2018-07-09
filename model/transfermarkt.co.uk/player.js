@@ -22,8 +22,8 @@ Player = Model.extend({
 })
 Player.table = 'transfermarkt_player';
 Player.get_player = function($){
-	var url = $('#submenue > li').eq(1).find('> a').attr('href'),
-	id = url.replace(/\S+?\/(\d{1,9})$/,'$1'),
+	var url = $('#domains a').eq(0).attr('href'),
+	id,
   dataName = $('.dataName > h1'),
 	full_name,
 	name_in_native_country = $( "th:contains('Name in home country:')" ).next().text()||'',
@@ -32,12 +32,19 @@ Player.get_player = function($){
 	market_value = $('.marktwert > span > a').text(),
 	foot = $("th:contains('Foot:')" ).next().text(),
 	position = $('.profilheader').eq(1).find('tr').eq(2).find('> td').text().replace(/^\s+(.+?)\s+$/,'$1') || $('.detailpositionen .auflistung tr').eq(0).find('a').text(),
-	profile_uri = url,
+	profile_uri = url.replace(/^http\:\/\/.+?\//,''),
 	nation_id = $("th:contains('Nationality:')").next().find('img'),
 	nationality = _.map($(".auflistung th:contains('Nationality:')" ).next().find('img'),function(img,i){
 		return $(img).attr('src').replace(/\S+\/(\d+)\.png.*$/,'$1')
 	}),
 	nation_name;
+  $('#spieler_select_breadcrumb').find(":selected").each((i, item) => {
+    if($(item).val()){
+      id = $(item).val()
+    }
+  })
+  console.log('id')
+  console.log(id)
   if(dataName.length == 1){
     full_name = dataName.eq(0).text().replace(/^\s+(.+?)\s+$/,'$1').replace(/[\n\t]/,'');
   } else {

@@ -4,8 +4,8 @@
 var mysql = require('mysql');
 module.exports = mysql.createPool({
 	connectionLimit : 1,
-	host : 'localhost',
+	host : '10.96.78.32',
 	user : 'root',
-	database : 'kickeleven',
-	password : '82Gz827m'
+	database : 'database_development',
+	password : 'password'
 })

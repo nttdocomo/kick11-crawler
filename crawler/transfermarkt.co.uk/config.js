@@ -14,7 +14,7 @@ difference = require('./utils').difference,
 host = 'http://www.transfermarkt.co.uk',
 fetchedUrls = [],
 input_competition = process.argv[2],
-crawler = new Crawler("www.transfermarkt.co.uk", "/");
+crawler = new Crawler("http://www.transfermarkt.co.uk");
 crawler.discoverResources = false;
 /*crawler.useProxy = true;
 crawler.proxyHostname = '127.0.0.1';
@@ -100,8 +100,12 @@ crawler.on("fetchcomplete",function(queueItem, responseBuffer, response){
 	})
   };*/
 }).on('complete',function(){
-	console.log('complete:'+crawler.queue.complete());
-  console.log('errors:'+crawler.queue.errors());
+  crawler.queue.countItems({ fetched: true }, function(error, count) {
+    console.log("The number of completed items is %d", count);
+  });
+  crawler.queue.countItems({ status: 'failed' }, function(error, count) {
+    console.log("The number of failed items is %d", count);
+  });
 	process.exit();
 }).on('fetcherror',function(queueItem, response){
 	console.log('fetcherror ' + queueItem.path)

@@ -1,5 +1,5 @@
 var Class = require('./class'),
-mysql = require('mysql'),
+mysql = require('mysql2'),
 _ = require('underscore'),
 moment = require('moment'),
 excute = require('./promiseExcute');
@@ -11,7 +11,8 @@ module.exports = Class.extend({
 	save:function(){
 		var me = this,
 		data = this.attributes;
-		return this.is_exist().then(function(row){
+		const is_exist = this.is_exist()
+		return is_exist.then(function(row){
     		if(row.length){
     			return me.update(data)
     		} else {
@@ -25,7 +26,7 @@ module.exports = Class.extend({
 		})
 	},
 	is_exist:function(){
-		return this.get('id') && this.get_by_id()
+		return this.get_by_id()
 	},
 	needToUpdate:function(data,row){
 		delete row.id;
@@ -33,7 +34,8 @@ module.exports = Class.extend({
 		delete row.update_at;
 	},
 	get_by_id:function(){
-		return excute(mysql.format('SELECT * FROM `'+this.constructor.table+'` WHERE id = ?',[this.get('id')]));
+		const ret = excute(mysql.format('SELECT * FROM `'+this.constructor.table+'` WHERE id = ?',[this.get('id')]));
+		return ret;
 	},
 	get:function(key){
 		return this.attributes[key];

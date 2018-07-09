@@ -2,7 +2,7 @@
  * @author nttdocomo
  */
 var excute = require('../../promiseExcute'),
-mysql = require('mysql'),
+mysql = require('mysql2'),
 _ = require('underscore'),
 difference = require('../../utils').difference,
 Model = require('../../model'),
@@ -36,6 +36,7 @@ Season.get_season = function($){
 			year:$(this).val()
 		})
 	})
+	console.log(seasons)
 	return seasons.reduce(function(sequence,season){
 		return sequence.then(function(){
 			var year = season.year,title = season.title;

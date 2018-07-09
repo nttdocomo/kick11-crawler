@@ -23,6 +23,7 @@ module.exports = Class.extend({
 		})
 	},
 	is_exist:function(){
+		console.log(this.get_by_id())
 		return this.get_by_id().then(function(row){
 			return row;
 		})
